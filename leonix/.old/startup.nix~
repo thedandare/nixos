@@ -1,0 +1,73 @@
+{ config, pkgs, ... }:
+let
+  # 1. Importa o flake diretamente da sua pasta local de desenvolvimento
+  fiboFlake = builtins.getFlake "path:/home/leo/flakes/fibo-serverpod";
+
+  # 2. Extrai o pacote default compilado por ele
+  fiboPackage = fiboFlake.packages.x86_64-linux.default;
+in
+
+{
+
+  services.gnome.gnome-keyring.enable = false;
+  programs.ssh.startAgent = true;
+
+
+
+  systemd.services.my-startup-script = {
+    description = "Custom Startup Script";
+
+    # Ensures the script runs once at system boot and finishes
+    serviceConfig = {
+      Type = "oneshot";
+      RemainAfterExit = true;
+    };
+
+    # The actual script content
+    script = ''
+      echo "allow br0" |  tee /etc/qemu/bridge.conf
+
+            echo "CorsairMouse started at $(date)" >> /var/log/initCorsairMouse.log
+            /run/current-system/sw/bin/ckb-next-daemon &
+            /run/current-system/sw/bin/ckb-next &
+
+    '';
+    # #       initCorsairMouse >> /var/log/initCorsairMouse.log
+    # Tells systemd to run this when the system reaches normal multi-user mode
+    wantedBy = [ "multi-user.target" ];
+  };
+
+  environment.interactiveShellInit = ''
+    alias gs='git status'
+    alias vim='nvim'
+     alias E='tmux new-window edit'
+     alias S='tmux split-window edit'
+      alias !='nixos-rebuild switch'
+  '';
+
+  environment.shellAliases = {
+    vi = "nvim";
+
+    E = "tmux new-window edit";
+    S = "tmux split-window edit";
+    B = "sudo nixos-rebuild switch";
+  };
+
+  environment.sessionVariables = rec {
+
+    S = "/etc/nixos/startup.nix";
+    C = "/etc/nixos/configuration.nix";
+    H = "/etc/nixos/hardware-configuration.nix";
+
+    XDG_CACHE_HOME = "$HOME/.cache";
+    XDG_CONFIG_HOME = "$HOME/.config";
+    XDG_DATA_HOME = "$HOME/.local/share";
+    XDG_STATE_HOME = "$HOME/.local/state";
+
+    # Not officially in the specification
+    XDG_BIN_HOME = "$HOME/.local/bin";
+    PATH = [
+      "${XDG_BIN_HOME}"
+    ];
+  };
+}

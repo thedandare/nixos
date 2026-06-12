@@ -1,0 +1,149 @@
+{ pkgs, ... }:
+{
+  # 📺 Display
+  services.displayManager.sddm = {
+    enable = true;
+    wayland.enable = true;
+
+    settings = {
+      Autologin = {
+        Relogin = false;
+        Session = "plasma.desktop";
+        User = "leo";
+      };
+    };
+    setupScript = ''
+      echo -e '\033[1m' '\033[31m' Iniciando CorsairMouse  '\033[0m'
+       su leo - -c /run/current-system/sw/bin/ckb-next &
+    '';
+    stopScript = "      echo -e '\033[1m' '\033[31m' SDDM Finalizando'\033[0m'
+";
+  };
+  services.desktopManager.plasma6.enable = true;
+
+  services.displayManager.defaultSession = "hyprland";
+  #   Configure keymap in X11
+  services.xserver.xkb = {
+    layout = "us";
+    variant = "alt-intl";
+  };
+
+  services.xserver = {
+    enable = false;
+    desktopManager = {
+      xterm.enable = false;
+      xfce.enable = true;
+    };
+  };
+  #    services.xserver = {
+  #     enable = true;
+  #     desktopManager = {
+  #       xterm.enable = false;
+  #       xfce = {
+  #         enable = true;
+  #         noDesktop = true;
+  #         enableXfwm = false;
+  #       };
+  #     };
+  #     windowManager = {
+  #       xmonad = {
+  #         enable = true;
+  #         enableContribAndExtras = true;
+  #         extraPackages = haskellPackages : [
+  #           haskellPackages.xmonad-contrib
+  #           haskellPackages.xmonad-extras
+  #           haskellPackages.xmonad
+  #         ];
+  #       };
+  #     };
+  #   };
+  #   services.displayManager.defaultSession = "xfce+xmonad";
+
+  xdg.terminal-exec = {
+    enable = true;
+    settings = {
+      default = [ "alacritty-leo.desktop" ];
+    };
+  };
+
+  # Some programs need SUID wrappers, can be configured further or are
+  # started in user sessions.
+  # programs.mtr.enable = true;
+  # programs.gnupg.agent = {
+  #   enable = true;
+  #   enableSSHSupport = true;
+  # };
+  # List services that you want to enable:
+
+  # 🖇️ OpenSSH
+  services.openssh.enable = true;
+  services.openssh.allowSFTP = true;
+  programs.ssh.enableAskPassword = true;
+  services.openssh.generateHostKeys = false;
+  services.openssh.hostKeys = [
+
+    {
+      path = "/home/leo/.ssh/tdd_id_ed25519";
+      type = "ed25519";
+    }
+
+    {
+      path = "/home/leo/.ssh/root_id_ed25519";
+      type = "ed25519";
+    }
+
+    {
+      path = "/home/leo/.ssh/leo.ssh";
+      type = "ed25519";
+    }
+
+    {
+      path = "/home/leo/.ssh/id_ed25519";
+      type = "ed25519";
+    }
+  ];
+  services.openssh.extraConfig = "PermitRootLogin yes";
+  services.openssh.startWhenNeeded = true;
+  services.sshguard.enable = true;
+  services.sshguard.whitelist = [
+    "192.168.0.0/24"
+    "100.100.0.0/16"
+  ];
+
+  # 🚰 Hydra
+  services.hydra = {
+    enable = true;
+    hydraURL = "http://localhost:3000";
+    notificationSender = "hydra@localhost";
+    useSubstitutes = true;
+  };
+
+  #services.pdfding.enable=true;
+
+  # 🔗 Networking
+  services.rqbit.enable = true; # A bittorrent client in Rust https://github.com/ikatson/rqbit
+  services.tailscale = {
+    enable = true;
+    serve = {
+      configFile = "/opt/secrets/tailscale-serve.json";
+    };
+  };
+
+  services.samba.enable = true;
+
+  services.spice-vdagentd.enable = true;
+  virtualisation.spiceUSBRedirection.enable = true;
+
+  #   services.kiwix-serve = {
+  #
+  #     enable = true;
+  #     library = {
+  #       wikipedia = "/data/wikipedia_en_all_maxi_2026-02.zim";
+  #       nix = pkgs.fetchurl {
+  #         url = "https://download.kiwix.org/zim/devdocs/devdocs_en_nix_2026-01.zim";
+  #         hash = "sha256-QxB9qDKSzzEU8t4droI08BXdYn+HMVkgiJMO3SoGTqM=";
+  #       };
+  #     };
+  #
+  #   };
+}

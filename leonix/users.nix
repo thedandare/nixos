@@ -1,0 +1,126 @@
+{ pkgs, ... }:
+let
+  repositoryName = "nixos";
+  repositoryUser = "thedandare";
+  repositoryUrl = "git@github.com:${repositoryUser}/${repositoryName}.git"; # Usando SSH
+  userSshKey =
+    if builtins.getEnv "SSH_KEY" != "" then
+      builtins.getEnv "SSH_KEY"
+    else
+      "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAICs+sOj/1GK5exkDkCw7H7zmDapshfWaRn474qxZxSUY leo";
+  rootSshKey =
+    if builtins.getEnv "SSH_KEY_ROOT" != "" then
+      builtins.getEnv "SSH_KEY_ROOT"
+    else
+      "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIMGWvbEP/E0dh/xwtUVIuQrNDSz+G4TCLA+UMVpT0gLi root@ali";
+
+in
+{
+  users.defaultUserShell = pkgs.zsh;
+  security.pam.services.sddm.enableKwallet = true;
+
+  users.users.root = {
+    hashedPasswordFile = "/etc/nixos/root-password.hash";
+    openssh.authorizedKeys.keys = [
+      userSshKey
+      rootSshKey
+    ];
+
+  };
+
+  home-manager.useGlobalPkgs = false;
+  users.users.leo = {
+    useDefaultShell = true;
+    isNormalUser = true;
+    description = "leo";
+    extraGroups = [
+      "samba"
+      "networkmanager"
+      "kvm"
+      "wheel"
+    ];
+    packages = with pkgs; [ thunderbird ];
+    openssh.authorizedKeys.keys = [
+      userSshKey
+      rootSshKey
+    ];
+
+  };
+
+  home-manager.users.leo =
+    { pkgs, ... }:
+    {
+      nixpkgs.config = {
+        permittedInsecurePackages = [ "googleearth-pro-7.3.7.1155" ];
+      };
+
+      #       nix.settings.experimental-features = [
+      #         "nix-command"
+      #         "flakes"
+      #       ];
+      nixpkgs.config.allowUnfree = true;
+      home.packages = [
+        pkgs.kdePackages.bluedevil
+        pkgs.kdePackages.calendarsupport
+        pkgs.kdePackages.drumstick
+        pkgs.kdePackages.dynamic-workspaces
+        pkgs.kdePackages.k3b
+        pkgs.kdePackages.kdeedu-data
+        pkgs.kdePackages.kcolorpicker
+        pkgs.kdePackages.kcolorchooser
+        pkgs.kdePackages.kgraphviewer
+        pkgs.kdePackages.kgeography
+        pkgs.kdePackages.kfind
+        pkgs.gravit # visually stunning gravity simulator, https://github.com/gak/gravit
+
+        pkgs.atool # Manage file archives of various types.
+        pkgs.httpie # (pronounced aitch-tee-tee-pie)
+        # is a command-line HTTP client. Its goal is to make CLI interaction with web services as human-friendly as possible. HTTPie is designed for testing, debugging, and generally interacting with APIs & HTTP servers. The http & https commands allow for creating and sending arbitrary HTTP requests. They use simple and natural syntax and provide formatted and colorized output.
+        pkgs.httpie-desktop
+
+        pkgs.googleearth-pro
+        pkgs.plex-desktop
+        pkgs.plexamp
+        pkgs.lockbook-desktop
+
+        pkgs.chezmoi # Manage your dotfiles across multiple machines, securely https://www.chezmoi.io
+
+        # 🎳 Gaming
+        pkgs.rpcs3 # PS3 emulator/debugger
+        pkgs.zsnes
+        pkgs.retroarch-full
+        pkgs.retroarch-joypad-autoconfig
+        pkgs.retroarch-assets
+      ];
+      services.mpris-proxy.enable = true; # To make bt buttons for pause/play or to skip to the next track usable.
+      programs.chromium.enable = true;
+      programs.home-manager.enable = true;
+      home.stateVersion = "26.05"; # 🚭 No Changing.
+
+      # ♐ Git
+      services.ssh-agent.enable = true;
+      home.file.".ssh/leo.ssh.pub".text = userSshKey; # Para q o Home Manager crie o arquivo  .pub na máquina
+      home.file.".ssh/root_id_ed25519.pub".text = rootSshKey;
+
+      programs.ssh = {
+        enable = true;
+        matchBlocks = {
+          "github.com" = {
+            hostname = "github.com";
+            user = "git";
+            identityFile = "~/.ssh/id_ed25519";
+          };
+        };
+      };
+      # Isso criará uma pasta física para o rep.
+      home.file."confignix" = {
+        source = builtins.fetchGit {
+          url = repositoryUrl;
+          ref = "main";
+        };
+        # Isso faz com que você possa modificar os arquivos localmente
+        recursive = true;
+      };
+
+    };
+}

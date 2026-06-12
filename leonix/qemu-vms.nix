@@ -1,0 +1,100 @@
+{ pkgs, ... }:
+let
+  constantes = import ./qemu-constants.nix;
+
+  # 🟰
+  vms = {
+    "windows-server" = {
+      mac = "52:54:00:AB:12:34";
+      device = "/dev/disk/by-id/ata-Lexar_SSD_NQ100_1TB_QE6068R0049370S30T";
+      cdrom = constantes.WIN_SRV_CDROM;
+      discosAdicionais = "${constantes.PASS_WD40} ${constantes.PASS_ST40} ${constantes.PASS_ST10}"; # ${constantes.WIN_VIRTIO_CDROM}
+      ram = "7G";
+    };
+    "ubuntu-vm" = {
+      mac = "52:54:00:AB:56:78";
+      device = "/dev/disk/by-id/nvme-WD_BLACK_SN750_SE_500GB_22064Y801267";
+      cdrom = ""; # constantes.UBUNTU_CDROM; # Certifique-se de que está definido no seu constants.nix;
+      discosAdicionais = "";
+      ram = "5G";
+    };
+  };
+
+in
+{
+  # O Nix vai rodar um 'map' (loop) sobre a nossa lista acima e gerar os serviços automaticamente
+  systemd.services = builtins.mapAttrs (vmID: vmConfig: {
+    description = "KVM Node - ${vmID}";
+    after = [
+      "network.target"
+      "tailscaled.service"
+    ];
+    wantedBy = [ "multi-user.target" ];
+    restartIfChanged = true;
+
+    serviceConfig = {
+      Type = "simple";
+      Restart = "on-failure";
+      RestartSec = "30s";
+      TimeoutStopSec = "3min";
+      LimitMEMLOCK = "infinity";
+      # 🟢 Evita que o Linux derrube a VM se faltar RAM no host (mata outros apps, protege a VM)
+      OOMScoreAdjust = "-1000";
+
+      # 🟢 Define permissões estritas para criação de arquivos de log/sockets
+      UMask = "0007";
+
+      # 🟢 Dá prioridade de CPU (Nice) em tempo real para o processo do QEMU no agendador do Linux
+      CPUSchedulingPolicy = "rr";
+      CPUSchedulingPriority = 50;
+
+      # O stop usa o nome dinâmico da VM para achar o socket correto (${constantes.HOME}windows-server-vm.sock, etc)
+      ExecStop = pkgs.writeShellScript "stop-${vmID}" ''
+               MONITOR_SOCK="${constantes.HOME}socks/${vmID}-vm.sock"
+               if [ -S "$MONITOR_SOCK" ]; then
+                 echo "🌙 Enviando comando de desligamento ACPI para a VM ${vmID}..."
+                 echo "system_powerdown" | ${pkgs.socat}/bin/socat - UNIX-CONNECT:"$MONITOR_SOCK"
+                 gracefulShutdownTimeout=60
+                 while [ $gracefulShutdownTimeout -gt 0 ] && kill -0 $MAINPID 2>/dev/null; do
+        sleep 1
+        gracefulShutdownTimeout=$((gracefulShutdownTimeout - 1))
+
+        # Se passar de 45 segundos e a VM não desligou, força o "puxão de tomada" via Monitor
+        if [ $gracefulShutdownTimeout -eq 15 ]; then
+          echo "⚠️ VM demorando demais para desligar. Forçando 'quit' via monitor..."
+          echo "quit" | ${pkgs.socat}/bin/socat - UNIX-CONNECT:"$MONITOR_SOCK"
+        fi
+                 done
+                 echo "✅ Processo da VM ${vmID} finalizado."
+               else
+                 echo "❌ Monitor não encontrado em $MONITOR_SOCK. Forçando finalização..."
+                 kill -SIGTERM $MAINPID
+               fi
+      '';
+    };
+
+    # O script de boot monta os parâmetros dinamicamente usando as constantes globais e os dados da VM atual
+    script = ''
+      MONITOR_SOCK="${constantes.HOME}socks/${vmID}-vm.sock"
+      SOCK_ADDR="${constantes.HOME}socks/${vmID}-spice.sock"
+      OVFM_VARS="${constantes.HOME}${vmID}_vars.fd"
+      CPU_PARAMS="${constantes.MACHINE} ${constantes.SMP}"
+      MEMORY_PARAMS="-m ${vmConfig.ram} -object memory-backend-file,id=mem-${vmID},size=${vmConfig.ram},mem-path=/dev/hugepages,share=on,policy=bind,host-nodes=0 -numa node,memdev=mem-${vmID}"  BOOT_PARAMS="-boot menu=on ${constantes.EFI_DRIVE} -drive if=pflash,format=raw,file=$OVFM_VARS -device ahci,id=ahci0"
+      PASS_DISK="-drive file=${vmConfig.device},format=raw,if=none,id=physical_sata,cache=none -device ide-hd,drive=physical_sata,bus=ahci0.0"
+      BRIDGE_NET="-netdev bridge,id=${vmID}net,br=${constantes.BRIDGE_IFACE} -device virtio-net,netdev=${vmID}net,mac=${vmConfig.mac}"
+      SPICE_SOCKET="-vga qxl -spice unix,addr=$SOCK_ADDR,disable-ticketing=on"
+      SPICE_CHARDEV="-chardev spicevmc,id=${vmID}-spicechannel,name=vdagent"
+      QEMU_MONITOR="-monitor unix:$MONITOR_SOCK,server,nowait"
+      PROC_NAME="-name ${vmID},process=${vmID}-qemu"
+      ( # Esse loop roda em paralelo, espera os sockets aparecerem no /tmp e libera o acesso (777 ou 666)
+        while [ ! -S "$SOCK_ADDR" ] || [ ! -S "$MONITOR_SOCK" ]; do
+          sleep 0.5
+        done
+        chmod 666 "$SOCK_ADDR" "$MONITOR_SOCK"
+        echo "🔒 Permissões cedidas a VM ${vmID}!"
+      ) &
+      COMANDO="${vmConfig.cdrom} $CPU_PARAMS $MEMORY_PARAMS $BOOT_PARAMS $PASS_DISK $BRIDGE_NET $SPICE_SOCKET $SPICE_CHARDEV $QEMU_MONITOR ${vmConfig.discosAdicionais} $PROC_NAME"
+      exec ${pkgs.qemu_kvm}/bin/qemu-system-x86_64 $COMANDO
+    '';
+  }) vms; # <--- Indica ao Nix que o loop deve ser aplicado em cima da nossa lista 'vms'
+}

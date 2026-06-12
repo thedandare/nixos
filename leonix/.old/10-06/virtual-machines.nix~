@@ -1,0 +1,92 @@
+{ pkgs, ... }:
+let
+  constantes = import ./constants.nix;
+
+  # 🟰 UNICA PARTE QUE MUDA: LISTA DAS SUAS VMS
+  vms = {
+    "window-server" = {
+      mac = "52:54:00:AB:12:34";
+      device = "/dev/disk/by-id/ata-Lexar_SSD_NQ100_1TB_QE6068R0049370S30T";
+      cdrom = constantes.WIN_SRV_CDROM;
+      discosAdicionais = "${constantes.PASS_WD40} ${constantes.PASS_ST40} ${constantes.PASS_ST10}"; # ${constantes.WIN_VIRTIO_CDROM}
+
+    };
+    "ubuntu-vm" = {
+      mac = "52:54:00:AB:56:78";
+      device = "/dev/disk/by-id/nvme-WD_BLACK_SN750_SE_500GB_22064Y801267";
+      cdrom = constantes.UBUNTU_CDROM; # Certifique-se de que está definido no seu constants.nix;
+      discosAdicionais = "";
+
+    };
+  };
+in
+{
+  # O Nix vai rodar um 'map' (loop) sobre a nossa lista acima e gerar os serviços automaticamente
+  systemd.services = builtins.mapAttrs (vmID: vmConfig: {
+    description = "MicroK8s Cluster Node - ${vmID}";
+    after = [
+      "network.target"
+      "tailscaled.service"
+    ];
+    wantedBy = [ "multi-user.target" ];
+    restartIfChanged = true;
+
+    serviceConfig = {
+      Type = "simple";
+      Restart = "on-failure";
+      RestartSec = "10s";
+      TimeoutStopSec = "5min";
+
+      # O stop usa o nome dinâmico da VM para achar o socket correto (/tmp/window-server-vm.sock, etc)
+      ExecStop = pkgs.writeShellScript "stop-${vmID}" ''
+        MONITOR_SOCK="/tmp/${vmID}-vm.sock"
+        if [ -S "$MONITOR_SOCK" ]; then
+          echo "🌙 Enviando comando de desligamento ACPI para a VM ${vmID}..."
+          echo "system_powerdown" | ${pkgs.socat}/bin/socat - UNIX-CONNECT:"$MONITOR_SOCK"
+
+          timeout=60
+          while [ $timeout -gt 0 ] && kill -0 $MAINPID 2>/dev/null; do
+            sleep 1
+            timeout=$((timeout - 1))
+          done
+          echo "✅ Processo da VM ${vmID} finalizado."
+        else
+          echo "❌ Monitor não encontrado em $MONITOR_SOCK. Forçando finalização..."
+          kill -SIGTERM $MAINPID
+        fi
+      '';
+    };
+
+    # O script de boot monta os parâmetros dinamicamente usando as constantes globais e os dados da VM atual
+    script = ''
+      SOCK_ADDR="/tmp/${vmID}-spice.sock"
+      MONITOR_SOCK="/tmp/${vmID}-vm.sock"
+      OVFM_VARS="${constantes.HOME}/${vmID}_vars.fd"
+
+      VM_PARAMS="${constantes.MACHINE} ${constantes.MEMORY} ${constantes.SMP}"
+      BOOT_PARAMS="-boot menu=on ${constantes.EFI_DRIVE} -drive if=pflash,format=raw,file=$OVFM_VARS -device ahci,id=ahci0"
+
+      PASS_DISK="-drive file=${vmConfig.device},format=raw,if=none,id=physical_sata,cache=none -device ide-hd,drive=physical_sata,bus=ahci0.0"
+      BRIDGE_NET="-netdev bridge,id=${vmID}net,br=${constantes.BRIDGE_IFACE} -device virtio-net,netdev=${vmID}net,mac=${vmConfig.mac}"
+
+      SPICE_SOCKET="-vga qxl -spice addr=$SOCK_ADDR,unix=on,disable-ticketing=on"
+      SPICE_CHARDEV="-chardev spicevmc,id=${vmID}-spicechannel,name=vdagent"
+      QEMU_MONITOR="-monitor unix:$MONITOR_SOCK,server,nowait"
+
+        # 🔒 CORREÇÃO DE PERMISSÕES (chmods em background)
+      # Esse loop roda em paralelo, espera os sockets aparecerem no /tmp e libera o acesso (777 ou 666)
+      (
+        while [ ! -S "$SOCK_ADDR" ] || [ ! -S "$MONITOR_SOCK" ]; do
+          sleep 0.5
+        done
+        chmod 666 "$SOCK_ADDR" "$MONITOR_SOCK"
+        echo "🔒 Permissões dos Sockets corrigidas para a VM ${vmID}!"
+      ) &
+
+      COMANDO="${vmConfig.cdrom} $VM_PARAMS $BOOT_PARAMS $PASS_DISK $BRIDGE_NET $SPICE_SOCKET $SPICE_CHARDEV $QEMU_MONITOR ${vmConfig.discosAdicionais}"
+
+      echo "Iniciando a VM ${vmID}..."
+      exec ${pkgs.qemu_kvm}/bin/qemu-system-x86_64 $COMANDO
+    '';
+  }) vms; # <--- Indica ao Nix que o loop deve ser aplicado em cima da nossa lista 'vms'
+}
