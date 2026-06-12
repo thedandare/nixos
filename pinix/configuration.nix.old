@@ -1,0 +1,208 @@
+# 🥧 ➖➖➖➖➖➖➖➖➖➖➖➖➖➖➖➖➖🥧
+# 🥧  Leo's raspberry-pi-4b Nixos stp  🥧
+# 🥧                                   🥧
+# 🥧                                   🥧
+# 🥧 ➖➖➖➖➖➖➖➖➖➖➖➖➖➖➖➖➖🥧
+
+
+{ config, pkgs, lib, ... }:
+
+let
+  user = "leo";
+  password = if builtins.getEnv "USER_PWD" != "" then builtins.getEnv "USER_PWD" else "Senha171";
+  rootpwd  = if builtins.getEnv "ROOT_PWD" != "" then builtins.getEnv "ROOT_PWD" else "toor171";
+    userSshKey =
+    if builtins.getEnv "SSH_KEY" != "" then
+      builtins.getEnv "SSH_KEY"
+    else
+      "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAICs+sOj/1GK5exkDkCw7H7zmDapshfWaRn474qxZxSUY leo";
+  rootSshKey =
+    if builtins.getEnv "SSH_KEY_ROOT" != "" then
+      builtins.getEnv "SSH_KEY_ROOT"
+    else
+      "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIMGWvbEP/E0dh/xwtUVIuQrNDSz+G4TCLA+UMVpT0gLi root@ali";
+
+
+  SSID = "THIS_IS_US";
+  SSIDpassword = "C@fezinho403";
+  interface = "wlan0";
+  hostname = "pinix";
+in {
+
+ imports = [
+    <nixos-hardware/raspberry-pi/4> # Change "4" to your model (e.g., 3 or 5)
+  ];
+
+  nixpkgs.config.allowUnfree = true;
+  nixpkgs.config.allowUnsupportedSystem = true;
+   hardware.opengl.enable = true;
+  hardware.raspberry-pi."4".apply-overlays-dtmerge.enable = true;
+
+    hardware.deviceTree = {
+    enable = true;
+    filter = "*-rpi-*.dtb";
+    overlays = [
+      {
+        name = "spi0-1cs";
+        dtboFile = "${pkgs.device-tree_rpi.overlays}/spi0-1cs.dtbo";
+      }
+    ];
+  };
+
+  services.udev.extraRules = ''
+    SUBSYSTEM=="spidev", KERNEL=="spidev0.*", GROUP="spi", MODE="0660"
+  '';
+  users.groups.spi = {};
+
+   boot = {
+    kernelPackages = pkgs.linuxKernel.packages.linux_rpi4;
+    initrd.availableKernelModules = [ "xhci_pci" "usbhid" "usb_storage" ];
+    initrd.systemd = {
+	enableTpm2=false;
+	};
+    loader = {
+      grub.enable = false;
+      generic-extlinux-compatible.enable = true;
+    };
+  
+  kernelModules = [ 
+    "fbtft_device" 
+    "fb_ili9486"     # Driver mais comum para telas de 3.5"
+    "ads7846"        # Driver do controlador de toque (XPT2046/ADS7846)
+];
+
+ kernelParams = [
+    "modules-load=fbtft_device"
+    # Nome do layout do driver (waveshare35a ou piscreen são os mais compatíveis com 26 pinos)
+    "fbtft_device.name=piscreen" 
+    "fbtft_device.speed=24000000"     # Velocidade do SPI em Hz
+    "fbtft_device.rotate=90"          # Rotação da tela (0, 90, 180, 270)
+    # Define os pinos GPIO para Data/Command (dc) e Reset
+#    "fbtft_device.gpios=dc:24,reset:25"
+    # Redireciona o console do Linux para a tela SPI (opcional)
+    "fbcon=map:10"
+  ];
+
+
+  };
+
+  # 2. Carregar os módulos de kernel para telas SPI (FBTFT)
+
+
+  # 3. Passar parâmetros para o Kernel configurar a tela e os pinos GPIO
+ 
+  # 5. Configurar o driver de toque no X11/Desktop Environment
+  services.xserver.inputClassSections = [
+    ''
+      Identifier "Configuracao Touchscreen SPI"
+      MatchIsTouchscreen "on"
+      MatchDevicePath "/dev/input/event*"
+      Driver "evdev"
+      # Ajuste estas opções se o toque ficar invertido ou desalinhado
+      Option "SwapXY" "0"
+      Option "InvertX" "0"
+      Option "InvertY" "0"
+    ''
+  ];
+  
+  fileSystems = {
+    "/" = {
+      device = "/dev/disk/by-label/NIXOS_SD";
+      fsType = "ext4";
+      options = [ "noatime" ];
+    };
+  };
+
+  networking = {
+    hostName = hostname;
+    wireless = {
+      enable = true;
+      networks."${SSID}".psk = SSIDpassword;
+      interfaces = [ interface ];
+    };
+  };
+
+  environment.systemPackages = with pkgs; [ 
+pkgs.neovim
+pkgs.gnvim
+
+
+pkgs.turbovnc
+pkgs.remmina
+pkgs.xrdp
+firefox
+pkgs.google-chrome
+pkgs.cool-retro-term
+ ];
+
+  services.xserver = {
+	enable = true;
+	desktopManager = {
+		xfce = {
+	enable = false;
+};
+		};
+	xkb = {
+    		layout = "us";
+    		variant = "alt-intl";
+  	};
+};
+
+services.displayManager.sddm.enable = true;
+services.displayManager.sddm.wayland.enable = true;
+
+# Enable the KDE Plasma Desktop Environment.
+services.desktopManager.plasma6.enable = true;
+
+
+
+  
+  services.openssh.enable = true;
+    services.openssh.extraConfig = "PermitRootLogin yes";
+  services.openssh.startWhenNeeded = true;
+
+  users = {
+    mutableUsers = false;
+    users."${user}" = {
+      isNormalUser = true;
+      password = password;
+      extraGroups = [ "wheel" ];
+openssh.authorizedKeys.keys = [ userSshKey rootSshKey];
+    };
+ users."root" = {
+      password = rootpwd;
+openssh.authorizedKeys.keys = [ rootSshKey];
+    };
+  };
+
+  programs.tmux = {
+    enable=true;
+    
+  };
+  
+  programs.chromium = {
+    enable=true;
+    
+  };
+  
+  programs.zsh = {
+    enable=true;
+  };
+  
+  # 🗝️ Seguranca
+  security.sudo.wheelNeedsPassword = false;
+
+  #  The following rule is the analogue of NOPASSWD:ALL in sudo, in that wheel users do not need to authenticate again when performing any action.
+  security.polkit.extraConfig = ''
+    polkit.addRule(function(action, subject) {
+      if (subject.isInGroup("wheel")) {
+        return polkit.Result.YES;
+      }
+    });
+  '';
+
+  networking.firewall.enable = false;
+
+  hardware.enableRedistributableFirmware = true;
+  system.stateVersion = "26.05";
+}
