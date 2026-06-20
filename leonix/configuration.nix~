@@ -29,12 +29,13 @@ in
     ./grub.nix
     ./boot.nix
     ./hardware-configuration.nix
-    ./systemPackages.nix
+#     ./systemPackages.nix
+./packages
     ./peripherals.nix
     ./services.nix
     ./net-svc/networking.nix
     ./net-svc/samba.nix
-#     ./git-services.nix
+    #     ./git-services.nix
     ./programs.nix
     ./users/users.nix
     ./users/home-manager.nix

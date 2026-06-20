@@ -1,6 +1,9 @@
 { pkgs, ... }:
 {
-  imports = [ ./samba.nix ];
+  imports = [
+    ./samba.nix
+    ./bonjour.nix
+  ];
   systemd.network.enable = true;
   systemd.network.wait-online.enable = false;
   networking.hostName = "leonix";
@@ -13,6 +16,7 @@
   networking.nftables.enable = true;
   networking.nat.enable = true;
 
+  # TCP/IP
   networking.useDHCP = false; # off by defalut, enable per-interface
 
   networking.bridges = {
@@ -25,7 +29,7 @@
     br0.useDHCP = false; # Bridge gets IP via DHCP
   };
 
-  # Adicione isso no seu configuration.nix principal para liberar a rede em Bridge
+  # libera a rede em Bridge para o QEMU
   security.wrappers.qemu-bridge-helper = {
     setuid = true;
     owner = "root";

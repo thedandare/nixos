@@ -29,7 +29,8 @@ in
     ./grub.nix
     ./boot.nix
     ./hardware-configuration.nix
-    ./systemPackages.nix
+    #     ./systemPackages.nix
+    ./packages
     ./peripherals.nix
     ./services.nix
     ./net-svc/networking.nix

@@ -1,12 +1,13 @@
 { pkgs, ... }:
 {
-  imports = [ ./samba.nix ];
+  imports = [
+    ./samba.nix
+    ./bonjour.nix
+  ];
   systemd.network.enable = true;
   systemd.network.wait-online.enable = false;
   networking.hostName = "leonix";
   networking.networkmanager.enable = true;
-
-
 
   # Firewalling
   # Isso força o NixOS a garantir que o ecossistema iptables/nftables básico seja carregado
@@ -15,7 +16,7 @@
   networking.nftables.enable = true;
   networking.nat.enable = true;
 
-
+  # TCP/IP
   networking.useDHCP = false; # off by defalut, enable per-interface
 
   networking.bridges = {
@@ -28,7 +29,7 @@
     br0.useDHCP = false; # Bridge gets IP via DHCP
   };
 
-  # Adicione isso no seu configuration.nix principal para liberar a rede em Bridge
+  # libera a rede em Bridge para o QEMU
   security.wrappers.qemu-bridge-helper = {
     setuid = true;
     owner = "root";
@@ -65,30 +66,30 @@
 
 }
 
-  # networking.firewall.allowedTCPPorts = [ ... ];
-  # networking.firewall.allowedUDPPorts = [ ... ];
-  # networking.wireless.enable = true;  # Enables wireless support via wpa_supplicant.
-  # Proxing
-  # networking.proxy.default = "http://user:password@proxy:port/";
-  # networking.proxy.noProxy = "127.0.0.1,localhost,internal.domain";
-  #   systemd.network = {
-  #     netdevs = {
-  #       # 2. Define the TAP device
-  #       "20-tap1" = {
-  #         enable = true;
-  #         netdevConfig = {
-  #           Kind = "tap";
-  #           Name = "tap1";
-  #         };
-  #       };
-  #     };
-  #     networks = {
-  #       # 3. Configure the TAP device
-  #       "40-tap1" = {
-  #         matchConfig.Name = "tap1";
-  #         # Optional: Bring interface up automatically
-  #         linkConfig.ActivationPolicy = "always-up";
-  #         # Add networking directives (e.g., static IP, bridging) here if needed
-  #       };
-  #     };
-  #   };
+# networking.firewall.allowedTCPPorts = [ ... ];
+# networking.firewall.allowedUDPPorts = [ ... ];
+# networking.wireless.enable = true;  # Enables wireless support via wpa_supplicant.
+# Proxing
+# networking.proxy.default = "http://user:password@proxy:port/";
+# networking.proxy.noProxy = "127.0.0.1,localhost,internal.domain";
+#   systemd.network = {
+#     netdevs = {
+#       # 2. Define the TAP device
+#       "20-tap1" = {
+#         enable = true;
+#         netdevConfig = {
+#           Kind = "tap";
+#           Name = "tap1";
+#         };
+#       };
+#     };
+#     networks = {
+#       # 3. Configure the TAP device
+#       "40-tap1" = {
+#         matchConfig.Name = "tap1";
+#         # Optional: Bring interface up automatically
+#         linkConfig.ActivationPolicy = "always-up";
+#         # Add networking directives (e.g., static IP, bridging) here if needed
+#       };
+#     };
+#   };

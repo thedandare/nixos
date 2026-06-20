@@ -1,0 +1,13 @@
+{ pkgs, ... }:
+{
+  # 🖨️ Printers
+  services.printing = {
+    enable = true; # CUPS
+    drivers = with pkgs; [
+      (writeTextDir "share/cups/model/canong3010.ppd" (builtins.readFile ./drivers/canong3010.ppd))
+      cups-filters
+      cups-browsed
+      pkgs.cnijfilter2
+    ];
+  };
+}

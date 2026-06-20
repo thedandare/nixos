@@ -1,0 +1,11 @@
+{ }:
+{
+  # 🖥️ AMD Radeon GPU
+  hardware.graphics.enable = true;
+  hardware.graphics.enable32Bit = true;
+  hardware.amdgpu.overdrive.enable = true;
+  hardware.facter.detected.graphics.amd.enable = true;
+  hardware.amdgpu.initrd.enable = true;
+  services.lact.enable = true; # LACT, a tool for monitoring, configuring and overclocking GPUs.
+  programs.corectrl.enable = true; # CoreCtrl, a tool to overclock amd graphics cards and processors
+}
