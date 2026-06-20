@@ -6,9 +6,6 @@
   ...
 }:
 {
-  # grub
-
-  # initrd
   boot.initrd.enable = true;
   boot.initrd.kernelModules = [
     "amdgpu"
@@ -22,14 +19,24 @@
     "sd_mod"
   ];
 
-  # kernel
   boot.kernelPackages = pkgs.linuxPackages_latest;
   boot.kernelModules = [
     "kvm-amd"
-    #     "zram"
     "k10temp" # equiv ao coretemp da intel
+    "loop"
+    "fuse"
+    "overlay"
+    "squashfs"
+    # Obrigatório para Funcionamento do Incus
+    "br_netfilter"
+    # NAO FUNCIONA MAIS
+    #     "ip_tables"
+    #     "iptable_filter"
+    #     "iptable_nat"
   ];
   boot.kernelParams = [
+    "boot.trace"
+    "boot.shell_on_fail"
     "hugepagesz=2M"
     "hugepages=12000"
     "default_hugepagesz=2M"
@@ -37,19 +44,21 @@
     "iommu=pt"
     "processor.max_cstate=4"
     "nohz_full=1-7" # Diz ao kernel que as CPUs de 1 a 7 ficarão sem interrupções periódicas.
-
+"modprobe.blacklist=dvb_usb_rtl28xxu"
   ];
-
+  boot.kernel.sysctl = {
+    "net.bridge.bridge-nf-call-iptables" = 1;
+    "net.bridge.bridge-nf-call-ip6tables" = 1;
+    "net.ipv4.ip_forward" = 1;
+  };
   # Linha 1 (kvm_amd): Ativa a virtualização aninhada (Nested Virtualization).
   #  Linha 2  é usado no Linux para habilitar o DPM (Dynamic Power Management), um recurso do driver amdgpu que controla o gerenciamento de energia e o ajuste dinâmico de clock da placa de vídeo AMD.
   boot.extraModprobeConfig = ''
     options kvm_amd nested=1
     options amdgpu          dpm=1
     options amdgpu          gpu_recovery=1
-  '';
-
-  #   boot.extraModulePackages = [ ];
-  #   boot.initrd.kernelModules = [ ];
+    options bluetooth enable_ecred=1
+  ''; # ecred > Pairing hearing aids using the ASHA protocol
 
   # Linha 1 (vfio-pci): Diz ao sistema para isolar a sua placa de vídeo AMD e o áudio HDMI assim que o PC ligar.
   #       options vfio-pci ids=1002:67ef,1002:aae0

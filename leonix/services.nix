@@ -77,41 +77,6 @@
   # };
   # List services that you want to enable:
 
-  # 🖇️ OpenSSH
-  services.openssh.enable = true;
-  services.openssh.allowSFTP = true;
-  programs.ssh.enableAskPassword = true;
-  services.openssh.generateHostKeys = false;
-  services.openssh.hostKeys = [
-
-    {
-      path = "/home/leo/.ssh/tdd_id_ed25519";
-      type = "ed25519";
-    }
-
-    {
-      path = "/home/leo/.ssh/root_id_ed25519";
-      type = "ed25519";
-    }
-
-    {
-      path = "/home/leo/.ssh/leo.ssh";
-      type = "ed25519";
-    }
-
-    {
-      path = "/home/leo/.ssh/id_ed25519";
-      type = "ed25519";
-    }
-  ];
-  services.openssh.extraConfig = "PermitRootLogin yes";
-  services.openssh.startWhenNeeded = true;
-  services.sshguard.enable = true;
-  services.sshguard.whitelist = [
-    "192.168.0.0/24"
-    "100.100.0.0/16"
-  ];
-
   # 🚰 Hydra
   services.hydra = {
     enable = true;
@@ -128,6 +93,7 @@
     enable = true;
     serve = {
       configFile = "/opt/secrets/tailscale-serve.json";
+
     };
   };
 

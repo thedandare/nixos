@@ -1,0 +1,86 @@
+# 1. Garante que qualquer resquício antigo do perfil seja apagado
+incus profile delete microk8s 2>/dev/null
+
+# 2. Cria o perfil do zero
+incus profile create microk8s
+
+# 3. Injeta as permissões de Nesting e privilégios para o microk8s montar os nós
+incus profile set microk8s security.nesting true
+incus profile set microk8s security.privileged true
+
+# 4. Associa o disco e a rede padrão (gerados pelo init do incus) ao novo perfil
+incus profile device add microk8s root disk pool=default path=/
+incus profile device add microk8s eth0 nic network=incusbr0 name=eth0
+
+# 5. Cria as pontes de hardware para os loop devices do NixOS
+incus profile device add microk8s loop-control unix-char path=/dev/loop-control
+# incus profile device add microk8s loop-block unix-block major=7 path=/dev/loop-block
+
+
+cat <<EOF | incus profile edit microk8s
+config:
+  boot.autostart: "true"
+  linux.kernel_modules: ip_vs,ip_vs_rr,ip_vs_wrr,ip_vs_sh,nf_nat,overlay,br_netfilter
+  raw.lxc: |
+    lxc.apparmor.profile=unconfined
+    lxc.mount.auto=proc:rw sys:rw cgroup:rw
+    lxc.cgroup.devices.allow=a
+    lxc.cap.drop=
+  security.nesting: "true"
+  security.privileged: "true"
+description: "Perfil Incus para MicroK8s"
+devices:
+  kmsg:
+    path: /dev/kmsg
+    source: /dev/kmsg
+    type: unix-char
+EOF
+
+
+
+
+
+# Passo 1: Derrubar o MicroK8s e limpar as travas do KernelRode este bloco de comandos para parar o Snap e limpar os mapeamentos de rede e memória que estão forçando o nó a rodar na versão antiga:
+sudo snap stop microk8s
+sudo killall -9 kubelite containerd kine dqlite 2>/dev/null
+sudo umount -f /var/snap/microk8s/common/run/containerd/s/* 2>/dev/null
+sudo rm -rf /var/snap/microk8s/common/run/containerd/*
+
+
+# Passo 2: Forçar o alinhamento de links simbólicos do SnapÀs vezes o Snap atualiza o pacote, mas o atalho interno (current) continua apontando para a pasta da versão 1.34 (9063). Vamos forçar o Snap a refazer esses links:bash
+sudo snap switch microk8s --channel=1.35/stable
+sudo snap refresh microk8s
+
+# Passo 3: Limpar o cache do Kine que impede a subida do nóO erro de conexão do Kine (kine.sock:12379) acontece porque o arquivo de banco SQLite/DQLite local ficou com um "lock" (trava) de escrita da versão antiga. Limpe os arquivos temporários do banco:bash
+
+sudo rm -f /var/snap/microk8s/current/var/kubernetes/backend/kine.sock*
+sudo rm -f /var/snap/microk8s/current/var/kubernetes/backend/.*.db-shm
+sudo rm -f /var/snap/microk8s/current/var/kubernetes/backend/.*.db-wal
+
+# --
+
+
+# Como resolver de verdade o travamento do Kine/DQLiteO componente do banco de dados (k8s-dqlite) está rodando em segundo plano usando metadados corrompidos da versão anterior. Precisamos reiniciá-lo isoladamente e forçar a remontagem do arquivo .sock.Pare todos os serviços vinculados:bashsudo snap stop microk8s
+# Mate qualquer processo fantasma do DQLite ou Kine que tenha ignorado o comando do snap:bashsudo
+killall -9 k8s-dqlite kine dqlite 2>/dev/null
+# Verifique se o banco de dados tem permissão para escrever o socket:O diretório precisa existir para o banco criar o arquivo quando subir. Garanta isso rodando:bashsudo
+mkdir -p /var/snap/microk8s/8978/var/kubernetes/backend/
+sudo chmod 777 /var/snap/microk8s/8978/var/kubernetes/backend/
+# Inicie o motor do banco de dados (DQLite) ANTES do plano de controle:bash
+sudo snap start microk8s.daemon-k8s-dqlite
+
+# --
+
+
+ # Kine quebrou o canal de comunicação com o API Server (kubelite).A mensagem "rpc error: code = Canceled desc = grpc: the client connection is closing" significa que o kubelite tenta ler os dados, mas o Kine encerra a sessão na cara dele a cada tentativa de varredura de tabelas (/etcdserverpb.KV/Range).Isso é o sintoma direto do bug de migração da versão 1.34 para a v1.35.5. O banco de dados (k8s-dqlite) mudou a forma de organizar o índice das chaves, fazendo com que as requisições enviadas pelo plano de controle fiquem presas em loops de timeout no driver do gRPC.Como destravar a conexão gRPC sem reinstalar o clusterO gRPC fecha a conexão porque o processo do Kine estoura o tempo limite tentando resolver queries acumuladas em background. Vamos despressurizar o banco limpando o histórico de revisões que causou o bug de sintaxe anterior.Passo 1: Isolar o API Server e manter o banco rodandoPara aliviar a carga no gRPC e permitir que o banco se limpe, pare o plano de controle Kubernetes, mas mantenha o DQLite ativo:bashsudo
+ snap stop microk8s.daemon-kubelite
+# .Passo 2: Forçar a limpeza do banco SQLite/DQLite via CLI internoO MicroK8s possui uma ferramenta interna para rodar comandos direto no motor do banco de dados dqlite quando a API cai. Vamos forçar um VACUUM e uma limpeza nas tabelas para remover os índices fantasmas:bash
+sudo /snap/microk8s/current/bin/sqlite3 /var/snap/microk8s/current/var/kubernetes/backend/db.sqlite "VACUUM;"
+# .(Se o seu cluster estiver em Alta Disponibilidade pura e usar arquivos segmentados ao invés do db.sqlite, o comando acima retornará um aviso. Nesse caso, pule para o Passo 3).Passo 3: Forçar a regeneração das travas físicas da pasta 8978A versão v1.35.5 está tentando ler configurações baseadas na pasta de revisão antiga. Vamos apagar os arquivos de paginação de disco remanescentes enquanto o API Server está parado:bash
+sudo rm -f /var/snap/microk8s/8978/var/kubernetes/backend/.*.db-shm
+sudo rm -f /var/snap/microk8s/8978/var/kubernetes/backend/.*.db-wal
+# .Passo 4: Subir o plano de controle de forma limpaAgora que o banco foi limpo e as conexões gRPC órfãs foram desalocadas do Kernel, ligue o API Server de volta:bash
+sudo snap start microk8s.daemon-kubelite
+# .Acompanhe o log com o
+journalctl -u snap.microk8s.daemon-kubelite -f
+# . As linhas de connection is closing devem sumir e dar lugar ao log de inicialização do cluster.Assim que rodar, me diga se o gRPC parou de derrubar as sessões!

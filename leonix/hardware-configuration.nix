@@ -121,10 +121,35 @@ in
 
     };
 
-    "C-NQ100" = {
-      mountPoint = "/c";
+    "NQ10-Win11" = {
+      mountPoint = "mnt/nq10-win11";
       device = "/dev/disk/by-uuid/01DCE55906B2BF60";
       fsType = "ntfs";
+      noCheck = true;
+      neededForBoot = false;
+      options = [
+        "noauto"
+        "user"
+      ];
+
+    };
+
+    "NQ10-WinSrv25" = {
+      mountPoint = "mnt/nq10-winSrv25";
+      device = "/dev/disk/by-uuid/584147C7147C9740";
+      fsType = "ntfs";
+      noCheck = true;
+      neededForBoot = false;
+      options = [
+        "noauto"
+        "user"
+      ];
+    };
+
+    "NQ10-WinEfi" = {
+      mountPoint = "mnt/nq10-winEfi";
+      device = "/dev/disk/by-uuid/E59F-D619";
+      fsType = "vfat";
       noCheck = true;
       neededForBoot = false;
       options = [
@@ -148,23 +173,23 @@ in
     };
 
     "M-ST40_ntfs" = {
-      mountPoint = "/M";
+      mountPoint = "/mnt/st40-M";
       device = "/dev/disk/by-uuid/BE9A24099A23BCB1";
       fsType = "ntfs";
       noCheck = true;
       neededForBoot = false;
-      #       depends = [ "/L" ];
     };
 
-    #     "N-ST40_ext" = {
-    #       mountPoint = "/N";
-    #       device = "/dev/disk/by-uuid/0501a667-289c-4869-bdda-a649de430b27";
-    #       fsType = "ntfs";
-    #       neededForBoot = false;
-    #     };
+    "st40-ext4" = {
+      device = "/dev/disk/by-uuid/0501a667-289c-4869-bdda-a649de430b27";
+      mountPoint = "/mnt/st40-ext4";
+      fsType = "ext4";
+      neededForBoot = false;
+
+    };
 
     "/kali" = {
-      mountPoint = "/kali";
+      mountPoint = "/mnt/kali";
       enable = false;
 
       device = "/dev/disk/by-uuid/b7073fc4-218e-4486-ac06-ac91a7caa392";
@@ -175,7 +200,7 @@ in
     };
 
     "/kali/var" = {
-      mountPoint = "/kali/var";
+      mountPoint = "/mnt/kali/var";
       enable = false;
 
       device = "/dev/disk/by-uuid/e7e62581-a62b-4734-aed4-696089450ea1";
@@ -187,7 +212,7 @@ in
     };
 
     "/kali/usr" = {
-      mountPoint = "/kali/usr";
+      mountPoint = "/mnt/kali/usr";
       device = "/dev/disk/by-uuid/a393de66-f6f8-4d96-9028-15ddc2b35ba8";
       fsType = "ext4";
       noCheck = true;

@@ -18,7 +18,17 @@
     libsigrok # https://github.com/sipeed/libsigrok/
     sigrok-cli # Signal analysis software suite
     toybox # Programs provided:
-    # [ acpi arch ascii base32 base64 basename blkdiscard blkid blockdev bunzip2 bzcat cal cat chattr chgrp chmod chown chroot chrt chvt cksum clear cmp comm count cp cpio crc32 cut date dd deallocvt devmem df dirname dmesg dnsdomainname dos2unix du echo egrep eject env expand factor fallocate false fgrep file find flock fmt fold free freeramdisk fsfreeze fstype fsync ftpget ftpput getconf getopt gpiodetect gpiofind gpioget gpioinfo gpioset grep groups gunzip halt hd head help hexedit host hostname httpd hwclock i2cdetect i2cdump i2cget i2cset i2ctransfer iconv id ifconfig inotifyd insmod install ionice iorenice iotop kill killall killall5 link linux32 ln logger login logname losetup ls lsattr lsmod lspci lsusb makedevs mcookie md5sum memeater microcom mix mkdir mkfifo mknod mkpasswd mkswap mktemp modinfo mount mountpoint mv nbd-client nbd-server nc netcat netstat nice nl nohup nologin nproc nsenter od oneit openvt partprobe paste patch pgrep pidof ping ping6 pivot_root pkill pmap poweroff printenv printf prlimit ps pwd pwdx pwgen readahead readelf readlink realpath reboot renice reset rev rfkill rm rmdir rmmod rtcwake sed seq setfattr setsid sha1sum sha224sum sha256sum sha384sum sha3sum sha512sum shred shuf sleep sntp sort split stat strings su swapoff swapon switch_root sync sysctl tac tail tar taskset tee test time timeout top touch toybox true truncate ts tsort tty tunctl uclampset ulimit umount uname unicode uniq unix2dos unlink unshare uptime usleep uudecode uuencode uuidgen vconfig vmstat w watch watchdog wc wget which who whoami xargs xxd yes zca ]  https://landley.net/toybox/
+    # [ acpi arch ascii base32 base64 basename blkdiscard blkid blockdev bunzip2 bzcat cal cat chattr chgrp chmod chown chroot chrt chvt cksum clear cmp comm
+    # count cp cpio crc32 cut date dd deallocvt devmem df dirname dmesg dnsdomainname dos2unix du echo egrep eject env expand factor fallocate false fgrep file find
+    # flock fmt fold free freeramdisk fsfreeze fstype fsync ftpget ftpput getconf getopt gpiodetect gpiofind gpioget gpioinfo gpioset grep groups gunzip halt hd head
+    # help hexedit host hostname httpd hwclock i2cdetect i2cdump i2cget i2cset i2ctransfer iconv id ifconfig inotifyd insmod install ionice iorenice iotop kill
+    # killall killall5 link linux32 ln logger login logname losetup ls lsattr lsmod lspci lsusb makedevs mcookie md5sum memeater microcom mix mkdir mkfifo mknod
+    # mkpasswd mkswap mktemp modinfo mount mountpoint mv nbd-client nbd-server nc netcat netstat nice nl nohup nologin nproc nsenter od oneit openvt partprobe paste
+    # patch pgrep pidof ping ping6 pivot_root pkill pmap poweroff printenv printf prlimit ps pwd pwdx pwgen readahead readelf readlink realpath reboot renice reset
+    # rev rfkill rm rmdir rmmod rtcwake sed seq setfattr setsid sha1sum sha224sum sha256sum sha384sum sha3sum sha512sum shred shuf sleep sntp sort split stat strings
+    # su swapoff swapon switch_root sync sysctl tac tail tar taskset tee test time timeout top touch toybox true truncate ts tsort tty tunctl uclampset ulimit umount
+    # uname unicode uniq unix2dos unlink unshare uptime usleep uudecode uuencode uuidgen vconfig vmstat w watch watchdog wc wget which who whoami xargs xxd yes zca ]
+    # https://landley.net/toybox/
     usbutils
     pciutils # https://mj.ucw.cz/sw/pciutils/
     /*
@@ -34,6 +44,7 @@
     nixos-grub2-theme
 
     nixfmt
+    nixos-artwork.wallpapers.binary-red
     # TODO agenix:>    inputs.agenix.packages."${system}".default
 
     # 🔊 Audio
@@ -67,7 +78,7 @@
     # 🥸 Desktop
     kdePackages.ksshaskpass # Ferramenta nativa do KDE para senhas
     lockbook-desktop
-
+    #     mouse-actions-gui # [https://github.com/jersou/mouse-actions]
     zsnes
 
     ## Image Editor
@@ -117,7 +128,7 @@
     kompose
     opentofu
     stern # Multi pod and container log tailing for Kubernetes Usage stern pod-query [flags] https://github.com/stern/stern
-
+    k9s
     # 📺 Media
     vlc
 
@@ -128,6 +139,7 @@
     whosthere
     net-tools
     tunctl
+    lan-mouse
 
     # 🏢 Remote Access
     x2goclient
@@ -135,10 +147,20 @@
     x2goserver
     remmina
     freerdp
-    turbovnc
+    #     turbovnc
+    tigervnc
 
     # 🌏 Sharing
     rqbit
+
+    # 📻 SDR
+    gnuradio
+    gnuradioPackages.osmosdr # Programs provided
+    # gnuradio-config-info gnuradio-companion gr-ctrlport-monitor gr-perf-monitorx gr_filter_design gr_modtool gr_plot gr_plot_const gr_plot_fft gr_plot_iq
+    # gr_plot_psd gr_plot_qt gr_read_file_metadata grcc polar_channel_construction uhd_fft uhd_rx_cfile uhd_rx_nogui uhd_siggen uhd_siggen_gui
+    rtl-sdr
+    rtl-sdr-blog # Software to turn the RTL2832U into a SDR receiver
+    sdrpp
 
     # 🐚 Terminals
     alacritty
@@ -157,6 +179,7 @@
 
     # Themes
     chicago95
+    darkly
 
     # TUIs /
     msedit
@@ -166,6 +189,9 @@
     tparted
     fortune
     newt
+    dmenu
+    fastfetch # tool for fetching system information, written mainly in C [https://github.com/fastfetch-cli/fastfetch]
+    zigfetch # Minimal neofetch/fastfetch like system information tool [https://github.com/utox39/zigfetch]
 
     # ⛽ Util
     wget
@@ -173,11 +199,11 @@
     wiper
     dysk
     zenith
-    chezmoi # Manage your dotfiles across multiple machines, securely https://www.chezmoi.io
-    tparted
     unrar-free
 
     # ❎ X-Win
+    xauth
+    xinit
     anyrun # Wayland-native, highly customizable runner
     wayland-utils # Wayland diagnostic tools
     wl-clipboard # Wayland copy/paste support
@@ -278,6 +304,8 @@
     #       in
     #       foobarFlake.packages.${system}.foobar2000
     #     )
+
+    lxc
 
   ];
 }

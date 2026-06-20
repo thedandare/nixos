@@ -2,6 +2,8 @@
 
 {
 
+  imports = [ ./drivers/bluetooth.nix];
+
   # ⚡ AMD Ryzen CPU
   hardware.cpu.amd.ryzen-smu.enable = true; # A linux kernel driver that exposes access to the SMU (System Management Unit)
   programs.ryzen-monitor-ng.enable = true; # A userspace application for setting and getting Ryzen SMU parameters via the above driver.
@@ -19,38 +21,6 @@
   services.lact.enable = true; # LACT, a tool for monitoring, configuring and overclocking GPUs.
   programs.corectrl.enable = true; # CoreCtrl, a tool to overclock amd graphics cards and processors
 
-  # 🎮 BLE
-  hardware.bluetooth = {
-    enable = true;
-    powerOnBoot = false;
-    settings = {
-      LE = {
-        MinConnectionInterval = 16;
-        MaxConnectionInterval = 16;
-        ConnectionLatency = 10;
-        ConnectionSupervisionTimeout = 100;
-      };
-    };
-  };
-
-  #Pairing hearing aids using the ASHA protocol
-  boot.extraModprobeConfig = ''
-    options bluetooth enable_ecred=1
-  '';
-
-  boot.kernelParams = [
-    "boot.trace"
-    "boot.shell_on_fail"
-  ];
-
-  # If you want to see what charge your bluetooth devices have you have to enable experimental features, which might lead to bugs (according to Arch Wiki). You can add the following to your config to enable experimental feature for bluetooth:
-  hardware.bluetooth.settings = {
-    General = {
-      Experimental = true;
-    };
-  };
-
-  services.blueman.enable = true;
 
   # ⌨️ Keymap
   console.keyMap = "us";
@@ -74,6 +44,9 @@
     ];
   };
 
+  # SDR
+  hardware.rtl-sdr.enable = true; # Lembrar de add users.users.<name>.extraGroups = [ "plugdev" ];
+
   # 🔊 Sound blasting.
   services.pulseaudio.enable = false;
   services.pipewire = {
@@ -86,6 +59,6 @@
   security.rtkit.enable = true; # rtkit (optional, recommended) allows Pipewire to use the realtime scheduler for increased performance.
 
   # 📳 Touchpad support
-  # services.xserver.libinput.enable = true;
+  services.libinput.enable = true;
 
 }

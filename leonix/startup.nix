@@ -31,36 +31,38 @@ in
 
   programs.ssh.startAgent = true;
 
-  systemd.services.socat100 = {
-    description = "Iniciar sessao tmux com comando em segundo plano";
-
-    # Garante que só inicia após a rede e todo o sistema básico estarem prontos
-    wantedBy = [ "multi-user.target" ];
-    after = [
-      "network.target"
-      "local-fs.target"
-    ];
-
-    # Injeta os pacotes necessários diretamente no ambiente deste serviço
-    path = with pkgs; [
-      tmux
-      python3
-      bash
-      coreutils
-    ];
-
-    serviceConfig = {
-      AmbientCapabilities = [ "CAP_NET_BIND_SERVICE" ]; # Permite ao usuário comum abrir portas < 1024
-      CapabilityBoundingSet = [ "CAP_NET_BIND_SERVICE" ]; # Garante que o processo herde a permissão
-
-      Type = "forking";
-      # FORÇA o uso do binário exato da Nix Store no início para o Systemd não se perder
-      ExecStart = "${pkgs.tmux}/bin/tmux new -d -s socat100 '${pkgs.socat}/bin/socat -d -d -v TCP4-LISTEN:100,bind=100.100.1.2,fork stdout | tee -a /home/leo/Desktop/socat100.log'";
-
-      RemainAfterExit = "yes";
-      User = "leo"; # Substitua pelo seu nome de usuário para não rodar como root
-    };
-  };
+#   systemd.services.socat100 = {
+#     description = "Iniciar sessao tmux com comando em segundo plano";
+#
+#     # Garante que só inicia após a rede e todo o sistema básico estarem prontos
+#     wantedBy = [ "multi-user.target" ];
+#     after = [
+#       "network.target"
+#       "local-fs.target"
+#     ];
+#
+#     # Injeta os pacotes necessários diretamente no ambiente deste serviço
+#     path = with pkgs; [
+#       tmux
+#       python3
+#       bash
+#       coreutils
+#     ];
+#
+#     serviceConfig = {
+#       AmbientCapabilities = [ "CAP_NET_BIND_SERVICE" ]; # Permite ao usuário comum abrir portas < 1024
+#       CapabilityBoundingSet = [ "CAP_NET_BIND_SERVICE" ]; # Garante que o processo herde a permissão
+#
+#       #       Type = "forking";
+#       Type = "oneshot";
+#       # FORÇA o uso do binário exato da Nix Store no início para o Systemd não se perder
+#       ExecStart = "${pkgs.socat}/bin/socat -d -d -v TCP4-LISTEN:100,bind=100.100.1.2,fork /home/leo/Desktop/socat100.log";
+#       #       ExecStart = "${pkgs.socat}/bin/socat -d -d -v TCP4-LISTEN:100,bind=100.100.1.2,fork stdout | tee -a /home/leo/Desktop/socat100.log";
+#       #       ExecStart = "${pkgs.tmux}/bin/tmux new -d -s socat100 '${pkgs.socat}/bin/socat -d -d -v TCP4-LISTEN:100,bind=100.100.1.2,fork stdout | tee -a /home/leo/Desktop/socat100.log'";
+#       RemainAfterExit = false;
+#       #       User = "leo"; # Substitua pelo seu nome de usuário para não rodar como root
+#     };
+#   };
 
   systemd.services.before-graphical-target = {
     description = "graphical.target";
@@ -108,6 +110,8 @@ in
     wantedBy = [ "multi-user.target" ];
   };
 
+  environment.variables.EDITOR = "nvim";
+
   environment.interactiveShellInit = ''
     alias gs='git status'
     alias vim='nvim'
@@ -123,11 +127,12 @@ in
     suleo = "su leo -";
     vi = "nvim";
     vim = "gnvim";
+    #     cd.. = "cd ..";
 
     E = "tmux split-window edit";
     Bt = "sudo nixos-rebuild boot  --show-trace";
     Tst = "sudo nixos-rebuild test  --show-trace";
-    Sw = "sudo nixos-rebuild switch  --show-trace";
+    Sw = "sudo nixos-rebuild switch  --show-trace --print-build-logs --verbose";
     Rbt = "sudo shutdown -r now";
     UbntRst = makeRestartVmScript "ubuntu-vm.service"; # 🚨 Este nome tem que bater com o configurado em startup.nix!
     WinRst = makeRestartVmScript "windows-server.service"; # 🚨 Este nome tem que bater com o configurado em startup.nix!

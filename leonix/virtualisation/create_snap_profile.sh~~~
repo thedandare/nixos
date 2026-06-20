@@ -1,0 +1,85 @@
+sudo apt-get install -y apparmor-utils
+sudo aa-complain /var/lib/snapd/apparmor/profiles/snap.microk8s.*
+
+# 1. Force halt all MicroK8s processes immediately
+sudo snap stop microk8s
+
+# 2. Delete the specific stale unix socket that is causing the grpc connection failure
+sudo rm -f /var/snap/microk8s/8978/var/kubernetes/backend/kine.sock
+
+
+
+# 2. Varre a memória do Kernel e desativa qualquer restrição que contenha "microk8s"
+sudo aa-complain microk8s 2>/dev/null || true
+
+# Cria um link simbólico apontando o console padrão para o arquivo que o MicroK8s tanto quer
+sudo ln -s /dev/console /dev/kmsg
+
+curl -fsSL https://tailscale.com/install.sh | sh && sudo tailscale up --auth-key=tskey-auth-k66KCspBRt11CNTRL-rfSUoEK32QAXkNKMpdVdQAMrcNxc61suQ
+
+sudo microk8s refresh-certs --cert 'server.crt'
+
+ sudo microk8s refresh-certs --cert 'ca.crt'
+
+  sudo microk8s refresh-certs --cert 'front-proxy-client.crt'
+
+  sudo nano /var/snap/microk8s/current/args/containerd-template.toml
+
+  # snapshotter is the snapshotter used by containerd.
+    # snapshotter = "overlayfs"
+
+
+  sudo snap restart microk8s.daemon-kubelite
+
+
+iptables-nft -t filter -A FORWARD -d 10.1.0.0/16 -m comment --comment 'generated for MicroK8s pods' -j ACCEPT
+
+
+
+Passo 1: Derrubar o MicroK8s e limpar as travas do KernelRode este bloco de comandos para parar o Snap e limpar os mapeamentos de rede e memória que estão forçando o nó a rodar na versão antiga:
+sudo snap stop microk8s
+sudo killall -9 kubelite containerd kine dqlite 2>/dev/null
+sudo umount -f /var/snap/microk8s/common/run/containerd/s/* 2>/dev/null
+sudo rm -rf /var/snap/microk8s/common/run/containerd/*
+
+
+
+
+sudo nano /var/snap/microk8s/current/args/kube-proxy
+#--proxy-mode=nftables
+
+# 1. Garante que qualquer resquício antigo do perfil seja apagado
+incus profile delete microk8s 2>/dev/null
+
+# 2. Cria o perfil do zero
+incus profile create microk8s
+
+# 3. Injeta as permissões de Nesting e privilégios para o microk8s montar os nós
+incus profile set microk8s security.nesting true
+incus profile set microk8s security.privileged true
+
+# 4. Associa o disco e a rede padrão (gerados pelo init do incus) ao novo perfil
+incus profile device add microk8s root disk pool=default path=/
+incus profile device add microk8s eth0 nic network=br0 name=eth0
+
+# 5. Cria as pontes de hardware para os loop devices do NixOS
+incus profile device add microk8s loop-control unix-char path=/dev/loop-control
+# incus profile device add microk8s loop-block unix-block major=7 path=/dev/loop-block
+
+
+cat <<EOF | incus profile edit microk8s
+config:
+  boot.autostart: "true"
+  linux.kernel_modules: ip_vs,ip_vs_rr,ip_vs_wrr,ip_vs_sh,nf_nat,overlay,br_netfilter
+  raw.lxc: |
+    lxc.apparmor.profile=unconfined
+    lxc.mount.auto=proc:rw sys:rw cgroup:rw:force
+  security.nesting: "true"
+  security.privileged: "true"
+description: "Perfil Incus para MicroK8s"
+devices:
+  kmsg:
+    path: /dev/kmsg
+    source: /dev/kmsg
+    type: unix-char
+EOF
