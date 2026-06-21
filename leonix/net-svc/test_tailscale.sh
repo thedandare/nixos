@@ -99,8 +99,28 @@ if ! ip link show "tailscale0" >/dev/null 2>&1; then
     done
 else
 
-    source ./tailscale_choose_ip.sh
+    # TOOD ESTAMOS AQUI
+    # source ./tailscale_choose_ip.sh
+ echo "=== 4. Extraindo e Fixando o IP da Interface Tailscale ==="
+    # Sênior/NixOS Tip: O comando ip/jq garante a captura atômica do IPv4 limpo na TTY
+    TAILSCALE_IP=$(ip -4 addr show dev tailscale0 | awk '/inet / {print $2}' | cut -d/ -f1)
 
+    if [ -z "${TAILSCALE_IP}" ]; then
+        echo "ERRO CRITICO: Nao foi possivel extrair o IP da interface tailscale0."
+        exit 1
+    fi
+    echo "IP extraido com sucesso: ${TAILSCALE_IP}"
+
+    # Injeção dinâmica nas variáveis globais de ambiente do MicroK8s
+    # Impede que o plano de controle (Control Plane) tente escutar a eth0
+    export MICROK8S_IP="${TAILSCALE_IP}"
+
+    # Executa o seletor de IP em conformidade com o ambiente atual (Ubuntu/NixOS)
+    if [ -f "./tailscale_choose_ip.sh" ]; then
+        source "./tailscale_choose_ip.sh"
+    else
+        echo "Aviso: Script tailscale_choose_ip.sh nao localizado. Prosseguindo..."
+    fi
 
 fi
 

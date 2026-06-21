@@ -3,6 +3,7 @@
   imports = [
     ./samba.nix
     ./bonjour.nix
+    ./pihole.nix
   ];
   systemd.network.enable = true;
   systemd.network.wait-online.enable = false;

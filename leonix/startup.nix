@@ -134,6 +134,9 @@ in
     Tst = "sudo nixos-rebuild test  --show-trace";
     Sw = "sudo nixos-rebuild switch  --show-trace --print-build-logs --verbose";
     Rbt = "sudo shutdown -r now";
+    cdn = "cd /etc/nixos";
+    Cdn = "cd /etc/nixos";
+
     UbntRst = makeRestartVmScript "ubuntu-vm.service"; # 🚨 Este nome tem que bater com o configurado em startup.nix!
     WinRst = makeRestartVmScript "windows-server.service"; # 🚨 Este nome tem que bater com o configurado em startup.nix!
     SockUbnt = makeOpenVmScript "ubuntu-vm"; # 🚨 Este nome tem que bater com o configurado em qemu-vms.nix!

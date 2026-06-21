@@ -99,68 +99,9 @@ if ! ip link show "tailscale0" >/dev/null 2>&1; then
     done
 else
 
-    # Atualiza a lista de pacotes e instala o whiptail caso não esteja instalado
-    if ! command -v whiptail &> /dev/null; then
-        echo "Whiptail não encontrado. Instalando..."
-        sudo apt update && sudo apt install -y whiptail
-    fi
-#!/bin/bash
+    # TOOD ESTAMOS AQUI
+    # source ./tailscale_choose_ip.sh
 
-# Garante a instalação das ferramentas necessárias de forma silenciosa
-for pacote in whiptail tailscale jq; do
-    if ! command -v $pacote &> /dev/null; then
-        echo "Instalando dependência ausente: $pacote..."
-        sudo apt update && sudo apt install -y $pacote
-    fi
-done
-
-# Garante que o Tailscale está ativo
-if ! tailscale status &> /dev/null; then
-    whiptail --title "Erro de Conexão" \
-        --msgbox "O serviço do Tailscale não está rodando. Por favor, inicie-o e tente novamente." \
-        8 60
-    exit 1
-fi
-
-# Cria a lista do menu de forma robusta interpretando o JSON oficial do Tailscale
-# Armazena os pares alternados: [IP] [Nome_do_Dispositivo (SO)]
-MENU_OPTIONS=()
-while read -r ip name os; do
-    if [[ -n "$ip" && "$ip" != "null" ]]; then
-        MENU_OPTIONS+=("$ip" "$name ($os)")
-    fi
-done < <(tailscale status --json | jq -r '.Peer[] | "\(.TailscaleIPs[0]) \(.HostName) \(.OS)"')
-
-# Se a rede estiver vazia, exibe um aviso informando o usuário
-if [ ${#MENU_OPTIONS[@]} -eq 0 ]; then
-    whiptail --title "Aviso" \
-        --msgbox "Nenhum outro dispositivo (peer) foi encontrado na sua rede Tailscale." \
-        8 60
-    exit 0
-fi
-
-# Abre o menu interativo com o Whiptail
-CHOICE=$(whiptail --title "Dispositivos Tailscale" \
-    --menu "Escolha um dispositivo cadastrado na rede:" \
-    20 75 10 \
-    "${MENU_OPTIONS[@]}" \
-    3>&1 1>&2 2>&3)
-
-STATUS=$?
-
-# Valida a ação do usuário no menu
-if [ $STATUS -eq 0 ]; then
-    # Filtra e extrai os detalhes brutos da linha correspondente ao IP selecionado
-    DETALHES=$(tailscale status | grep "$CHOICE")
-
-    whiptail --title "Conexão Estabelecida" \
-        --msgbox "Dispositivo Selecionado: $CHOICE\n\nInformações do nó:\n$DETALHES" \
-        12 75
-else
-    whiptail --title "Cancelado" \
-        --msgbox "Você fechou o menu." \
-        8 45
-fi
 
 fi
 

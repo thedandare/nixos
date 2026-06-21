@@ -141,11 +141,12 @@
     shellInit = "echo -e '\033[1m' '\033[31m' E aízsh '\033[0m'"; # Shell script code called during zsh shell initialisation.
     ohMyZsh = {
       enable = true;
+      theme = "robbyrussell"; # <--- ADICIONE ESTA LINHA (O robbyrussell mostra o caminho atual por padrão)
       preLoaded = "echo -e '\033[1m' '\033[31m' oh My Zsh  '\033[0m'";
       plugins = [
         "zsh-interactive-cd"
         "web-search"
-        #         "zsh-reload"
+        # ... resto dos seus plugins
         "branch"
         "catimg"
         "chezmoi"

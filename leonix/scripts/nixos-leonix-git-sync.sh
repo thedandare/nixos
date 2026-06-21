@@ -30,7 +30,7 @@ clear
 # ==============================================================================
 # FASE 1: VALIDAÇÃO DE DEPENDÊNCIAS IMPERATIVAS
 # ==============================================================================
-for pacote in whiptail jq iputils-ping tailscale; do
+for pacote in whiptail jq tailscale; do
     if ! command -v "$pacote" >/dev/null 2>&1; then
         echo "[EXEC] Componente ausente. Instalando via APT: $pacote"
         sudo apt-get update -y && sudo apt-get install -y whiptail jq iputils-ping tailscale
@@ -88,14 +88,14 @@ fi
     # ETAPA 2: Replicação de Arquivos de Infraestrutura (Rsync)
     # --------------------------------------------------------------------------
     cd leonix >/dev/null 2>&1
-    if [ $? -ne 0 ] || [ ! -f "./rsync.sh" ]; then
+    if [ $? -ne 0 ] || [ ! -f "../rsync.sh" ]; then
         echo "FALHOU_RSYNC" > "$STATUS_TRACKER"
-        echo "Erro Fatal: O subdiretorio 'leonix' ou o script './rsync.sh' estao ausentes." > "$LOG_RSYNC"
+        echo "Erro Fatal: O subdiretorio 'leonix' ou o script '../rsync.sh' estao ausentes." > "$LOG_RSYNC"
         echo "100"
         exit 1
     fi
 
-    ./rsync.sh > "$LOG_RSYNC" 2>&1
+    ../rsync.sh > "$LOG_RSYNC" 2>&1
     if [ $? -ne 0 ]; then
         echo "FALHOU_RSYNC" > "$STATUS_TRACKER"
         echo "100"
@@ -159,7 +159,7 @@ else
     # Mapeia qual etapa causou a falha do sistema para direcionar o operador
     case "$RESULTADO" in
         FALHOU_PULL)   ETAPA="Git Pull";    ALVO_LOG="$LOG_PULL" ;;
-        FALHOU_RSYNC)  ETAPA="./rsync.sh";  ALVO_LOG="$LOG_RSYNC" ;;
+        FALHOU_RSYNC)  ETAPA="../rsync.sh";  ALVO_LOG="$LOG_RSYNC" ;;
         FALHOU_COMMIT) ETAPA="Git Commit";  ALVO_LOG="$LOG_COMMIT" ;;
         FALHOU_PUSH)   ETAPA="./pu.sh";     ALVO_LOG="$LOG_PUSH" ;;
         *)             ETAPA="Desconhecida";ALVO_LOG="/dev/null" ;;
