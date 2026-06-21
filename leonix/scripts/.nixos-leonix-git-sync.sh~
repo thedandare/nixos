@@ -1,10 +1,14 @@
-#!/bin/sh
+#!/sh
 # ==============================================================================
-# SCRIPT: Runbook Automático de Deploy NixOS via Whiptail
-# ORG: POSIX Estrito (/bin/sh) - Compatível com NixOS / Ubuntu 26.04
+# SCRIPT: Runbook Definitivo de Deploy - NixOS / Ubuntu 26.04 LTS
+# COMPATIBILIDADE: POSIX Estrito (Dash / Sem arrays / Sem subshells órfãos)
+# CONFIGURAÇÃO DE INPUT: ESC de 1 clique persistido em runtime
 # ==============================================================================
 
-# Define o mapa de cores estilo Hacker
+# Zera o delay de timeout da biblioteca newt para registrar o ESC instantaneamente
+export ESCDELAY=0
+
+# Define a matriz de cores customizada estilo Hacker
 export NEWT_COLORS='
   root=green,black
   window=black,black
@@ -14,78 +18,159 @@ export NEWT_COLORS='
   textbox=green,black
   button=black,green
   actbutton=black,cyan
+  checkbox=green,black
+  actcheckbox=black,cyan
   listbox=green,black
   actlistbox=black,green
   label=red,black
 '
 
-# Garante que a TTY seja limpa antes do Whiptail subir
 clear
 
-# Função para exibir janelas de erro críticas de forma explícita
-exibir_erro() {
-    whiptail --title "Erro Critico no Runbook" \
-        --msgbox "Falha detectada na etapa: $1\n\n[O DEPLOY FOI ABORTADO]" 10 60 >/dev/tty
-    exit 1
-}
+# ==============================================================================
+# FASE 1: VALIDAÇÃO DE DEPENDÊNCIAS IMPERATIVAS
+# ==============================================================================
+for pacote in whiptail jq iputils-ping tailscale; do
+    if ! command -v "$pacote" >/dev/null 2>&1; then
+        echo "[EXEC] Componente ausente. Instalando via APT: $pacote"
+        sudo apt-get update -y && sudo apt-get install -y whiptail jq iputils-ping tailscale
+    fi
+done
 
-# Caixa de diálogo inicial confirmando o início do Runbook
-whiptail --title "Runbook NixOS Deployment" \
-    --yesno "Deseja iniciar a sequencia automatica de sincronizacao e commit?" 8 65 >/dev/tty
+# Alocação de descritores de logs isolados em memória RAM (/tmp)
+LOG_PULL="/tmp/rb_pull.$$"
+LOG_RSYNC="/tmp/rb_rsync.$$"
+LOG_COMMIT="/tmp/rb_commit.$$"
+LOG_PUSH="/tmp/rb_push.$$"
+STATUS_TRACKER="/tmp/rb_status.$$"
+
+# Limpeza sanitária dos resíduos de arquivos temporários no encerramento
+trap 'rm -f "$LOG_PULL" "$LOG_RSYNC" "$LOG_COMMIT" "$LOG_PUSH" "$STATUS_TRACKER"' EXIT INT TERM
+
+# Inicialização limpa dos buffers de auditoria
+echo "PENDENTE" > "$STATUS_TRACKER"
+
+# Janela gráfica de confirmação de barreira inicial
+whiptail --title 'Runbook NixOS Deployment' \
+    --yesno 'Deseja iniciar a sequencia automatica de sincronizacao e commit?' 8 65 2>&1 1>/dev/tty
 
 if [ $? -ne 0 ]; then
-    echo "[INFO] Operacao cancelada pelo usuario."
+    echo "[INFO] Operacao abortada pelo operador."
     exit 0
 fi
 
 # ==============================================================================
-# MOTOR DE EXECUÇÃO EM BACKGROUND COM BARRA DE PROGRESSO (GAUGE)
+# FASE 2: MOTOR SEQUENCIAL EM BACKGROUND COM ALIMENTAÇÃO DO GAUGE
 # ==============================================================================
-# Sênior Tip: O whiptail --gauge lê números de 0 a 100 vindos de um pipe.
-# Usamos subshells isolados e verificamos o status ($?) de cada comando do Git/Rsync.
 {
     echo "0"
-    # Etapa 1: Acessar diretório e atualizar repositório
-    cd /osnix/nixos || exibir_erro "Acessar /osnix/nixos"
-    echo "20"
 
-    git pull >/dev/null 2>&1 || exibir_erro "Git Pull"
-    echo "40"
+    # --------------------------------------------------------------------------
+    # ETAPA 1: Sincronização do Repositório (Git Pull)
+    # --------------------------------------------------------------------------
+    cd /osnix/nixos >/dev/null 2>&1
+    if [ $? -ne 0 ]; then
+        echo "FALHOU_PULL" > "$STATUS_TRACKER"
+        echo "Erro Fatal: O diretorio local /osnix/nixos nao foi encontrado no sistema." > "$LOG_PULL"
+        echo "100"
+        exit 1
+    fi
 
-    # Etapa 2: Executar o rsync local
-    cd leonix && ./rsync.sh || exibir_erro "Executar ./rsync.sh"
-    echo "60"
+    git pull > "$LOG_PULL" 2>&1
+    if [ $? -ne 0 ]; then
+        echo "FALHOU_PULL" > "$STATUS_TRACKER"
+        echo "100"
+        exit 1
+    fi
+    echo "25"
 
-    # Etapa 3: Preparar e commitar as alterações do NixOS
+    # --------------------------------------------------------------------------
+    # ETAPA 2: Replicação de Arquivos de Infraestrutura (Rsync)
+    # --------------------------------------------------------------------------
+    cd leonix >/dev/null 2>&1
+    if [ $? -ne 0 ] || [ ! -f "./rsync.sh" ]; then
+        echo "FALHOU_RSYNC" > "$STATUS_TRACKER"
+        echo "Erro Fatal: O subdiretorio 'leonix' ou o script './rsync.sh' estao ausentes." > "$LOG_RSYNC"
+        echo "100"
+        exit 1
+    fi
+
+    ./rsync.sh > "$LOG_RSYNC" 2>&1
+    if [ $? -ne 0 ]; then
+        echo "FALHOU_RSYNC" > "$STATUS_TRACKER"
+        echo "100"
+        exit 1
+    fi
     cd ..
-    git add . -A || exibir_erro "Git Add"
-    echo "80"
+    echo "50"
 
-    # Sênior Tip: uname -n captura o hostname limpo do NixOS (ex: leonix) sem poluir a mensagem
-    HOSTNAME_LEONIX=$(uname -n)
-    git commit -m "auto commit from $HOSTNAME_LEONIX" >/dev/null 2>&1
+    # --------------------------------------------------------------------------
+    # ETAPA 3: Consolidação do Estado e Commit (Git Add / Commit)
+    # --------------------------------------------------------------------------
+    git add . -A > "$LOG_COMMIT" 2>&1
+    if [ $? -ne 0 ]; then
+        echo "FALHOU_COMMIT" > "$STATUS_TRACKER"
+        echo "100"
+        exit 1
+    fi
 
-    # Etapa 4: Push final
-    ./pu.sh >/dev/null 2>&1 || exibir_erro "Executar ./pu.sh (Git Push)"
+    HOSTNAME_NODE=$(uname -n)
+    git commit -m "auto commit from $HOSTNAME_NODE" >> "$LOG_COMMIT" 2>&1
+    if [ $? -ne 0 ]; then
+        echo "FALHOU_COMMIT" > "$STATUS_TRACKER"
+        echo "100"
+        exit 1
+    fi
+    echo "75"
+
+    # --------------------------------------------------------------------------
+    # ETAPA 4: Publicação das Alterações (Git Push via pu.sh)
+    # --------------------------------------------------------------------------
+    if [ ! -f "./pu.sh" ]; then
+        echo "FALHOU_PUSH" > "$STATUS_TRACKER"
+        echo "Erro Fatal: O script de envio './pu.sh' nao foi localizado no diretorio raiz." > "$LOG_PUSH"
+        echo "100"
+        exit 1
+    fi
+
+    ./pu.sh > "$LOG_PUSH" 2>&1
+    if [ $? -ne 0 ]; then
+        echo "FALHOU_PUSH" > "$STATUS_TRACKER"
+        echo "100"
+        exit 1
+    fi
+
+    # Marcação de conclusão bem-sucedida de todas as barreiras
+    echo "SUCESSO" > "$STATUS_TRACKER"
     echo "100"
 
-} | whiptail --title "Status do Deploy" --gauge "Sincronizando infraestrutura..." 8 60 0
+} | whiptail --title "Status do Deploy" --gauge "Processando automacao de infraestrutura..." 8 65 0
 
-# Mensagem final de sucesso absoluto
-whiptail --title "Sucesso" --msgbox "Runbook executado com sucesso!\nRepositorio sincronizado e atualizado." 8 50 >/dev/tty
+# Lê o veredito final capturado do motor em background
+RESULTADO=$(cat "$STATUS_TRACKER")
+
+# ==============================================================================
+# FASE 3: RELATÓRIO DINÂMICO DE AUDITORIA (TRATAMENTO DE ERROS SEM FALLBACK)
+# ==============================================================================
+if [ "$RESULTADO" = "SUCESSO" ]; then
+    whiptail --title 'Sucesso Absoluto' \
+        --msgbox 'Runbook executado com 100% de exito!\n\nRepositorio atualizado, sincronizado e publicado.' 10 60 2>&1 1>/dev/tty
+else
+    # Mapeia qual etapa causou a falha do sistema para direcionar o operador
+    case "$RESULTADO" in
+        FALHOU_PULL)   ETAPA="Git Pull";    ALVO_LOG="$LOG_PULL" ;;
+        FALHOU_RSYNC)  ETAPA="./rsync.sh";  ALVO_LOG="$LOG_RSYNC" ;;
+        FALHOU_COMMIT) ETAPA="Git Commit";  ALVO_LOG="$LOG_COMMIT" ;;
+        FALHOU_PUSH)   ETAPA="./pu.sh";     ALVO_LOG="$LOG_PUSH" ;;
+        *)             ETAPA="Desconhecida";ALVO_LOG="/dev/null" ;;
+    esac
+
+    whiptail --title 'Erro Detectado no Runbook' \
+        --msgbox "O deploy falhou na etapa: [$ETAPA]\n\nA seguir, inspecione o log real do console gerado pelo comando." 10 65 2>&1 1>/dev/tty
+
+    # Exibe o visualizador de texto nativo com rolagem para depuração do erro em tela
+    whiptail --title "Log de Console - Falha em $ETAPA" --textbox "$ALVO_LOG" 18 78 2>&1 1>/dev/tty
+fi
 
 clear
-echo "[SUCCESS] Runbook finalizado de forma sanitaria."
-
-
-
-
-# #!/bin/sh
-# cd /osnix/nixos
-# git pull
-# cd leonix
-# ./rsync.sh
-# cd ..
-# git add . -A
-# git commit -m "auto commit from $(uname -a) "
-# ./pu.sh
+echo "[SUCCESS] Rotina de execucao e auditoria do Runbook finalizada."
