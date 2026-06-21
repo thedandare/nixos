@@ -1,0 +1,444 @@
+#!/bin/sh
+export ESCDELAY=0 # controla o tempo (em milissegundos) que o sistema espera para ver se o ESC é uma tecla isolada ou o início de uma sequência de escape (como as setas do teclado)
+
+# ==============================================================================
+# SCRIPT: Gerenciador de Rede Tailscale via Whiptail
+# ORG: Ubuntu 26.04 LTS (Kernel 7 / Interpretador Dash / POSIX Estrito)
+# ==============================================================================
+
+# Define a matriz de cores customizada compatível com a biblioteca newt estável
+export NEWT_COLORS='
+  root=green,black
+  window=black,black
+  border=green,black
+  shadow=grey,black
+  title=cyan,black
+  textbox=green,black
+  button=black,green
+  actbutton=black,cyan
+  checkbox=green,black
+  actcheckbox=black,cyan
+  listbox=green,black
+  actlistbox=black,green
+  label=red,black
+'
+
+# ==============================================================================
+# FASE 1: SANEAMENTO IMPERATIVO DE DEPENDÊNCIAS (APT UBUNTU 26.04)
+# ==============================================================================
+for pacote in whiptail jq iputils-ping tailscale; do
+    if ! command -v "$pacote" >/dev/null 2>&1; then
+        echo "[EXEC] Instalando componente obrigatorio via APT: $pacote"
+        sudo apt-get update -y && sudo apt-get install -y whiptail jq iputils-ping tailscale
+    fi
+done
+
+# Captura atômica da topologia de rede em formato JSON bruto
+JSON_DATA=$(sudo tailscale status --json)
+
+if [ -z "$JSON_DATA" ]; then
+    echo "[ERRO CRITICO] Falha na comunicacao com o daemon do Tailscale."
+    exit 1
+fi
+
+# Alocação de buffers temporários em memória RAM (/tmp)
+TMP_MENU="/tmp/ts_menu.$$"
+TMP_DETAILS="/tmp/ts_details.$$"
+trap 'rm -f "$TMP_MENU" "$TMP_DETAILS"' EXIT INT TERM
+
+# ==============================================================================
+# FASE 2: MÁQUINA DE ESTADOS (LOOP PRINCIPAL DE NAVEGAÇÃO POSIX)
+# ==============================================================================
+TELA=1
+
+while [ "$TELA" -ne 0 ]; do
+    case "$TELA" in
+        1)
+            # TELA 1: Filtros de exibição via Checkbox
+            OPCOES=$(whiptail --title 'Painel Tailscale - Filtros' \
+                --ok-button 'Prosseguir' \
+                --cancel-button 'Sair' \
+                --checklist 'Selecione os parametros de exibicao (Espaco para marcar):\n\n[ESC para Sair]' \
+                13 68 3 \
+                'IPV6' 'Exibir IPs no padrao IPv6 (Padrao: IPv4)' OFF \
+                'ONLINE_ONLY' 'Ocultar dispositivos offline' OFF \
+                3>&1 1>&2 2>&3)
+
+            STATUS_TELA1=$?
+
+            # Se clicar em Sair (1) ou pressionar ESC (255), finaliza o script
+            if [ "$STATUS_TELA1" -eq 1 ] || [ "$STATUS_TELA1" -eq 255 ]; then
+                TELA=0
+            else
+                TELA=2
+            fi
+            ;;
+
+        2)
+            # TELA 2: Processamento JSON e Construção do Menu de IPs
+            case "$OPCOES" in
+                *IPV6*) FILTRO_IP=":" ;;
+                *)      FILTRO_IP="." ;;
+            esac
+
+            JQ_QUERY="[ (.Self | . + {IsSelf: true}), (.Peer[] | . + {IsSelf: false}) ] | .[]"
+            case "$OPCOES" in
+                *ONLINE_ONLY*) JQ_QUERY="$JQ_QUERY | select(.Online == true)" ;;
+            esac
+
+            JQ_FINAL="$JQ_QUERY | {ip: (.TailscaleIPs[] | select(contains(\"$FILTRO_IP\"))), name: .HostName, os: (.OS // \"unknown\"), self: .IsSelf}"
+
+            # Limpa o arquivo temporário do menu antes da nova escrita
+            : > "$TMP_MENU"
+
+            # Alimenta o buffer linha por linha no formato nativo exigido pelo whiptail
+            echo "$JSON_DATA" | jq -r "$JQ_FINAL | \"\(.ip)\n\(.name) (\(.os))\(if .self then \" [Sua Maquina]\" else \"\" end)\"" | while read -r linha; do
+                if [ -n "$linha" ] && [ "$linha" != "null" ]; then
+                    echo "$linha" >> "$TMP_MENU"
+                fi
+            done
+
+            # Aborda falha de filtro sem silenciar o fluxo
+            if [ ! -s "$TMP_MENU" ]; then
+                whiptail --title 'Aviso' --msgbox 'Nenhum dispositivo corresponde aos filtros aplicados.' 8 55 3>&1 1>&2 2>&3
+                TELA=1; continue
+            fi
+
+            # Renderização estável via xargs sem corrupção de descritores no Dash
+            CHOICE=$(xargs -a "$TMP_MENU" whiptail --title 'Dispositivos Encontrados' \
+                --ok-button 'Selecionar' \
+                --cancel-button 'Voltar' \
+                --menu 'Escolha o no de rede para gerenciar:\n\n[DICA: Use ESC para Voltar]' \
+                22 78 12 3>&1 1>&2 2>&3)
+
+            STATUS_TELA2=$?
+
+            if [ "$STATUS_TELA2" -eq 255 ] || [ "$STATUS_TELA2" -eq 1 ]; then
+                TELA=1  # ESC ou botão Voltar retorna para a Tela 1 (Filtros)
+            else
+                TELA=3  # Sucesso (Status 0) avança para as Ações
+            fi
+            ;;
+
+        3)
+            # TELA 3: Menu de Ações do Nó Selecionado
+            ACAO=$(whiptail --title "Acoes - $CHOICE" \
+                --ok-button 'Executar' \
+                --cancel-button 'Voltar' \
+                --menu "O que deseja fazer com o IP $CHOICE?\n\n[DICA: Use ESC para Voltar]" \
+                16 65 4 \
+                '1' 'Ver metadados detalhados do no' \
+                '2' 'Testar conectividade (Ping de 4 pacotes)' \
+                '3' 'Iniciar sessao remota via SSH' \
+                '4' 'Usar o prox. livre' \
+                3>&1 1>&2 2>&3)
+
+            STATUS_TELA3=$?
+
+            if [ "$STATUS_TELA3" -eq 255 ] || [ "$STATUS_TELA3" -eq 1 ]; then
+                TELA=2  # ESC ou botão Voltar retorna para a Tela 2 (Lista de IPs)
+            else
+                TELA=4  # Sucesso (Status 0) avança para a Execução
+            fi
+            ;;
+
+        4)
+            # TELA 4: Motores de Execução
+            echo "$JSON_DATA" | jq -r --arg ip "$CHOICE" '[.Self, .Peer[]] | .[] | select(.TailscaleIPs[]? == $ip)' > "$TMP_DETAILS"
+
+            case "$ACAO" in
+                1)
+                    HOST=$(jq -r '.HostName' "$TMP_DETAILS")
+                    OS_PEER=$(jq -r '.OS // "unknown"' "$TMP_DETAILS")
+                    ONLINE=$(jq -r '.Online' "$TMP_DETAILS")
+                    LAST_SEEN=$(jq -r '.LastSeen' "$TMP_DETAILS")
+                    RELAY=$(jq -r '.Relay // "nenhum"' "$TMP_DETAILS")
+
+                    if [ "$ONLINE" = "true" ]; then STATUS_TXT="Online 🟢"; else STATUS_TXT="Offline 🔴 (Visto em: $LAST_SEEN)"; fi
+
+                    INFO="Hostname: $HOST\nSistema: $OS_PEER\nIP Selecionado: $CHOICE\nStatus: $STATUS_TXT\nServidor de Relay (DERP): $RELAY\n\n[ESC ou OK para Voltar]"
+                    whiptail --title 'Especificacoes do No' --ok-button 'Voltar' --msgbox "$INFO" 15 70 3>&1 1>&2 2>&3
+                    TELA=3
+                    ;;
+                2)
+                    clear
+                    echo "[EXEC] Executando ping ICMP para $CHOICE..."
+                    echo "--------------------------------------------------"
+                    ping -c 4 "$CHOICE"
+                    echo "--------------------------------------------------"
+                    printf "Pressione [Enter] para retornar ao painel..." && read -r _
+                    TELA=3
+                    ;;
+                3)
+                    USER_SSH=$(whiptail --title 'Acesso SSH' --inputbox 'Digite o usuario para login SSH:\n\n[ESC para Cancelar]' 11 50 "$USER" 3>&1 1>&2 2>&3)
+                    if [ $? -eq 0 ] && [ -n "$USER_SSH" ]; then
+                        clear
+                        echo "[EXEC] Estabelecendo conexao remota: ssh $USER_SSH@$CHOICE"
+                        ssh "$USER_SSH@$CHOICE"
+                        printf "\nSessao SSH finalizada. Pressione [Enter] para retornar..." && read -r _
+                    fi
+                    TELA=3
+                    ;;
+                4)
+                    clear
+                    echo "[EXEC] Iniciando varredura sequencial de sub-rede..."
+                    echo "--------------------------------------------------"
+                    BASE_IP=$(echo "$CHOICE" | cut -d. -f1-3)
+                    IP_LIVRE=""
+
+                    # Iteração incremental nativa POSIX
+                    i=1
+                    while [ "$i" -le 254 ]; do
+                        TEST_IP="$BASE_IP.$i"
+                        if ! ping -c 1 -W 1 "$TEST_IP" >/dev/null 2>&1; then
+                            IP_LIVRE="$TEST_IP"
+                            break
+                        fi
+                        i=$((i + 1))
+                    done
+
+                    if [ -n "$IP_LIVRE" ]; then
+                        whiptail --title 'IP Livre Encontrado' --msgbox "O proximo endereco IP disponivel na rede e:\n\n* $IP_LIVRE" 10 55 3>&1 1>&2 2>&3
+                    else
+                        whiptail --title 'Aviso' --msgbox 'Todos os blocos de enderecamento respondem aos testes na sub-rede.' 8 55 3>&1 1>&2 2>&3
+                    fi
+                    TELA=3
+                    ;;
+            esac
+            ;;
+    esac
+done
+
+clear
+echo "[SUCCESS] Painel encerrado. Ambiente do terminal restaurado de forma sanitaria."
+
+# #!/bin/sh -x
+# # ==============================================================================
+# # SCRIPT: Gerenciador de Rede Tailscale via Whiptail
+# # COMPATIBILIDADE: POSIX Estrito (/bin/sh no NixOS)
+# # ==============================================================================
+#
+# # Define o mapa de cores customizado para a interface do Whiptail estilo Hacker
+# export NEWT_COLORS='
+#   root=green,black
+#   window=black,black
+#   border=green,black
+#   shadow=grey,black
+#   title=cyan,black
+#   textbox=green,black
+#   button=black,green
+#   actbutton=black,cyan
+#   checkbox=green,black
+#   actcheckbox=black,cyan
+#   listbox=green,black
+#   actlistbox=black,green
+#   label=red,black
+# '
+#
+# # ==============================================================================
+# # FASE 1: VALIDAÇÃO DE AMBIENTE E DEPENDÊNCIAS
+# # ==============================================================================
+# for cmd in whiptail jq ping tailscale; do
+#     if ! command -v "$cmd" >/dev/null 2>&1; then
+#         echo "[ERRO] Dependência obrigatória '$cmd' não encontrada no PATH."
+#         echo "No NixOS, certifique-se de executar este script em um ambiente preparado."
+#         echo "Exemplo: nix-shell -p whiptail jq iputils tailscale"
+#         exit 1
+#     fi
+# done
+#
+# # Captura inicial dos dados de topologia de rede usando o sudo para o daemon do NixOS
+# JSON_DATA=$(sudo tailscale status --json)
+# # Execução direta com tratamento explícito de erro do NixOS
+# echo "[DEBUG] Tentando ler o socket do Tailscale..."
+# JSON_DATA=$(tailscale status --json 2>&1)
+# STATUS_TS=$?
+#
+# if [ $STATUS_TS -ne 0 ] || [ -z "$JSON_DATA" ]; then
+#     echo "=================================================="
+#     echo "[ERRO DO NIXOS DETECTADO]"
+#     echo "Código de saída do comando: $STATUS_TS"
+#     echo "Mensagem real do sistema: $JSON_DATA"
+#     echo "=================================================="
+#     exit 1
+# fi
+#
+#
+# # Alocação de arquivos temporários seguros em memória (/tmp)
+# TMP_MENU="/tmp/ts_menu.$$"
+# TMP_DETAILS="/tmp/ts_details.$$"
+# trap 'rm -f "$TMP_MENU" "$TMP_DETAILS"' EXIT INT TERM
+#
+# # ==============================================================================
+# # FASE 2: MÁQUINA DE ESTADOS (LOOP PRINCIPAL DE NAVEGAÇÃO POSIX)
+# # ==============================================================================
+# TELA=1
+#
+# while [ "$TELA" -ne 0 ]; do
+#     case "$TELA" in
+#         1)
+#             # TELA 1: Filtros de exibição via Checkbox
+#             OPCOES=$(whiptail --title "Painel Tailscale - Filtros" \
+#                 --ok-button "Prosseguir" \
+#                 --cancel-button "Voltar" \
+#                 --extra-button \
+#                 --extra-button-title "Sair" \
+#                 --checklist "Selecione os parâmetros de exibição (Espaço para marcar):\n\n[ESC para Sair]" \
+#                 13 68 3 \
+#                 "IPV6" "Exibir IPs no padrão IPv6 (Padrão: IPv4)" OFF \
+#                 "ONLINE_ONLY" "Ocultar dispositivos offline" OFF \
+#                 2>&1 1>/dev/tty </dev/tty)
+#
+#             STATUS_TELA1=$?
+#
+#             # Interceptação de sinais: 1=Cancelar, 3=Sair, 255=Tecla ESC
+#             if [ "$STATUS_TELA1" -eq 1 ] || [ "$STATUS_TELA1" -eq 3 ] || [ "$STATUS_TELA1" -eq 255 ]; then
+#                 TELA=0
+#             else
+#                 TELA=2
+#             fi
+#             ;;
+#
+#         2)
+#             # TELA 2: Processamento JSON e Construção do Menu de IPs
+#             case "$OPCOES" in
+#                 *IPV6*) FILTRO_IP=":" ;;
+#                 *)      FILTRO_IP="." ;;
+#             esac
+#
+#             JQ_QUERY="[ (.Self | . + {IsSelf: true}), (.Peer[] | . + {IsSelf: false}) ] | .[]"
+#             case "$OPCOES" in
+#                 *ONLINE_ONLY*) JQ_QUERY="$JQ_QUERY | select(.Online == true)" ;;
+#             esac
+#
+#             JQ_FINAL="$JQ_QUERY | {ip: (.TailscaleIPs[] | select(contains(\"$FILTRO_IP\"))), name: .HostName, os: (.OS // \"unknown\"), self: .IsSelf}"
+#
+#             # Saneamento e preenchimento do buffer do menu em formato [TAG] \n [DESCRIÇÃO]
+#             : > "$TMP_MENU"
+#             echo "$JSON_DATA" | jq -r "$JQ_FINAL | \"\(.ip)\n\(.name) (\(.os))\(if .self then \" [Sua Máquina]\" else \"\" end)\"" | while read -r linha; do
+#                 if [ -n "$linha" ] && [ "$linha" != "null" ]; then
+#                     echo "$linha" >> "$TMP_MENU"
+#                 fi
+#             done
+#
+#             # Valida se o arquivo de menu gerado não está vazio
+#             if [ ! -s "$TMP_MENU" ]; then
+#                 whiptail --title "Aviso" --msgbox "Nenhum dispositivo corresponde aos filtros aplicados." 8 55 2>&1 1>/dev/tty </dev/tty
+#                 TELA=1; continue
+#             fi
+#
+#             # Injeção dinâmica do buffer via xargs e amarração robusta de TTY no NixOS
+#             CHOICE=$(xargs -a "$TMP_MENU" whiptail --title "Dispositivos Encontrados" \
+#                 --ok-button "Selecionar" \
+#                 --cancel-button "Voltar" \
+#                 --extra-button \
+#                 --extra-button-title "Sair" \
+#                 --menu "Escolha o nó de rede para gerenciar:\n\n[ESC para Voltar]" \
+#                 22 78 12 2>&1 1>/dev/tty </dev/tty)
+#
+#             STATUS_TELA2=$?
+#
+#             if [ "$STATUS_TELA2" -eq 3 ] || [ "$STATUS_TELA2" -eq 255 ]; then
+#                 TELA=0
+#             elif [ "$STATUS_TELA2" -eq 1 ]; then
+#                 TELA=1
+#             else
+#                 TELA=3
+#             fi
+#             ;;
+#
+#         3)
+#             # TELA 3: Menu de Ações Disponíveis para o Nó Selecionado
+#             ACAO=$(whiptail --title "Ações - $CHOICE" \
+#                 --ok-button "Executar" \
+#                 --cancel-button "Voltar" \
+#                 --extra-button \
+#                 --extra-button-title "Sair" \
+#                 --menu "O que deseja fazer com o IP $CHOICE?\n\n[ESC para Voltar]" \
+#                 16 65 4 \
+#                 "1" "Ver metadados detalhados do nó" \
+#                 "2" "Testar conectividade (Ping de 4 pacotes)" \
+#                 "3" "Iniciar sessão remota via SSH" \
+#                 "4" "Usar o prox. livre" \
+#                 2>&1 1>/dev/tty </dev/tty)
+#
+#             STATUS_TELA3=$?
+#
+#             if [ "$STATUS_TELA3" -eq 3 ] || [ "$STATUS_TELA3" -eq 255 ]; then
+#                 TELA=0
+#             elif [ "$STATUS_TELA3" -eq 1 ]; then
+#                 TELA=2
+#             else
+#                 TELA=4
+#             fi
+#             ;;
+#
+#         4)
+#             # TELA 4: Motores Operacionais de Execução
+#             echo "$JSON_DATA" | jq -r --arg ip "$CHOICE" '[.Self, .Peer[]] | .[] | select(.TailscaleIPs[]? == $ip)' > "$TMP_DETAILS"
+#
+#             case "$ACAO" in
+#                 1)
+#                     HOST=$(jq -r '.HostName' "$TMP_DETAILS")
+#                     OS_PEER=$(jq -r '.OS // "unknown"' "$TMP_DETAILS")
+#                     ONLINE=$(jq -r '.Online' "$TMP_DETAILS")
+#                     LAST_SEEN=$(jq -r '.LastSeen' "$TMP_DETAILS")
+#                     RELAY=$(jq -r '.Relay // "nenhum"' "$TMP_DETAILS")
+#
+#                     if [ "$ONLINE" = "true" ]; then STATUS_TXT="Online 🟢"; else STATUS_TXT="Offline 🔴 (Visto em: $LAST_SEEN)"; fi
+#
+#                     INFO="Hostname: $HOST\nSistema: $OS_PEER\nIP Selecionado: $CHOICE\nStatus: $STATUS_TXT\nServidor de Relay (DERP): $RELAY\n\n[ESC ou OK para Voltar]"
+#                     whiptail --title "Especificações do Nó" --ok-button "Voltar" --msgbox "$INFO" 15 70 2>&1 1>/dev/tty </dev/tty
+#                     TELA=3
+#                     ;;
+#                 2)
+#                     clear
+#                     echo "[EXEC] Executando ping ICMP para $CHOICE..."
+#                     echo "--------------------------------------------------"
+#                     ping -c 4 "$CHOICE"
+#                     echo "--------------------------------------------------"
+#                     printf "Pressione [Enter] para retornar ao painel..." && read -r _
+#                     TELA=3
+#                     ;;
+#                 3)
+#                     USER_SSH=$(whiptail --title "Acesso SSH" --inputbox "Digite o usuário para login SSH:\n\n[ESC para Cancelar]" 11 50 "$USER" 2>&1 1>/dev/tty </dev/tty)
+#                     if [ $? -eq 0 ] && [ -n "$USER_SSH" ]; then
+#                         clear
+#                         echo "[EXEC] Estabelecendo conexão remota: ssh $USER_SSH@$CHOICE"
+#                         ssh "$USER_SSH@$CHOICE"
+#                         printf "\nSessão SSH finalizada. Pressione [Enter] para retornar..." && read -r _
+#                     fi
+#                     TELA=3
+#                     ;;
+#                 4)
+#                     clear
+#                     echo "[EXEC] Iniciando varredura sequencial de sub-rede..."
+#                     echo "--------------------------------------------------"
+#                     BASE_IP=$(echo "$CHOICE" | cut -d. -f1-3)
+#                     IP_LIVRE=""
+#
+#                     i=1
+#                     while [ "$i" -le 254 ]; do
+#                         TEST_IP="$BASE_IP.$i"
+#                         if ! ping -c 1 -W 1 "$TEST_IP" >/dev/null 2>&1; then
+#                             IP_LIVRE="$TEST_IP"
+#                             break
+#                         fi
+#                         i=$((i + 1))
+#                     done
+#
+#                     if [ -n "$IP_LIVRE" ]; then
+#                         whiptail --title 'IP Livre Encontrado' \
+#                             --msgbox "O próximo endereço IP disponível na rede é:\n\n $IP_LIVRE" 10 55 2>&1 1>/dev/tty </dev/tty
+#                     else
+#                         whiptail --title 'Aviso' --msgbox 'Todos os blocos de enderecamento respondem aos testes na sub-rede.' 8 55 2>&1 1>/dev/tty </dev/tty
+#                     fi
+#                     TELA=3
+#                     ;;
+#             esac
+#             ;;
+#     esac
+# done
+#
+# # clear
+# echo "[SUCCESS] Painel encerrado. Ambiente do terminal restaurado de forma sanitária."

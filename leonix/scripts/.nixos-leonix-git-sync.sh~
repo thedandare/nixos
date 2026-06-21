@@ -1,0 +1,9 @@
+#!/bin/sh
+cd /osnix/nixos
+git pull
+cd leonix
+./rsync.sh
+cd ..
+git add . -A
+git commit -m "auto commit from $(uname -a) "
+./pu.sh

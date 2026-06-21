@@ -15,7 +15,7 @@
   # Ativa o nftables exigido pelo Incus no NixOS [Solucao!]
   networking.nftables.enable = true;
   networking.nat.enable = true;
-  # CORREÇÃO REAL: Força o nftables do host NixOS a liberar o tráfego do Kubernetes na bridge
+   # CORREÇÃO REAL: Força o nftables do host NixOS a liberar o tráfego do Kubernetes na bridge
   networking.nftables.ruleset = ''
     table inet filter {
       chain input {

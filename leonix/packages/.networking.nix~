@@ -1,5 +1,4 @@
-{ pkgs, ... }:
-{
+{ pkgs, ... }: {
   environment.systemPackages = with pkgs; [
     # 📡 Networking
     tailscale
@@ -27,9 +26,10 @@
     # 📻 SDR
     gnuradio
     gnuradioPackages.osmosdr # Programs provided
-    #     rtl-sdr-librtlsdr # Fork of the rtl-sdr library by the Osmocom project.
+#     rtl-sdr-librtlsdr # Fork of the rtl-sdr library by the Osmocom project.
     sdr-j-fm
     gqrx
+
 
   ];
 }

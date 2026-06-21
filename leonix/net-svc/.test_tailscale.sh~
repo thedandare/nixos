@@ -1,0 +1,170 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+echo "=== 1. Solicitando Access Token via OAuth ==="
+# Ajustado para usar o Content-Type oficial exigido por validadores estritos
+API_RESPONSE=$(curl -s -X POST \
+  -H "Content-Type: application/x-www-form-urlencoded" \
+  -d "grant_type=client_credentials" \
+  -d "client_id=${TAILSCALE_CLIENT_ID}" \
+  -d "client_secret=${TAILSCALE_CLIENT_SECRET}" \
+  "https://api.tailscale.com/api/v2/oauth/token")
+
+API_TOKEN=$(echo "${API_RESPONSE}" | jq -r '.access_token // empty')
+
+if [ -z "${API_TOKEN}" ]; then
+    echo "ERRO: Falha ao obter API_TOKEN. Resposta do servidor:"
+    echo "${API_RESPONSE}"
+    exit 1
+fi
+echo "Access Token obtido com sucesso."
+
+echo "=== 2. Gerando Auth Key Descartável ==="
+# Requisição estruturada com Bearer Token limpo
+KEY_RESPONSE=$(curl -s -X POST \
+  -H "Authorization: Bearer ${API_TOKEN}" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "capabilities": {
+      "devices": {
+        "create": {
+          "reusable": false,
+          "ephemeral": true,
+          "preauthorized": true,
+          "tags": ["tag:teste", "tag:canssh"]
+        }
+      }
+    },
+    "expirySeconds": 600
+  }' \
+  "https://api.tailscale.com/api/v2/tailnet/-/keys")
+
+REQ_KEY=$(echo "${KEY_RESPONSE}" | jq -r '.key // empty')
+
+if [ -z "${REQ_KEY}" ]; then
+    echo "ERRO: Falha ao obter REQ_KEY. Resposta do servidor:"
+    echo "${KEY_RESPONSE}"
+    exit 1
+fi
+echo "Auth Key descartável gerada: tskey-auth-..."
+
+echo "=== 3. Autenticando na Rede Tailscale ==="
+# Executa a junção à malha usando a chave validada
+tailscale up --auth-key="${REQ_KEY}" --accept-dns=true --ssh=true --stateful-filtering=false
+echo "Nó autenticado com sucesso!"
+
+# 🌐 VERIFICAÇÃO CONDICIONAL DA INTERFACE (Abre console apenas em falha)
+# =========================================================================
+# Se a interface já existe, passa direto sem tocar no console
+if ! ip link show "tailscale0" >/dev/null 2>&1; then
+
+    # Redireciona I/O apenas se a interface falhou (Evita bloqueios precoces)
+    exec < /dev/console > /dev/console 2>&1
+
+    echo ""
+    echo "======================================================================"
+    echo " 🚨 INTERFACE TAILSCALE0 AUSENTE - BLOQUEIO DE SEGURANÇA "
+    echo "======================================================================"
+    echo "A placa da VPN nao foi criada. Escolha uma acao para continuar:"
+    echo ""
+
+    while true; do
+    echo "1) Tentar novamente (Forçar checagem atualizada)"
+    echo "2) Ignorar (Forçar instalacao do MicroK8s mesmo sem VPN)"
+    echo "3) Abortar (Encerrar o script imediatamente)"
+    echo ""
+    read -p "Selecione a opcao [1-3]: " OPCAO
+
+    case $OPCAO in
+        1)
+        if ip link show "tailscale0" >/dev/null 2>&1; then
+            echo "Sucesso: Interface detectada!"
+            break
+        else
+            echo "Erro: Interface continua ausente."
+        fi
+        ;;
+        2)
+        echo "Aviso: Prosseguindo sem a interface ativa."
+        break
+        ;;
+        3)
+        echo "Erro Fatal: Boot abortado pelo operador."
+        exit 1
+        ;;
+        *)
+        echo "Opcao inválida."
+        ;;
+    esac
+    done
+else
+
+    # Atualiza a lista de pacotes e instala o whiptail caso não esteja instalado
+    if ! command -v whiptail &> /dev/null; then
+        echo "Whiptail não encontrado. Instalando..."
+        sudo apt update && sudo apt install -y whiptail
+    fi
+#!/bin/bash
+
+# Garante a instalação das ferramentas necessárias de forma silenciosa
+for pacote in whiptail tailscale jq; do
+    if ! command -v $pacote &> /dev/null; then
+        echo "Instalando dependência ausente: $pacote..."
+        sudo apt update && sudo apt install -y $pacote
+    fi
+done
+
+# Garante que o Tailscale está ativo
+if ! tailscale status &> /dev/null; then
+    whiptail --title "Erro de Conexão" \
+        --msgbox "O serviço do Tailscale não está rodando. Por favor, inicie-o e tente novamente." \
+        8 60
+    exit 1
+fi
+
+# Cria a lista do menu de forma robusta interpretando o JSON oficial do Tailscale
+# Armazena os pares alternados: [IP] [Nome_do_Dispositivo (SO)]
+MENU_OPTIONS=()
+while read -r ip name os; do
+    if [[ -n "$ip" && "$ip" != "null" ]]; then
+        MENU_OPTIONS+=("$ip" "$name ($os)")
+    fi
+done < <(tailscale status --json | jq -r '.Peer[] | "\(.TailscaleIPs[0]) \(.HostName) \(.OS)"')
+
+# Se a rede estiver vazia, exibe um aviso informando o usuário
+if [ ${#MENU_OPTIONS[@]} -eq 0 ]; then
+    whiptail --title "Aviso" \
+        --msgbox "Nenhum outro dispositivo (peer) foi encontrado na sua rede Tailscale." \
+        8 60
+    exit 0
+fi
+
+# Abre o menu interativo com o Whiptail
+CHOICE=$(whiptail --title "Dispositivos Tailscale" \
+    --menu "Escolha um dispositivo cadastrado na rede:" \
+    20 75 10 \
+    "${MENU_OPTIONS[@]}" \
+    3>&1 1>&2 2>&3)
+
+STATUS=$?
+
+# Valida a ação do usuário no menu
+if [ $STATUS -eq 0 ]; then
+    # Filtra e extrai os detalhes brutos da linha correspondente ao IP selecionado
+    DETALHES=$(tailscale status | grep "$CHOICE")
+
+    whiptail --title "Conexão Estabelecida" \
+        --msgbox "Dispositivo Selecionado: $CHOICE\n\nInformações do nó:\n$DETALHES" \
+        12 75
+else
+    whiptail --title "Cancelado" \
+        --msgbox "Você fechou o menu." \
+        8 45
+fi
+
+fi
+
+sleep 5
+tailscale set --webclient=true
+tailscale funnel --bg --tcp 80 5252
+tailscale funnel --bg --tcp 2409 22
