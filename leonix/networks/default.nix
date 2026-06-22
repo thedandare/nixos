@@ -1,4 +1,4 @@
-{ pkgs, ... }:
+{ pkgs, config, ... }:
 {
   imports = [
     ./bonjour.nix
@@ -8,9 +8,13 @@
     ./sshd.nix
   ];
   systemd.network.enable = true;
-  systemd.network.wait-online.enable = false;
   networking.hostName = "leonix";
+
   networking.networkmanager.enable = true;
+  # 3. Optimization: Prevent systemd from waiting for network online
+  # (Optional but recommended for faster boot with VPNs)
+  systemd.network.wait-online.enable = false;
+  boot.initrd.systemd.network.wait-online.enable = false;
 
   # NixOS vem com o systemd-resolved ativo, que se amarra à porta 53 e impede o Pi-hole de subir.
   # sudo ss -tulpn | grep :53
@@ -20,6 +24,13 @@
   networking.firewall.enable = false; # [ pois =true  Nao funciona!]
   # Ativa o nftables exigido pelo Incus no NixOS [Solucao!]
   networking.nftables.enable = true;
+/*  networking.firewall = {
+    enable = true;
+    # Always allow traffic from your Tailscale network
+    trustedInterfaces = [ config.services.tailscale.interfaceName ];
+    # Allow the Tailscale UDP port through the firewall
+    allowedUDPPorts = [ config.services.tailscale.port ];
+  }*/
   networking.nat.enable = true;
   # CORREÇÃO REAL: Força o nftables do host NixOS a liberar o tráfego do Kubernetes na bridge
   networking.nftables.ruleset = ''

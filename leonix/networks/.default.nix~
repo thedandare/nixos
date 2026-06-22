@@ -1,4 +1,4 @@
-{ pkgs, ... }:
+{ pkgs, config, ... }:
 {
   imports = [
     ./bonjour.nix
@@ -8,7 +8,10 @@
     ./sshd.nix
   ];
   systemd.network.enable = true;
+
+
   systemd.network.wait-online.enable = false;
+
   networking.hostName = "leonix";
   networking.networkmanager.enable = true;
 
@@ -20,6 +23,13 @@
   networking.firewall.enable = false; # [ pois =true  Nao funciona!]
   # Ativa o nftables exigido pelo Incus no NixOS [Solucao!]
   networking.nftables.enable = true;
+/*  networking.firewall = {
+    enable = true;
+    # Always allow traffic from your Tailscale network
+    trustedInterfaces = [ config.services.tailscale.interfaceName ];
+    # Allow the Tailscale UDP port through the firewall
+    allowedUDPPorts = [ config.services.tailscale.port ];
+  }*/
   networking.nat.enable = true;
   # CORREÇÃO REAL: Força o nftables do host NixOS a liberar o tráfego do Kubernetes na bridge
   networking.nftables.ruleset = ''

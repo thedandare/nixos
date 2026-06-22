@@ -3,6 +3,7 @@
 
   imports = [
     ./startup.nix
+    ./tailscale.nix
   ];
 
   # 📺 Display
@@ -94,13 +95,6 @@
 
   # 🔗 Networking
   services.rqbit.enable = true; # A bittorrent client in Rust https://github.com/ikatson/rqbit
-  services.tailscale = {
-    enable = true;
-    serve = {
-      configFile = "/opt/secrets/tailscale-serve.json";
-
-    };
-  };
 
   services.samba.enable = true;
 
