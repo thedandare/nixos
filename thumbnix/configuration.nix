@@ -7,9 +7,13 @@
 
 {
   imports =
-    [ # Include the results of the hardware scan.
+    [
       ./hardware-configuration.nix
-    ];
+      ./drivers/bluetooth.nix
+      ./networks/samba.nix
+      ./virtualisation/incus.nix
+      ./users
+	];
 
   # Bootloader.
   boot.loader.systemd-boot.enable = true;
@@ -17,8 +21,20 @@
 
   # Use latest kernel.
   boot.kernelPackages = pkgs.linuxPackages_latest;
+boot.kernelModules = [ "loop" "fuse" "overlay"  "squashfs" ];
 
-  networking.hostName = "nixos"; # Define your hostname.
+	    nixpkgs.config = {
+	        android_sdk.accept_license = true;
+		    allowUnfree = true;
+		      };
+
+		        #  Seguranca
+			  security.sudo.wheelNeedsPassword = false;
+
+
+  systemd.network.enable = true;
+  networking.useDHCP = false;
+  networking.hostName = "thumbnix"; # Define your hostname.
   # networking.wireless.enable = true;  # Enables wireless support via wpa_supplicant.
 
   # Configure network proxy if necessary
@@ -27,10 +43,49 @@
 
   # Enable networking
   networking.networkmanager.enable = true;
+  services.tailscale={
+enable=true;
+
+  }; 
+  networking.bridges = {
+	"lxcbr0" = {
+interfaces = ["enp8s0"];
+	};
+  };
+
+  networking.interfaces = {
+	enp8s0.useDHCP = false;
+	lxcbr0.useDHCP = true;
+
+  };
+	 
+  environment.variables.EDITOR = "nvim";
+  environment.shellAliases = {
+    Sw = "sudo nixos-rebuild switch  --show-trace --print-build-logs --verbose";
+	  
+};
 
   # Enable network manager applet
   programs.nm-applet.enable = true;
-
+  programs.neovim={
+	viAlias = true;
+	vimAlias = true;
+	configure = {
+ customRC = ''
+    " here your custom VimScript configuration goes!
+  '';
+  customLuaRC = ''
+    -- here your custom Lua configuration goes!
+  '';
+  /*packages.myVimPackage = with pkgs.vimPlugins; {
+    # loaded on launch
+    start = [ fugitive ];
+    # manually loadable by calling `:packadd $plugin-name`
+    opt = [ ];
+   }; */		
+	};
+	enable=true;
+};
   # Set your time zone.
   time.timeZone = "America/Sao_Paulo";
 
@@ -54,11 +109,13 @@
 
   # Enable the LXQT Desktop Environment.
 
-  services.xserver.displayManager.lightdm.enable = true;
-  services.xserver.displayManager.defaultSession="xfce";
+#  services.xserver.displayManager.lightdm.enable = true;
+ # services.xserver.displayManager.defaultSession="xfce";
   services.xserver.desktopManager.xfce.enable = true;
 services.xserver.desktopManager.xfce.enableXfwm = true;
   services.xserver.desktopManager.lxqt.enable = false;
+#  services.desktopManager.gnome.enable = true;
+# services.gnome.gnome-software.enable = true;
 
   # Configure keymap in X11
   services.xserver.xkb = {
@@ -90,61 +147,82 @@ services.xserver.desktopManager.xfce.enableXfwm = true;
 
   # Enable touchpad support (enabled default in most desktopManager).
   services.xserver.libinput.enable =  true;
+  services.touchegg.enable=true;
+  services.buffyboard={
+    settings.input.touchscreen=true;
+    settings.theme.default="pmos-dark";
 
-  # Define a user account. Don't forget to set a password with ‘passwd’.
-  users.users.leo = {
-    isNormalUser = true;
-    description = "leo";
-    extraGroups = [ "networkmanager" "wheel" ];
-    packages = with pkgs; [
-    #  thunderbird
-    ];
+    extraFlags = [ "-dpi 192"];
+    enable=true;
   };
 
+
+
   # Install firefox.
+  programs.git.enable = true;
   programs.firefox.enable = true;
-programs.chromium.enable=true;  
-programs.zsh={
-enable=true;
-};
+	programs.chromium.enable=true;  
+	programs.zsh={
+	enable=true;
+	};
 
-programs.bash={
-enable=true;
-};
-programs.tmux={
-enable=true;
-};
+	programs.bash={
+	enable=true;
+	};
+	programs.tmux={
+	enable=true;
+	};
 
-  # Allow unfree packages
-  nixpkgs.config.allowUnfree = true;
 
   # List packages installed in system profile. To search, run:
   # $ nix search wget
   environment.systemPackages = with pkgs; [
+
+  lxc 
+
   #  vim # Do not forget to add an editor to edit configuration.nix! The Nano editor is also installed by default.
-  #  wgeti
-pkgs.gedit
-pkgs.turbovnc
-remmina
+  # 🫵
+wget
+toybox
+fusuma
+# IMPORTANT: You MUST be a member of the INPUT group to read touchpad by Fusuma.
+	chicago95
+
+	wf-touch
+
+
+	darkly
+ 	lorien # Note taking app
+	lan-mouse
+	squeekboard # virtual keyboard
+  	maliit-keyboard
+   	kdePackages.plasma-keyboard
+	kdePackages.qtvirtualkeyboard        
+
+	# LXC LXC LXC LXC	
+ 	lxc
+	tigervnc
+	remmina
 #"packages.remote-viewer"
   ];
-services.xrdp.enable = true;
-services.xserver.displayManager.sddm.enable = false;
-services.xserver.desktopManager.plasma6.enable = true;
-services.xserver.resolutions=[{
-x=1920; y=1080;
-}
-{x=1280; y= 720;}
-{x=1366; y= 768;
-}];
-#services.xrdp.defaultWindowManager = "startplasma-wayland";
-services.xrdp.openFirewall = true;
+	services.xrdp.enable = true;
+	services.xserver.displayManager.sddm.enable = true;
+	services.xserver.desktopManager.plasma6.enable = true;
+	services.xserver.resolutions=[{
+	x=1920; y=1080;
+	}
+	{x=1280; y= 720;}
+	{x=1366; y= 768;
+	}];
+	#services.xrdp.defaultWindowManager = "startplasma-wayland";
+	services.xrdp.openFirewall = true;
 
- services.x2goserver.enable = true;
-services.displayManager.autoLogin.enable = false;
-services.getty.autologinUser = null;
+	 services.x2goserver.enable = true;
+	services.displayManager.autoLogin.enable = false;
+#	services.displayManager.autoLogin.user = "leo";  
   # Some programs need SUID wrappers, can be configured further or are
-  # started in user sessions.
+
+		  # started in user sessions.
   # programs.mtr.enable = true;
   # programs.gnupg.agent = {
   #   enable = true;

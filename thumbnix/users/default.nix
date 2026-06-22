@@ -1,0 +1,54 @@
+{ pkgs, inputs, ... }:
+let
+  rootSshKey =
+    if builtins.getEnv "SSH_KEY_ROOT" != "" then
+      builtins.getEnv "SSH_KEY_ROOT"
+    else
+      "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIMGWvbEP/E0dh/xwtUVIuQrNDSz+G4TCLA+UMVpT0gLi root@ali";
+  userSshKey =
+    if builtins.getEnv "SSH_KEY" != "" then
+      builtins.getEnv "SSH_KEY"
+    else
+      "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAICs+sOj/1GK5exkDkCw7H7zmDapshfWaRn474qxZxSUY leo";
+
+in
+{
+
+  imports = [
+    ./env.nix
+    ./home-manager.nix
+  ];
+
+  users.defaultUserShell = pkgs.zsh;
+  security.pam.services.sddm.enableKwallet = true;
+
+  users.users.root = {
+    hashedPasswordFile = "/etc/nixos/root-password.hash";
+    openssh.authorizedKeys.keys = [
+      rootSshKey
+      userSshKey
+    ];
+
+  };
+  #   home.file."/root/.ssh/root_id_ed25519.pub".text = rootSshKey;
+
+  users.users.leo = {
+    openssh.authorizedKeys.keys = [ userSshKey ];
+    useDefaultShell = true;
+    isNormalUser = true;
+    description = "leo";
+    extraGroups = [
+      "samba"
+      "networkmanager"
+      "kvm"
+      "wheel"
+      "incus-admin"
+      "incus"
+      "plugdev"
+    ];
+
+  };
+
+  #     paxckages = with pkgs; [ thunderbird ];
+
+}
