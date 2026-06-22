@@ -12,6 +12,7 @@
     tshark
     wireshark
     wireshark-cli
+    pihole-ftl
 
     # 🏢 Remote Access
     x2goclient
@@ -31,5 +32,6 @@
     sdr-j-fm
     gqrx
 
+    qradiolink
   ];
 }

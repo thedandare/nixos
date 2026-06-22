@@ -1,0 +1,12 @@
+{ ... }:
+{
+  imports = [
+    ./base.nix
+    ./development.nix
+    ./media-desktop.nix
+    ./networking.nix
+#     ./pentesting.nix
+    ./sys-hardware.nix
+    ./terminal-utils.nix
+  ];
+}

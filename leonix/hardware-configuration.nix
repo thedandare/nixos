@@ -16,18 +16,18 @@ in
   hardware.cpu.amd.updateMicrocode = true;
 
   fileSystems = {
-    #   "shadowing" (sombreamento de diretório).
-    "/home/leo/.cache" = {
-      device = "tmpfs";
-      fsType = "tmpfs";
-      options = [
-        "nosuid"
-        "nodev"
-        "size=16G"
-        "mode=0700"
-        "uid=1000"
-      ];
-    };
+#     #   "shadowing" (sombreamento de diretório).
+#     "/home/leo/.cache" = {
+#       device = "tmpfs";
+#       fsType = "tmpfs";
+#       options = [
+#         "nosuid"
+#         "nodev"
+#         "size=16G"
+#         "mode=0700"
+#         "uid=1000"
+#       ];
+#     };
 
     "boot" = {
       #        ATA Lexar SSD NQ100 part8

@@ -1,13 +1,13 @@
-{ pkgs, ... }: {
+{ pkgs, ... }:
+{
   environment.systemPackages = with pkgs; [
     # 🐚 Terminals
     alacritty
     alacritty-graphics
     pycritty # CLI tool for changing your alacritty configuration on the fly
     cool-retro-term
-    fzf
-    wezterm
-    vimPlugins.wezterm-nvim
+    fzf # fzf is a general-purpose command-line fuzzy finder and an interactive terminal toolkit.
+    sesh # Sesh, the smart tmux session manager
 
     # 📧 Text editors
     gnvim # https://github.com/vhakulinen/gnvim

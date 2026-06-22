@@ -1,7 +1,7 @@
-# Edit this configuration file to define what should be installed on
-# your system.  Help is available in the configuration.nix(5) man page
-# and in the NixOS manual (accessible by running ‘nixos-help’).
-
+# ▐▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▌
+# ▐                                                                              ▌
+# ▐                                                                              ▌
+# ▐▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▌
 {
   config,
   pkgs,
@@ -26,22 +26,14 @@ in
 {
 
   imports = [
-    ./grub.nix
-    ./boot.nix
     ./hardware-configuration.nix
-    #     ./systemPackages.nix
+    ./kernel
+    ./networks
     ./packages
-    ./peripherals.nix
-    ./services.nix
-    ./net-svc/networking.nix
-    ./net-svc/samba.nix
-    #     ./git-services.nix
-    ./programs.nix
-    ./users/users.nix
-    ./users/home-manager.nix
-    ./virtualisation/qemu-vms.nix
-    ./virtualisation/incus.nix
-    ./startup.nix
+    ./programs
+    ./services
+    ./users
+    ./virtualisation
   ];
 
   /*
@@ -141,25 +133,26 @@ in
   };
 
   system.stateVersion = "25.11"; # 🚭 No Changing.
+  /*
+    virtualisation.lxc = {
+      enable = false;
 
-  virtualisation.lxc = {
-    enable = false;
+      # Ativa o lxcfs para isolamento correto de CPU/Memória (opcional, mas recomendado)
+      lxcfs.enable = true;
 
-    # Ativa o lxcfs para isolamento correto de CPU/Memória (opcional, mas recomendado)
-    lxcfs.enable = true;
+      # Injeta a configuração global que todo container criado irá herdar
+      defaultConfig = ''
+        # Inclui o perfil padrão de Nesting que vem com o pacote LXC do NixOS
+        lxc.include = ${pkgs.lxc}/share/lxc/config/nesting.conf
 
-    # Injeta a configuração global que todo container criado irá herdar
-    defaultConfig = ''
-      # Inclui o perfil padrão de Nesting que vem com o pacote LXC do NixOS
-      lxc.include = ${pkgs.lxc}/share/lxc/config/nesting.conf
+        # Configurações de montagem para permitir o gerenciamento de cgroups/sys
+        lxc.mount.auto = cgroup:rw sys:rw
+        lxc.apparmor.profile = unconfined
 
-      # Configurações de montagem para permitir o gerenciamento de cgroups/sys
-      lxc.mount.auto = cgroup:rw sys:rw
-      lxc.apparmor.profile = unconfined
-
-      # Permite que o container manipule o hardware de loop do host (major number 7)
-      lxc.cgroup2.devices.allow = b 7:* rwm
-    '';
-  };
+        # Permite que o container manipule o hardware de loop do host (major number 7)
+        lxc.cgroup2.devices.allow = b 7:* rwm
+      '';
+    };
+  */
 
 }

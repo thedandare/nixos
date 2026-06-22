@@ -2,10 +2,11 @@
 {
   imports = [
     ./base.nix
-    ./sys-hardware.nix
     ./development.nix
-    ./networking.nix
     ./media-desktop.nix
+    ./networking.nix
+    #     ./pentesting.nix
+    ./sys-hardware.nix
     ./terminal-utils.nix
   ];
 }

@@ -3,7 +3,7 @@ set -euo pipefail
 
 # Configuração de caminhos locais
 SCRIPT_FONTE="../net-svc/test_tailscale.sh"
-TEMPLATE_YAML="cloud-init.yaml.tmpl"
+TEMPLATE_YAML="cloud-init.template.yaml"
 OUTPUT_YAML="cloud-init.yaml"
 
 echo "=== 🧬 Compilacao Idempotente do Cloud-Init ==="

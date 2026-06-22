@@ -13,6 +13,12 @@ let
 
 in
 {
+
+  imports = [
+  ./env.nix
+    ./home-manager.nix
+  ];
+
   users.defaultUserShell = pkgs.zsh;
   security.pam.services.sddm.enableKwallet = true;
 
@@ -44,4 +50,5 @@ in
   };
 
   #     paxckages = with pkgs; [ thunderbird ];
+
 }
