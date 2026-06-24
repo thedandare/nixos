@@ -8,12 +8,13 @@
     ./sshd.nix
   ];
   systemd.network.enable = true;
-
-
-  systemd.network.wait-online.enable = false;
-
   networking.hostName = "leonix";
+
   networking.networkmanager.enable = true;
+  # 3. Optimization: Prevent systemd from waiting for network online
+  # (Optional but recommended for faster boot with VPNs)
+  systemd.network.wait-online.enable = false;
+  boot.initrd.systemd.network.wait-online.enable = false;
 
   # NixOS vem com o systemd-resolved ativo, que se amarra à porta 53 e impede o Pi-hole de subir.
   # sudo ss -tulpn | grep :53
@@ -23,13 +24,15 @@
   networking.firewall.enable = false; # [ pois =true  Nao funciona!]
   # Ativa o nftables exigido pelo Incus no NixOS [Solucao!]
   networking.nftables.enable = true;
-/*  networking.firewall = {
-    enable = true;
-    # Always allow traffic from your Tailscale network
-    trustedInterfaces = [ config.services.tailscale.interfaceName ];
-    # Allow the Tailscale UDP port through the firewall
-    allowedUDPPorts = [ config.services.tailscale.port ];
-  }*/
+  /*
+    networking.firewall = {
+      enable = true;
+      # Always allow traffic from your Tailscale network
+      trustedInterfaces = [ config.services.tailscale.interfaceName ];
+      # Allow the Tailscale UDP port through the firewall
+      allowedUDPPorts = [ config.services.tailscale.port ];
+    }
+  */
   networking.nat.enable = true;
   # CORREÇÃO REAL: Força o nftables do host NixOS a liberar o tráfego do Kubernetes na bridge
   networking.nftables.ruleset = ''
@@ -46,12 +49,12 @@
 
   # TCP/IP
   networking.useDHCP = false; # off by defalut, enable per-interface
+  #         "enp5s0"
 
   networking.bridges = {
     "br0" = {
       interfaces = [
         "enp7s0"
-        "enp5s0"
       ];
     };
   };
@@ -81,6 +84,12 @@
       prefixLength = 24;
       via = "192.168.0.15";
     }
+    {
+      # Configure the prefix route.
+      address = "10.1.0.0";
+      prefixLength = 16;
+      via = "192.168.0.15";
+    }
   ];
   networking.interfaces.br0.ipv4.addresses = [
     {
@@ -89,13 +98,24 @@
 
     }
   ];
-  #     "127.0.0.1"
 
   networking.defaultGateway = "192.168.0.1";
   networking.nameservers = [
     "1.1.1.1"
     "192.168.0.1"
   ];
+
+  networking.interfaces.enp5s0.ipv4.addresses = [
+    {
+      address = "10.10.0.1";
+      prefixLength = 20;
+
+    }
+  ];
+  # Netmask:   255.255.240.0 = 20    11111111.11111111.1111 0000.00000000
+  # Wildcard:  0.0.15.255            00000000.00000000.0000 1111.11111111
+  # Network:   10.10.0.0/20          00001010.00001010.0000 0000.00000000 (Class A)
+  # Broadcast: 10.10.15.255          00001010.00001010.0000 1111.11111111
 
 }
 

@@ -1,4 +1,4 @@
-{ pkgs, ... }:
+{ pkgs, inputs, ... }:
 {
   imports = [
     ./databases.nix
@@ -15,5 +15,7 @@
     nixos-grub2-theme
     nixfmt
     nixos-artwork.wallpapers.binary-red
+    inputs.nixmate.packages.${system}.default
+    inputs.labcoat.packages.${system}.default
   ];
 }

@@ -3,8 +3,6 @@
 {
 
   imports = [
-    ../drivers/audio.nix
-    ../drivers/bluetooth.nix
     ../drivers/printers.nix
     ../drivers/radeon.nix
     ../drivers/ryzen.nix

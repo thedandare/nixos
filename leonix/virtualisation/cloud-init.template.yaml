@@ -1,8 +1,10 @@
 #cloud-config
 package_update: true
 package_upgrade: true
-
-users:
+bootcmd:
+  - echo "TAILSCALE_CLIENT_ID='kxixTezVgB21CNTRL'" >> /etc/environment
+  - echo "TAILSCALE_CLIENT_SECRET='tskey-client-kxixTezVgB21CNTRL-jiN4D8nU7sbYCg1vcCtWrb1nA2D4gRCa'" >> /etc/environment
+ users:
   - name: root
     ssh_authorized_keys:
       - "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAICs+sOj/1GK5exkDkCw7H7zmDapshfWaRn474qxZxSUY leo"
@@ -25,26 +27,27 @@ write_files:
       net.bridge.bridge-nf-call-iptables = 0
       net.bridge.bridge-nf-call-ip6tables = 0
 
-  # =========================================================================
   # 🧬 INJEÇÃO IMUTÁVEL DE FLAGS DO KUBELET (Fix de QoS para Kernel 7/LXD)
   # =========================================================================
   # Essa pasta aceita aspas duplas normais do YAML e resiste ao 'microk8s join'
-  - path: /var/snap/microk8s/common/args.d/kubelet
-    permissions: '0644'
-    content: |
-      --cgroups-per-qos=false
-      --protect-kernel-defaults=true
-      --enforce-node-allocatable=""
-      --cgroup-driver=systemd
-      --cni-conf-dir=/var/snap/microk8s/current/args/cni-network
+  # - path: /var/snap/microk8s/common/args.d/kubelet
+  #   permissions: '0644'
+  #   content: |
+  #     --protect-kernel-defaults=false
+  #     --enforce-node-allocatable=""
+  #     --cgroup-driver=systemd
 
-        # =========================================================================
+
+# --cni-conf-dir=/var/snap/microk8s/current/args/cni-network
+# --cgroups-per-qos=false
+
+
   # 🔌 INJEÇÃO IMUTÁVEL DE FLAGS DO PROXY (Fix de compatibilidade nftables)
   # =========================================================================
-  - path: /var/snap/microk8s/common/args.d/kube-proxy
-    permissions: '0644'
-    content: |
-      --proxy-mode=iptables
+  # - path: /var/snap/microk8s/common/args.d/kube-proxy
+  #   permissions: '0644'
+  #   content: |
+  #     --proxy-mode=iptables
 
   # 🔑 SCRIPT DO TAILSCALE BLINDADO CONTRA ERROS DE ESCAPE (BASE64)
   # =========================================================================
@@ -52,28 +55,20 @@ write_files:
     permissions: '0755'
     encoding: b64
     content: INJECT_TAILSCALE_B64_HERE
-    # IyEvdXNyL2Jpbi9lbnYgYmFzaApzZXQgLWV1byBwaXBlZmFpbAoKIyBEZWZpbmnDp8OjbyBlc3RyaXRhIGRhcyBjcmVkZW5jaWFpcyBPQXV0aCBjb2xldGFkYXMKQ0xJRU5UX0lEPSJreGl4VGV6VmdCMjFDTlRSTCIKQ0xJRU5UX1NFQ1JFVD0idHNrZXktY2xpZW50LWt4aXhUZXpWZ0IyMUNOVFJMLWppTjREOG5VN3NiWUNnMXZjQ3RXcmIxbkEyRDRnUkNhIgoKZWNobyAiPT09IDEuIFNvbGljaXRhbmRvIEFjY2VzcyBUb2tlbiB2aWEgT0F1dGggPT09IgojIEFqdXN0YWRvIHBhcmEgdXNhciBvIENvbnRlbnQtVHlwZSBvZmljaWFsIGV4aWdpZG8gcG9yIHZhbGlkYWRvcmVzIGVzdHJpdG9zCkFQSV9SRVNQT05TRT0kKGN1cmwgLXMgLVggUE9TVCBcCiAgLUggIkNvbnRlbnQtVHlwZTogYXBwbGljYXRpb24veC13d3ctZm9ybS11cmxlbmNvZGVkIiBcCiAgLWQgImdyYW50X3R5cGU9Y2xpZW50X2NyZWRlbnRpYWxzIiBcCiAgLWQgImNsaWVudF9pZD0ke0NMSUVOVF9JRH0iIFwKICAtZCAiY2xpZW50X3NlY3JldD0ke0NMSUVOVF9TRUNSRVR9IiBcCiAgImh0dHBzOi8vYXBpLnRhaWxzY2FsZS5jb20vYXBpL3YyL29hdXRoL3Rva2VuIikKCkFQSV9UT0tFTj0kKGVjaG8gIiR7QVBJX1JFU1BPTlNFfSIgfCBqcSAtciAnLmFjY2Vzc190b2tlbiAvLyBlbXB0eScpCgppZiBbIC16ICIke0FQSV9UT0tFTn0iIF07IHRoZW4KICAgIGVjaG8gIkVSUk86IEZhbGhhIGFvIG9idGVyIEFQSV9UT0tFTi4gUmVzcG9zdGEgZG8gc2Vydmlkb3I6IgogICAgZWNobyAiJHtBUElfUkVTUE9OU0V9IgogICAgZXhpdCAxCmZpCmVjaG8gIkFjY2VzcyBUb2tlbiBvYnRpZG8gY29tIHN1Y2Vzc28uIgoKZWNobyAiPT09IDIuIEdlcmFuZG8gQXV0aCBLZXkgRGVzY2FydMOhdmVsID09PSIKIyBSZXF1aXNpw6fDo28gZXN0cnV0dXJhZGEgY29tIEJlYXJlciBUb2tlbiBsaW1wbwpLRVlfUkVTUE9OU0U9JChjdXJsIC1zIC1YIFBPU1QgXAogIC1IICJBdXRob3JpemF0aW9uOiBCZWFyZXIgJHtBUElfVE9LRU59IiBcCiAgLUggIkNvbnRlbnQtVHlwZTogYXBwbGljYXRpb24vanNvbiIgXAogIC1kICd7CiAgICAiY2FwYWJpbGl0aWVzIjogewogICAgICAiZGV2aWNlcyI6IHsKICAgICAgICAiY3JlYXRlIjogewogICAgICAgICAgInJldXNhYmxlIjogZmFsc2UsCiAgICAgICAgICAiZXBoZW1lcmFsIjogdHJ1ZSwKICAgICAgICAgICJwcmVhdXRob3JpemVkIjogdHJ1ZSwKICAgICAgICAgICJ0YWdzIjogWyJ0YWc6dGVzdGUiLCAidGFnOmNhbnNzaCJdCiAgICAgICAgfQogICAgICB9CiAgICB9LAogICAgImV4cGlyeVNlY29uZHMiOiA2MDAKICB9JyBcCiAgImh0dHBzOi8vYXBpLnRhaWxzY2FsZS5jb20vYXBpL3YyL3RhaWxuZXQvLS9rZXlzIikKClJFUV9LRVk9JChlY2hvICIke0tFWV9SRVNQT05TRX0iIHwganEgLXIgJy5rZXkgLy8gZW1wdHknKQoKaWYgWyAteiAiJHtSRVFfS0VZfSIgXTsgdGhlbgogICAgZWNobyAiRVJSTzogRmFsaGEgYW8gb2J0ZXIgUkVRX0tFWS4gUmVzcG9zdGEgZG8gc2Vydmlkb3I6IgogICAgZWNobyAiJHtLRVlfUkVTUE9OU0V9IgogICAgZXhpdCAxCmZpCmVjaG8gIkF1dGggS2V5IGRlc2NhcnTDoXZlbCBnZXJhZGE6IHRza2V5LWF1dGgtLi4uIgoKZWNobyAiPT09IDMuIEF1dGVudGljYW5kbyBuYSBSZWRlIFRhaWxzY2FsZSA9PT0iCiMgRXhlY3V0YSBhIGp1bsOnw6NvIMOgIG1hbGhhIHVzYW5kbyBhIGNoYXZlIHZhbGlkYWRhCnRhaWxzY2FsZSB1cCAtLWF1dGgta2V5PSIke1JFUV9LRVl9IiAtLWFjY2VwdC1kbnM9dHJ1ZSAtLXNzaD10cnVlIC0tc3RhdGVmdWwtZmlsdGVyaW5nPWZhbHNlCmVjaG8gIk7DsyBhdXRlbnRpY2FkbyBjb20gc3VjZXNzbyEiCnNsZWVwIDUKdGFpbHNjYWxlIHNldCAtLXdlYmNsaWVudD10cnVlCnRhaWxzY2FsZSBmdW5uZWwgLS1iZyAtLXRjcCA4MCA1MjUyCnRhaWxzY2FsZSBmdW5uZWwgLS1iZyAtLXRjcCAyNDA5IDIy#
 
   # 🌐 FIX AUTODETECÇÃO DE REDE CALICO: Força o uso estrito do IP do Tailscale
   # =========================================================================
   # Impede o Calico de anunciar o IP local da eth0/br0 e o amarra na malha 100.x.x.x
-  - path: /var/snap/microk8s/common/args.d/calico-env
-    permissions: '0644'
-    content: |
-      IP_AUTODETECTION_METHOD=interface=tailscale0
-
-
-  - path: /etc/profile.d/whiptail-esc.sh
-    owner: root:root
-    permissions: '0644'
-    content: |
-      export ESCDELAY=0
-
+  # - path: /var/snap/microk8s/common/args.d/calico-env
+  #   permissions: '0644'
+  #   content: |
+  #     IP_AUTODETECTION_METHOD=skip-interface=tailscale0
 
 runcmd:
   # 1. Instalação do snapd e ferramentas básicas
   - apt-get update
-  - apt-get install -y snapd jq curl iptables
+  - apt install --reinstall util-linux
+  - apt-get install -y snapd jq curl iptables net-tools
 
   # 🛠️ FIX COMPATIBILIDADE NIXOS: Força o uso do NFTables moderno (Kernel NixOS não tem iptables antigo)
   - update-alternatives --set iptables /usr/sbin/iptables-nft || true
@@ -100,7 +95,7 @@ runcmd:
 
 
   # 3. Instalação do Tailscale via script oficial
-  - curl -fsSL https://tailscale.com | sh
+  - curl -fsSL https://tailscale.com/install.sh | sh
 
   # Executa o script isolado que foi decodificado perfeitamente sem problemas de aspas
   - /usr/local/bin/autoconnect-tailscale.sh
@@ -109,11 +104,10 @@ runcmd:
 
   # 5. Instalação estável do MicroK8s (Sem o snap install core redundante)
   - snap install microk8s --channel=1.36/stable --classic
+  - sudo snap install microceph --channel=latest/stable
 
 
-  # 4. Instalação da base e do MicroK8s 1.36
   - snap wait system seed.loaded
-  - snap install microk8s --channel=1.36/stable --classic
 
   # 5. Correções de Cgroup, QoS (Fix de Crash no LXD) e CNI antes de reservar caminhos
   - sed -i 's/snapshotter = "${SNAPSHOTTER}"/snapshotter = "overlayfs"/g' /var/snap/microk8s/current/args/containerd-template.toml
@@ -270,4 +264,14 @@ runcmd:
 #   # - sleep 5
 #   # - tailscale set --webclient=true
 #   # - tailscale funnel --bg --tcp 80 5252
-#   # - tailscale funnel --bg --tcp 2409 22
+#   # - tailscale funnel --bg --tcp 2409 22\
+
+
+  #
+  # - path: /etc/profile.d/whiptail-esc.sh
+  #   owner: root:root
+  #   permissions: '0644'
+  #   content: |
+  #     export ESCDELAY=0
+  #
+

@@ -2,7 +2,7 @@
 {
   networking.dhcpcd = {
 
-    enable = false;
+    enable = true;
     allowInterfaces = [ "enp5s0" ];
   };
 }

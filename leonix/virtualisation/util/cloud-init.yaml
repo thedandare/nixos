@@ -60,7 +60,7 @@ write_files:
   - path: /var/snap/microk8s/common/args.d/calico-env
     permissions: '0644'
     content: |
-      IP_AUTODETECTION_METHOD=interface=tailscale0
+      IP_AUTODETECTION_METHOD=skip-interface=tailscale0
 
 runcmd:
   # 1. Instalação do snapd e ferramentas básicas

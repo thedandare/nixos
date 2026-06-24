@@ -1,1 +1,11 @@
-i
+{
+  "version": "0.0.1",
+  "services": {
+    "svc:web-server": {
+      "endpoints": {
+        "tcp:80": "https://localhost:3000"
+      }
+    }
+  }
+}
+

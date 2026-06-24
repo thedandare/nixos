@@ -105,6 +105,8 @@ in
     #     logDirectory = "/var/log/pihole";
     #     stateDirectory = "/var/lib/pihole"; # Path for pihole state files.
     settings = {
+            misc.readOnly = false;
+
       # Servidores DNS de Upstream (onde ele busca quando não está bloqueado)
       dns.upstreams = [
         "1.1.1.1" # Cloudflare

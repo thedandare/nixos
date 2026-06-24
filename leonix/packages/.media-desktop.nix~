@@ -1,11 +1,10 @@
-{ pkgs, ... }:
-{
+{ pkgs, ... }: {
   environment.systemPackages = with pkgs; [
     # 🔊 Audio
     asha-pipewire-sink # Pairing hearing aids using the ASHA protocol
     pavucontrol
     ncpamixer
-    #     pipewire
+#     pipewire
     qjackctl
     qpwgraph # Graph manager dedicated for PipeWire, using the Qt C++ framework, based and pretty much like the same of QjackCtl.
     easyeffects # https://github.com/wwmm/easyeffects

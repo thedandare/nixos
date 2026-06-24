@@ -4,6 +4,9 @@
   inputs = {
     #     nixpkgs.url = "github:NixOS/nixpkgs/nixos-26.05";
     nixpkgs.url = "github:nixos/nixpkgs?ref=nixos-unstable";
+    nixmate.url = "github:daskladas/nixmate";
+    labcoat.url = "github:jhillyerd/labcoat";
+
   };
 
   outputs =

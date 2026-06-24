@@ -14,25 +14,41 @@
     glrnvim # https://github.com/beeender/glrnvim
     leo-editor # https://leo-editor.github.io/leo-editor/
 
-    # TUIs /
-    msedit
-    notcurses
-    tuios # https://tuios.gaurav.
-    wiremix # TUI audio mixer for PipeWire.
-    tparted
-    fortune
-    newt
-    dmenu
-    fastfetch # tool for fetching system information, written mainly in C [https://github.com/fastfetch-cli/fastfetch]
-    zigfetch # Minimal neofetch/fastfetch like system information tool [https://github.com/utox39/zigfetch]
-    termshark # Terminal UI for tshark
+    #▐▀▀▀▀▀▀▀▀▀▀▀▌
+    #▐▄▄▄▄▄▄▄▄▄▄▄▌
 
-    # ⛽ Util
-    wget
-    jq
-    wiper
-    dysk
-    zenith
+    #▐▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▌
+    #▐ 🅃🅄🄸        ▐
+    msedit # ˫       ▐
+    notcurses # ˫    ▐
+    tuios # ˫        ▐ https://tuios.gaurav.
+    wiremix # ˫      ▐ TUI audio mixer for PipeWire.
+    fortune # ˫      ▐
+    newt # ˫         ▐
+    dialog # ˫       ▐
+    dmenu # ˫        ▐
+    fastfetch # ˫    ▐ tool for fetching system information, written mainly in C [https://github.com/fastfetch-cli/fastfetch]
+    zigfetch # ˫     ▐ Minimal neofetch/fastfetch like system information tool [https://github.com/utox39/zigfetch]
+    termshark # ˫    ▐ Terminal UI for tshark
+    gum # ˫          ▐ Tasty Bubble Gum for your shell
+    systemctl-tui # ˫▐ https://crates.io/crates/systemctl-tui
+    tray-tui # ˫     ▐
+ wiki-tui
+
+    #▐▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▌
+
+    #▐▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▌
+    #▐ ⛽ 🅄🅃🄸🄻  ▐
+    wget # ˫        ▐
+    jq # ˫          ▐
+    wiper # ˫       ▐
+    dysk # ˫        ▐
+    zenith # ˫      ▐
+    #▐▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▌
+
+    #  Util
+
+    # Compression
     unrar-free
 
     # ❎ X-Win
@@ -43,7 +59,7 @@
     wl-clipboard # Wayland copy/paste support
     vulkan-tools
     libxdmcp
-    gpu-viewer
     xclip # X clipboard for console application  Programs also provided:
   ];
 }
+#

@@ -1,7 +1,6 @@
 { pkgs, ... }:
 {
-  environment.systemPackages = [
-    pkgs.openssl
+  environment.systemPackages = with pkgs; [
+    openssl
   ];
-
 }

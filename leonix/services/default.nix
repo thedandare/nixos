@@ -2,6 +2,7 @@
 {
 
   imports = [
+    ./bluetooth.nix
     ./mailing.nix
     ./startup.nix
     ./tailscale.nix
@@ -22,16 +23,20 @@
         User = "leo";
       };
     };
-    setupScript = ''
-      echo -e '\033[1m' '\033[31m' Iniciando CorsairMouse  '\033[0m'
-       su leo - -c /run/current-system/sw/bin/ckb-next &
-    '';
-    stopScript = "      echo -e '\033[1m' '\033[31m' SDDM Finalizando'\033[0m'
-";
+    #     setupScript = ''
+    #       echo -e '\033[1m' '\033[31m' Iniciando CorsairMouse  '\033[0m'
+    #        su leo - -c /run/current-system/sw/bin/ckb-next &
+    #     '';
+    #     stopScript = "      echo -e '\033[1m' '\033[31m' SDDM Finalizando'\033[0m'
+    # ";
   };
 
   services.desktopManager.plasma6.enable = true;
-
+  # Certifique-se de habilitar o Hyprland no sistema:
+  programs.hyprland = {
+    enable = true;
+    xwayland.enable = true; # Permite rodar apps antigos de X11 dentro do Wayland
+  };
   services.displayManager.defaultSession = "hyprland";
   #   services.displayManager.defaultSession = "xmonad+xfce";
 

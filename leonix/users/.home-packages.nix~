@@ -49,7 +49,12 @@
     # 📻 Multimedia
     plex-desktop
     plexamp
-
+    # Ferramentas de linha de comando para manipular os arquivos baixados
+    abcm2ps # Converte o arquivo .abc em arquivos de imagem/PDF com a partitura gráfica real
+    abcmidi # Transforma o arquivo de texto bruto em um arquivo de áudio .mid executável
+    easyabc # [https://easyabc.sourceforge.net/]
+    # Reprodutor de áudio MIDI leve para escutar os resultados no terminal
+    timidity
     # KDE Customization
     kdePackages.karousel
 

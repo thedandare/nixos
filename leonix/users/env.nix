@@ -58,10 +58,10 @@ in
     '';
 
   };
-#   # Opcional: Garante que o diretório seja criado na inicialização se não existir
-#   systemd.tmpfiles.rules = [
-#     "d /run/user/0 0700 root root -"
-#   ];
+  #   # Opcional: Garante que o diretório seja criado na inicialização se não existir
+  #   systemd.tmpfiles.rules = [
+  #     "d /run/user/0 0700 root root -"
+  #   ];
   environment.sessionVariables = rec {
 
     S = "/etc/nixos/startup.nix";
@@ -74,7 +74,6 @@ in
     XDG_CONFIG_HOME = "$HOME/.config";
     XDG_DATA_HOME = "$HOME/.local/share";
     XDG_STATE_HOME = "$HOME/.local/state";
-    XDG_RUNTIME_DIR = "/run/user/0";
 
     # Not officially in the specification
     XDG_BIN_HOME = "$HOME/.local/bin";

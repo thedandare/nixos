@@ -25,20 +25,21 @@ write_files:
       net.bridge.bridge-nf-call-iptables = 0
       net.bridge.bridge-nf-call-ip6tables = 0
 
-  # =========================================================================
   # 🧬 INJEÇÃO IMUTÁVEL DE FLAGS DO KUBELET (Fix de QoS para Kernel 7/LXD)
   # =========================================================================
   # Essa pasta aceita aspas duplas normais do YAML e resiste ao 'microk8s join'
   - path: /var/snap/microk8s/common/args.d/kubelet
     permissions: '0644'
     content: |
-      --cgroups-per-qos=false
-      --protect-kernel-defaults=true
+      --protect-kernel-defaults=false
       --enforce-node-allocatable=""
       --cgroup-driver=systemd
-      --cni-conf-dir=/var/snap/microk8s/current/args/cni-network
 
-        # =========================================================================
+
+# --cni-conf-dir=/var/snap/microk8s/current/args/cni-network
+# --cgroups-per-qos=false
+
+
   # 🔌 INJEÇÃO IMUTÁVEL DE FLAGS DO PROXY (Fix de compatibilidade nftables)
   # =========================================================================
   - path: /var/snap/microk8s/common/args.d/kube-proxy
@@ -51,8 +52,7 @@ write_files:
   - path: /usr/local/bin/autoconnect-tailscale.sh
     permissions: '0755'
     encoding: b64
-    content: IyEvdXNyL2Jpbi9lbnYgYmFzaApzZXQgLWV1byBwaXBlZmFpbAoKIyBEZWZpbmnDp8OjbyBlc3RyaXRhIGRhcyBjcmVkZW5jaWFpcyBPQXV0aCBjb2xldGFkYXMKQ0xJRU5UX0lEPSJreGl4VGV6VmdCMjFDTlRSTCIKQ0xJRU5UX1NFQ1JFVD0idHNrZXktY2xpZW50LWt4aXhUZXpWZ0IyMUNOVFJMLWppTjREOG5VN3NiWUNnMXZjQ3RXcmIxbkEyRDRnUkNhIgoKZWNobyAiPT09IDEuIFNvbGljaXRhbmRvIEFjY2VzcyBUb2tlbiB2aWEgT0F1dGggPT09IgojIEFqdXN0YWRvIHBhcmEgdXNhciBvIENvbnRlbnQtVHlwZSBvZmljaWFsIGV4aWdpZG8gcG9yIHZhbGlkYWRvcmVzIGVzdHJpdG9zCkFQSV9SRVNQT05TRT0kKGN1cmwgLXMgLVggUE9TVCBcCiAgLUggIkNvbnRlbnQtVHlwZTogYXBwbGljYXRpb24veC13d3ctZm9ybS11cmxlbmNvZGVkIiBcCiAgLWQgImdyYW50X3R5cGU9Y2xpZW50X2NyZWRlbnRpYWxzIiBcCiAgLWQgImNsaWVudF9pZD0ke1RBSUxTQ0FMRV9DTElFTlRfSUR9IiBcCiAgLWQgImNsaWVudF9zZWNyZXQ9JHtUQUlMU0NBTEVfQ0xJRU5UX1NFQ1JFVH0iIFwKICAiaHR0cHM6Ly9hcGkudGFpbHNjYWxlLmNvbS9hcGkvdjIvb2F1dGgvdG9rZW4iKQoKQVBJX1RPS0VOPSQoZWNobyAiJHtBUElfUkVTUE9OU0V9IiB8IGpxIC1yICcuYWNjZXNzX3Rva2VuIC8vIGVtcHR5JykKCmlmIFsgLXogIiR7QVBJX1RPS0VOfSIgXTsgdGhlbgogICAgZWNobyAiRVJSTzogRmFsaGEgYW8gb2J0ZXIgQVBJX1RPS0VOLiBSZXNwb3N0YSBkbyBzZXJ2aWRvcjoiCiAgICBlY2hvICIke0FQSV9SRVNQT05TRX0iCiAgICBleGl0IDEKZmkKZWNobyAiQWNjZXNzIFRva2VuIG9idGlkbyBjb20gc3VjZXNzby4iCgplY2hvICI9PT0gMi4gR2VyYW5kbyBBdXRoIEtleSBEZXNjYXJ0w6F2ZWwgPT09IgojIFJlcXVpc2nDp8OjbyBlc3RydXR1cmFkYSBjb20gQmVhcmVyIFRva2VuIGxpbXBvCktFWV9SRVNQT05TRT0kKGN1cmwgLXMgLVggUE9TVCBcCiAgLUggIkF1dGhvcml6YXRpb246IEJlYXJlciAke0FQSV9UT0tFTn0iIFwKICAtSCAiQ29udGVudC1UeXBlOiBhcHBsaWNhdGlvbi9qc29uIiBcCiAgLWQgJ3sKICAgICJjYXBhYmlsaXRpZXMiOiB7CiAgICAgICJkZXZpY2VzIjogewogICAgICAgICJjcmVhdGUiOiB7CiAgICAgICAgICAicmV1c2FibGUiOiBmYWxzZSwKICAgICAgICAgICJlcGhlbWVyYWwiOiB0cnVlLAogICAgICAgICAgInByZWF1dGhvcml6ZWQiOiB0cnVlLAogICAgICAgICAgInRhZ3MiOiBbInRhZzp0ZXN0ZSIsICJ0YWc6Y2Fuc3NoIl0KICAgICAgICB9CiAgICAgIH0KICAgIH0sCiAgICAiZXhwaXJ5U2Vjb25kcyI6IDYwMAogIH0nIFwKICAiaHR0cHM6Ly9hcGkudGFpbHNjYWxlLmNvbS9hcGkvdjIvdGFpbG5ldC8tL2tleXMiKQoKUkVRX0tFWT0kKGVjaG8gIiR7S0VZX1JFU1BPTlNFfSIgfCBqcSAtciAnLmtleSAvLyBlbXB0eScpCgppZiBbIC16ICIke1JFUV9LRVl9IiBdOyB0aGVuCiAgICBlY2hvICJFUlJPOiBGYWxoYSBhbyBvYnRlciBSRVFfS0VZLiBSZXNwb3N0YSBkbyBzZXJ2aWRvcjoiCiAgICBlY2hvICIke0tFWV9SRVNQT05TRX0iCiAgICBleGl0IDEKZmkKZWNobyAiQXV0aCBLZXkgZGVzY2FydMOhdmVsIGdlcmFkYTogdHNrZXktYXV0aC0uLi4iCgplY2hvICI9PT0gMy4gQXV0ZW50aWNhbmRvIG5hIFJlZGUgVGFpbHNjYWxlID09PSIKIyBFeGVjdXRhIGEganVuw6fDo28gw6AgbWFsaGEgdXNhbmRvIGEgY2hhdmUgdmFsaWRhZGEKdGFpbHNjYWxlIHVwIC0tYXV0aC1rZXk9IiR7UkVRX0tFWX0iIC0tYWNjZXB0LWRucz10cnVlIC0tc3NoPXRydWUgLS1zdGF0ZWZ1bC1maWx0ZXJpbmc9ZmFsc2UKZWNobyAiTsOzIGF1dGVudGljYWRvIGNvbSBzdWNlc3NvISIKc2xlZXAgNQp0YWlsc2NhbGUgc2V0IC0td2ViY2xpZW50PXRydWUKdGFpbHNjYWxlIGZ1bm5lbCAtLWJnIC0tdGNwIDgwIDUyNTIKdGFpbHNjYWxlIGZ1bm5lbCAtLWJnIC0tdGNwIDI0MDkgMjI=
-    # IyEvdXNyL2Jpbi9lbnYgYmFzaApzZXQgLWV1byBwaXBlZmFpbAoKIyBEZWZpbmnDp8OjbyBlc3RyaXRhIGRhcyBjcmVkZW5jaWFpcyBPQXV0aCBjb2xldGFkYXMKQ0xJRU5UX0lEPSJreGl4VGV6VmdCMjFDTlRSTCIKQ0xJRU5UX1NFQ1JFVD0idHNrZXktY2xpZW50LWt4aXhUZXpWZ0IyMUNOVFJMLWppTjREOG5VN3NiWUNnMXZjQ3RXcmIxbkEyRDRnUkNhIgoKZWNobyAiPT09IDEuIFNvbGljaXRhbmRvIEFjY2VzcyBUb2tlbiB2aWEgT0F1dGggPT09IgojIEFqdXN0YWRvIHBhcmEgdXNhciBvIENvbnRlbnQtVHlwZSBvZmljaWFsIGV4aWdpZG8gcG9yIHZhbGlkYWRvcmVzIGVzdHJpdG9zCkFQSV9SRVNQT05TRT0kKGN1cmwgLXMgLVggUE9TVCBcCiAgLUggIkNvbnRlbnQtVHlwZTogYXBwbGljYXRpb24veC13d3ctZm9ybS11cmxlbmNvZGVkIiBcCiAgLWQgImdyYW50X3R5cGU9Y2xpZW50X2NyZWRlbnRpYWxzIiBcCiAgLWQgImNsaWVudF9pZD0ke0NMSUVOVF9JRH0iIFwKICAtZCAiY2xpZW50X3NlY3JldD0ke0NMSUVOVF9TRUNSRVR9IiBcCiAgImh0dHBzOi8vYXBpLnRhaWxzY2FsZS5jb20vYXBpL3YyL29hdXRoL3Rva2VuIikKCkFQSV9UT0tFTj0kKGVjaG8gIiR7QVBJX1JFU1BPTlNFfSIgfCBqcSAtciAnLmFjY2Vzc190b2tlbiAvLyBlbXB0eScpCgppZiBbIC16ICIke0FQSV9UT0tFTn0iIF07IHRoZW4KICAgIGVjaG8gIkVSUk86IEZhbGhhIGFvIG9idGVyIEFQSV9UT0tFTi4gUmVzcG9zdGEgZG8gc2Vydmlkb3I6IgogICAgZWNobyAiJHtBUElfUkVTUE9OU0V9IgogICAgZXhpdCAxCmZpCmVjaG8gIkFjY2VzcyBUb2tlbiBvYnRpZG8gY29tIHN1Y2Vzc28uIgoKZWNobyAiPT09IDIuIEdlcmFuZG8gQXV0aCBLZXkgRGVzY2FydMOhdmVsID09PSIKIyBSZXF1aXNpw6fDo28gZXN0cnV0dXJhZGEgY29tIEJlYXJlciBUb2tlbiBsaW1wbwpLRVlfUkVTUE9OU0U9JChjdXJsIC1zIC1YIFBPU1QgXAogIC1IICJBdXRob3JpemF0aW9uOiBCZWFyZXIgJHtBUElfVE9LRU59IiBcCiAgLUggIkNvbnRlbnQtVHlwZTogYXBwbGljYXRpb24vanNvbiIgXAogIC1kICd7CiAgICAiY2FwYWJpbGl0aWVzIjogewogICAgICAiZGV2aWNlcyI6IHsKICAgICAgICAiY3JlYXRlIjogewogICAgICAgICAgInJldXNhYmxlIjogZmFsc2UsCiAgICAgICAgICAiZXBoZW1lcmFsIjogdHJ1ZSwKICAgICAgICAgICJwcmVhdXRob3JpemVkIjogdHJ1ZSwKICAgICAgICAgICJ0YWdzIjogWyJ0YWc6dGVzdGUiLCAidGFnOmNhbnNzaCJdCiAgICAgICAgfQogICAgICB9CiAgICB9LAogICAgImV4cGlyeVNlY29uZHMiOiA2MDAKICB9JyBcCiAgImh0dHBzOi8vYXBpLnRhaWxzY2FsZS5jb20vYXBpL3YyL3RhaWxuZXQvLS9rZXlzIikKClJFUV9LRVk9JChlY2hvICIke0tFWV9SRVNQT05TRX0iIHwganEgLXIgJy5rZXkgLy8gZW1wdHknKQoKaWYgWyAteiAiJHtSRVFfS0VZfSIgXTsgdGhlbgogICAgZWNobyAiRVJSTzogRmFsaGEgYW8gb2J0ZXIgUkVRX0tFWS4gUmVzcG9zdGEgZG8gc2Vydmlkb3I6IgogICAgZWNobyAiJHtLRVlfUkVTUE9OU0V9IgogICAgZXhpdCAxCmZpCmVjaG8gIkF1dGggS2V5IGRlc2NhcnTDoXZlbCBnZXJhZGE6IHRza2V5LWF1dGgtLi4uIgoKZWNobyAiPT09IDMuIEF1dGVudGljYW5kbyBuYSBSZWRlIFRhaWxzY2FsZSA9PT0iCiMgRXhlY3V0YSBhIGp1bsOnw6NvIMOgIG1hbGhhIHVzYW5kbyBhIGNoYXZlIHZhbGlkYWRhCnRhaWxzY2FsZSB1cCAtLWF1dGgta2V5PSIke1JFUV9LRVl9IiAtLWFjY2VwdC1kbnM9dHJ1ZSAtLXNzaD10cnVlIC0tc3RhdGVmdWwtZmlsdGVyaW5nPWZhbHNlCmVjaG8gIk7DsyBhdXRlbnRpY2FkbyBjb20gc3VjZXNzbyEiCnNsZWVwIDUKdGFpbHNjYWxlIHNldCAtLXdlYmNsaWVudD10cnVlCnRhaWxzY2FsZSBmdW5uZWwgLS1iZyAtLXRjcCA4MCA1MjUyCnRhaWxzY2FsZSBmdW5uZWwgLS1iZyAtLXRjcCAyNDA5IDIy#
+    content: IyEvdXNyL2Jpbi9lbnYgYmFzaApzZXQgLWV1byBwaXBlZmFpbAoKZWNobyAiPT09IDEuIFNvbGljaXRhbmRvIEFjY2VzcyBUb2tlbiB2aWEgT0F1dGggPT09IgojIEFqdXN0YWRvIHBhcmEgdXNhciBvIENvbnRlbnQtVHlwZSBvZmljaWFsIGV4aWdpZG8gcG9yIHZhbGlkYWRvcmVzIGVzdHJpdG9zCkFQSV9SRVNQT05TRT0kKGN1cmwgLXMgLVggUE9TVCBcCiAgLUggIkNvbnRlbnQtVHlwZTogYXBwbGljYXRpb24veC13d3ctZm9ybS11cmxlbmNvZGVkIiBcCiAgLWQgImdyYW50X3R5cGU9Y2xpZW50X2NyZWRlbnRpYWxzIiBcCiAgLWQgImNsaWVudF9pZD0ke1RBSUxTQ0FMRV9DTElFTlRfSUR9IiBcCiAgLWQgImNsaWVudF9zZWNyZXQ9JHtUQUlMU0NBTEVfQ0xJRU5UX1NFQ1JFVH0iIFwKICAiaHR0cHM6Ly9hcGkudGFpbHNjYWxlLmNvbS9hcGkvdjIvb2F1dGgvdG9rZW4iKQoKQVBJX1RPS0VOPSQoZWNobyAiJHtBUElfUkVTUE9OU0V9IiB8IGpxIC1yICcuYWNjZXNzX3Rva2VuIC8vIGVtcHR5JykKCmlmIFsgLXogIiR7QVBJX1RPS0VOfSIgXTsgdGhlbgogICAgZWNobyAiRVJSTzogRmFsaGEgYW8gb2J0ZXIgQVBJX1RPS0VOLiBSZXNwb3N0YSBkbyBzZXJ2aWRvcjoiCiAgICBlY2hvICIke0FQSV9SRVNQT05TRX0iCiAgICBleGl0IDEKZmkKZWNobyAiQWNjZXNzIFRva2VuIG9idGlkbyBjb20gc3VjZXNzby4iCgplY2hvICI9PT0gMi4gR2VyYW5kbyBBdXRoIEtleSBEZXNjYXJ0w6F2ZWwgPT09IgojIFJlcXVpc2nDp8OjbyBlc3RydXR1cmFkYSBjb20gQmVhcmVyIFRva2VuIGxpbXBvCktFWV9SRVNQT05TRT0kKGN1cmwgLXMgLVggUE9TVCBcCiAgLUggIkF1dGhvcml6YXRpb246IEJlYXJlciAke0FQSV9UT0tFTn0iIFwKICAtSCAiQ29udGVudC1UeXBlOiBhcHBsaWNhdGlvbi9qc29uIiBcCiAgLWQgJ3sKICAgICJjYXBhYmlsaXRpZXMiOiB7CiAgICAgICJkZXZpY2VzIjogewogICAgICAgICJjcmVhdGUiOiB7CiAgICAgICAgICAicmV1c2FibGUiOiBmYWxzZSwKICAgICAgICAgICJlcGhlbWVyYWwiOiB0cnVlLAogICAgICAgICAgInByZWF1dGhvcml6ZWQiOiB0cnVlLAogICAgICAgICAgInRhZ3MiOiBbInRhZzp0ZXN0ZSIsICJ0YWc6Y2Fuc3NoIl0KICAgICAgICB9CiAgICAgIH0KICAgIH0sCiAgICAiZXhwaXJ5U2Vjb25kcyI6IDYwMAogIH0nIFwKICAiaHR0cHM6Ly9hcGkudGFpbHNjYWxlLmNvbS9hcGkvdjIvdGFpbG5ldC8tL2tleXMiKQoKUkVRX0tFWT0kKGVjaG8gIiR7S0VZX1JFU1BPTlNFfSIgfCBqcSAtciAnLmtleSAvLyBlbXB0eScpCgppZiBbIC16ICIke1JFUV9LRVl9IiBdOyB0aGVuCiAgICBlY2hvICJFUlJPOiBGYWxoYSBhbyBvYnRlciBSRVFfS0VZLiBSZXNwb3N0YSBkbyBzZXJ2aWRvcjoiCiAgICBlY2hvICIke0tFWV9SRVNQT05TRX0iCiAgICBleGl0IDEKZmkKZWNobyAiQXV0aCBLZXkgZGVzY2FydMOhdmVsIGdlcmFkYTogdHNrZXktYXV0aC0uLi4iCgplY2hvICI9PT0gMy4gQXV0ZW50aWNhbmRvIG5hIFJlZGUgVGFpbHNjYWxlID09PSIKIyBFeGVjdXRhIGEganVuw6fDo28gw6AgbWFsaGEgdXNhbmRvIGEgY2hhdmUgdmFsaWRhZGEKdGFpbHNjYWxlIHVwIC0tYXV0aC1rZXk9IiR7UkVRX0tFWX0iIC0tYWNjZXB0LWRucz10cnVlIC0tc3NoPXRydWUgLS1zdGF0ZWZ1bC1maWx0ZXJpbmc9ZmFsc2UKZWNobyAiTsOzIGF1dGVudGljYWRvIGNvbSBzdWNlc3NvISIKCiMg8J+MkCBWRVJJRklDQcOHw4NPIENPTkRJQ0lPTkFMIERBIElOVEVSRkFDRSAoQWJyZSBjb25zb2xlIGFwZW5hcyBlbSBmYWxoYSkKIyA9PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09CiMgU2UgYSBpbnRlcmZhY2UgasOhIGV4aXN0ZSwgcGFzc2EgZGlyZXRvIHNlbSB0b2NhciBubyBjb25zb2xlCmlmICEgaXAgbGluayBzaG93ICJ0YWlsc2NhbGUwIiA+L2Rldi9udWxsIDI+JjE7IHRoZW4KCiAgICAjIFJlZGlyZWNpb25hIEkvTyBhcGVuYXMgc2UgYSBpbnRlcmZhY2UgZmFsaG91IChFdml0YSBibG9xdWVpb3MgcHJlY29jZXMpCiAgICBleGVjIDwgL2Rldi9jb25zb2xlID4gL2Rldi9jb25zb2xlIDI+JjEKCiAgICBlY2hvICIiCiAgICBlY2hvICI9PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09IgogICAgZWNobyAiIPCfmqggSU5URVJGQUNFIFRBSUxTQ0FMRTAgQVVTRU5URSAtIEJMT1FVRUlPIERFIFNFR1VSQU7Dh0EgIgogICAgZWNobyAiPT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PSIKICAgIGVjaG8gIkEgcGxhY2EgZGEgVlBOIG5hbyBmb2kgY3JpYWRhLiBFc2NvbGhhIHVtYSBhY2FvIHBhcmEgY29udGludWFyOiIKICAgIGVjaG8gIiIKCiAgICB3aGlsZSB0cnVlOyBkbwogICAgZWNobyAiMSkgVGVudGFyIG5vdmFtZW50ZSAoRm9yw6dhciBjaGVjYWdlbSBhdHVhbGl6YWRhKSIKICAgIGVjaG8gIjIpIElnbm9yYXIgKEZvcsOnYXIgaW5zdGFsYWNhbyBkbyBNaWNyb0s4cyBtZXNtbyBzZW0gVlBOKSIKICAgIGVjaG8gIjMpIEFib3J0YXIgKEVuY2VycmFyIG8gc2NyaXB0IGltZWRpYXRhbWVudGUpIgogICAgZWNobyAiIgogICAgcmVhZCAtcCAiU2VsZWNpb25lIGEgb3BjYW8gWzEtM106ICIgT1BDQU8KCiAgICBjYXNlICRPUENBTyBpbgogICAgICAgIDEpCiAgICAgICAgaWYgaXAgbGluayBzaG93ICJ0YWlsc2NhbGUwIiA+L2Rldi9udWxsIDI+JjE7IHRoZW4KICAgICAgICAgICAgZWNobyAiU3VjZXNzbzogSW50ZXJmYWNlIGRldGVjdGFkYSEiCiAgICAgICAgICAgIGJyZWFrCiAgICAgICAgZWxzZQogICAgICAgICAgICBlY2hvICJFcnJvOiBJbnRlcmZhY2UgY29udGludWEgYXVzZW50ZS4iCiAgICAgICAgZmkKICAgICAgICA7OwogICAgICAgIDIpCiAgICAgICAgZWNobyAiQXZpc286IFByb3NzZWd1aW5kbyBzZW0gYSBpbnRlcmZhY2UgYXRpdmEuIgogICAgICAgIGJyZWFrCiAgICAgICAgOzsKICAgICAgICAzKQogICAgICAgIGVjaG8gIkVycm8gRmF0YWw6IEJvb3QgYWJvcnRhZG8gcGVsbyBvcGVyYWRvci4iCiAgICAgICAgZXhpdCAxCiAgICAgICAgOzsKICAgICAgICAqKQogICAgICAgIGVjaG8gIk9wY2FvIGludsOhbGlkYS4iCiAgICAgICAgOzsKICAgIGVzYWMKICAgIGRvbmUKZWxzZQoKICAgICMgVE9PRCBFU1RBTU9TIEFRVUkKICAgICMgc291cmNlIC4vdGFpbHNjYWxlX2Nob29zZV9pcC5zaAogZWNobyAiPT09IDQuIEV4dHJhaW5kbyBlIEZpeGFuZG8gbyBJUCBkYSBJbnRlcmZhY2UgVGFpbHNjYWxlID09PSIKICAgICMgU8Oqbmlvci9OaXhPUyBUaXA6IE8gY29tYW5kbyBpcC9qcSBnYXJhbnRlIGEgY2FwdHVyYSBhdMO0bWljYSBkbyBJUHY0IGxpbXBvIG5hIFRUWQogICAgVEFJTFNDQUxFX0lQPSQoaXAgLTQgYWRkciBzaG93IGRldiB0YWlsc2NhbGUwIHwgYXdrICcvaW5ldCAvIHtwcmludCAkMn0nIHwgY3V0IC1kLyAtZjEpCgogICAgaWYgWyAteiAiJHtUQUlMU0NBTEVfSVB9IiBdOyB0aGVuCiAgICAgICAgZWNobyAiRVJSTyBDUklUSUNPOiBOYW8gZm9pIHBvc3NpdmVsIGV4dHJhaXIgbyBJUCBkYSBpbnRlcmZhY2UgdGFpbHNjYWxlMC4iCiAgICAgICAgZXhpdCAxCiAgICBmaQogICAgZWNobyAiSVAgZXh0cmFpZG8gY29tIHN1Y2Vzc286ICR7VEFJTFNDQUxFX0lQfSIKCiAgICAjIEluamXDp8OjbyBkaW7Dom1pY2EgbmFzIHZhcmnDoXZlaXMgZ2xvYmFpcyBkZSBhbWJpZW50ZSBkbyBNaWNyb0s4cwogICAgIyBJbXBlZGUgcXVlIG8gcGxhbm8gZGUgY29udHJvbGUgKENvbnRyb2wgUGxhbmUpIHRlbnRlIGVzY3V0YXIgYSBldGgwCiAgICBleHBvcnQgTUlDUk9LOFNfSVA9IiR7VEFJTFNDQUxFX0lQfSIKCiAgICAjIEV4ZWN1dGEgbyBzZWxldG9yIGRlIElQIGVtIGNvbmZvcm1pZGFkZSBjb20gbyBhbWJpZW50ZSBhdHVhbCAoVWJ1bnR1L05peE9TKQogICAgaWYgWyAtZiAiLi90YWlsc2NhbGVfY2hvb3NlX2lwLnNoIiBdOyB0aGVuCiAgICAgICAgc291cmNlICIuL3RhaWxzY2FsZV9jaG9vc2VfaXAuc2giCiAgICBlbHNlCiAgICAgICAgZWNobyAiQXZpc286IFNjcmlwdCB0YWlsc2NhbGVfY2hvb3NlX2lwLnNoIG5hbyBsb2NhbGl6YWRvLiBQcm9zc2VndWluZG8uLi4iCiAgICBmaQoKZmkKCnNsZWVwIDUKdGFpbHNjYWxlIHNldCAtLXdlYmNsaWVudD10cnVlCnRhaWxzY2FsZSBmdW5uZWwgLS1iZyAtLXRjcCA4MCA1MjUyCnRhaWxzY2FsZSBmdW5uZWwgLS1iZyAtLXRjcCAyNDA5IDIy
 
   # 🌐 FIX AUTODETECÇÃO DE REDE CALICO: Força o uso estrito do IP do Tailscale
   # =========================================================================
@@ -60,7 +60,7 @@ write_files:
   - path: /var/snap/microk8s/common/args.d/calico-env
     permissions: '0644'
     content: |
-      IP_AUTODETECTION_METHOD=interface=tailscale0
+      IP_AUTODETECTION_METHOD=skip-interface=tailscale0
 
 runcmd:
   # 1. Instalação do snapd e ferramentas básicas
@@ -92,66 +92,19 @@ runcmd:
 
 
   # 3. Instalação do Tailscale via script oficial
-  - curl -fsSL https://tailscale.com | sh
+  - curl -fsSL https://tailscale.com/install.sh | sh
 
   # Executa o script isolado que foi decodificado perfeitamente sem problemas de aspas
   - /usr/local/bin/autoconnect-tailscale.sh
 
-    # =========================================================================
-  # 🌐 VERIFICAÇÃO CONDICIONAL DA INTERFACE (Abre console apenas em falha)
-  # =========================================================================
-  - |
-    # Se a interface já existe, passa direto sem tocar no console
-    if ! ip link show "tailscale0" >/dev/null 2>&1; then
 
-      # Redireciona I/O apenas se a interface falhou (Evita bloqueios precoces)
-      exec < /dev/console > /dev/console 2>&1
-
-      echo ""
-      echo "======================================================================"
-      echo " 🚨 INTERFACE TAILSCALE0 AUSENTE - BLOQUEIO DE SEGURANÇA "
-      echo "======================================================================"
-      echo "A placa da VPN nao foi criada. Escolha uma acao para continuar:"
-      echo ""
-
-      while true; do
-        echo "1) Tentar novamente (Forçar checagem atualizada)"
-        echo "2) Ignorar (Forçar instalacao do MicroK8s mesmo sem VPN)"
-        echo "3) Abortar (Encerrar o script imediatamente)"
-        echo ""
-        read -p "Selecione a opcao [1-3]: " OPCAO
-
-        case $OPCAO in
-          1)
-            if ip link show "tailscale0" >/dev/null 2>&1; then
-              echo "Sucesso: Interface detectada!"
-              break
-            else
-              echo "Erro: Interface continua ausente."
-            fi
-            ;;
-          2)
-            echo "Aviso: Prosseguindo sem a interface ativa."
-            break
-            ;;
-          3)
-            echo "Erro Fatal: Boot abortado pelo operador."
-            exit 1
-            ;;
-          *)
-            echo "Opcao inválida."
-            ;;
-        esac
-      done
-    fi
 
   # 5. Instalação estável do MicroK8s (Sem o snap install core redundante)
   - snap install microk8s --channel=1.36/stable --classic
+  - sudo snap install microceph --channel=latest/stable
 
 
-  # 4. Instalação da base e do MicroK8s 1.36
   - snap wait system seed.loaded
-  - snap install microk8s --channel=1.36/stable --classic
 
   # 5. Correções de Cgroup, QoS (Fix de Crash no LXD) e CNI antes de reservar caminhos
   - sed -i 's/snapshotter = "${SNAPSHOTTER}"/snapshotter = "overlayfs"/g' /var/snap/microk8s/current/args/containerd-template.toml
@@ -178,9 +131,9 @@ runcmd:
   - chmod -R 777 /var/snap/microk8s/current/var/kubernetes/backend/
 
   # 6. Atualiza rede do Host e segura atualizações automáticas do snap
-  - sysctl --system
-  - ln -sf /run/systemd/resolve/resolv.conf /etc/resolv.conf || true
-  - snap set system refresh.hold=forever
+  # - sysctl --system
+  # - ln -sf /run/systemd/resolve/resolv.conf /etc/resolv.conf || true
+  # - snap set system refresh.hold=forever
 
   # 7. Aplica os parâmetros reiniciando os daemons do MicroK8s
   - snap restart microk8s.daemon-containerd
@@ -308,4 +261,14 @@ runcmd:
 #   # - sleep 5
 #   # - tailscale set --webclient=true
 #   # - tailscale funnel --bg --tcp 80 5252
-#   # - tailscale funnel --bg --tcp 2409 22
+#   # - tailscale funnel --bg --tcp 2409 22\
+
+
+  #
+  # - path: /etc/profile.d/whiptail-esc.sh
+  #   owner: root:root
+  #   permissions: '0644'
+  #   content: |
+  #     export ESCDELAY=0
+  #
+
