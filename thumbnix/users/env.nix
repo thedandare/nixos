@@ -1,20 +1,5 @@
 { ... }:
 let
-  tmuxSessionHandler = ../scripts/handle_tmux_client_and_session.sh;
-  scriptForNixosBuildName = ../scripts/popup_for_nixos_build_name.sh;
-
-  # Gerenciamento rápido das VMs
-  makeRestartVmScript =
-    serviceName:
-    ''sudo journalctl -u ${serviceName} -f -n 0 > /dev/tty 2>&1 & sleep 1 && echo -e "\n\e[1;31m[=== PARANDO O SERVIÇO: ${serviceName} ===]\e[0m" && sudo systemctl stop ${serviceName} && echo -e "\n\e[1;32m[=== INICIANDO O SERVIÇO: ${serviceName} ===]\e[0m" && sudo systemctl start ${serviceName} && echo -e "\n\e[1;34m[=== PRONTO! MONITORANDO LOGS AO VIVO (Ctrl+C para sair) ===]\e[0m"'';
-
-  makeOpenVmScript = serviceName: ''
-    journalctl -u ${serviceName} -f -n 0 > /dev/tty 2>&1 & sleep 1 \
-    && echo -e "\n\e[1;31m[=== Iniciando o Spicy: ${serviceName} ===]\e[0m" \
-    && remote-viewer spice+unix:///home/leo/emulators/socks/${serviceName}-spice.sock \
-    && echo -e "\n\e[1;32m[=== AGUARDANDO O SERVIÇO: ${serviceName} ===]\e[0m" \
-    && echo -e "\n\e[1;34m[===  Ctrl+C para sair ===]\e[0m"
-  '';
 in
 {
   environment.variables.EDITOR = "nvim";
@@ -45,23 +30,8 @@ in
     Cdn = "cd /etc/nixos";
     Ntrst = "systemctl restart network-online.target accounts-daemon.service NetworkManager";
 
-    UbntRst = makeRestartVmScript "ubuntu-vm.service"; # 🚨 Este nome tem que bater com o configurado em startup.nix!
-    WinRst = makeRestartVmScript "windows-server.service"; # 🚨 Este nome tem que bater com o configurado em startup.nix!
-    SockUbnt = makeOpenVmScript "ubuntu-vm"; # 🚨 Este nome tem que bater com o configurado em qemu-vms.nix!
-    SockWin = makeOpenVmScript "windows-server"; # 🚨 Este nome tem que bater com o configurado em qemu-vms.nix!
-    #
-
-    Swl = ''
-      ${tmuxSessionHandler}
-      sleep 2
-      ${scriptForNixosBuildName}
-    '';
 
   };
-#   # Opcional: Garante que o diretório seja criado na inicialização se não existir
-#   systemd.tmpfiles.rules = [
-#     "d /run/user/0 0700 root root -"
-#   ];
   environment.sessionVariables = rec {
 
     S = "/etc/nixos/startup.nix";

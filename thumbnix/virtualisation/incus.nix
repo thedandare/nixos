@@ -94,9 +94,9 @@ in
 
   # Lembrar de adicionar seu usuário aos grupos "incus-admin" e "incus" em users.nix
 
-  # Cria um serviço Systemd para gerenciar a existência do container leonk8s
-  systemd.services.init-incus-leonk8s = {
-    description = "Garante a existencia e execucao do container MicroK8s leonk8s";
+  # Cria um serviço Systemd para gerenciar a existência do container thmbk8s
+  systemd.services.init-incus-thmbk8s = {
+    description = "Garante a existencia e execucao do container MicroK8s thmbk8s";
 
     # Garante que o serviço só rode DEPOIS que o Incus e a rede estiverem prontos
     after = [
@@ -116,17 +116,17 @@ in
     };
 
     script = ''
-      # Verifica se o container leonk8s já existe no ecossistema do Incus
-      if ! ${pkgs.incus}/bin/incus info leonk8s >/dev/null 2>&1; then
-        echo "Container leonk8s nao encontrado. Criando de forma declarativa..."
+      # Verifica se o container thmbk8s já existe no ecossistema do Incus
+      if ! ${pkgs.incus}/bin/incus info thmbk8s >/dev/null 2>&1; then
+        echo "Container thmbk8s nao encontrado. Criando de forma declarativa..."
 
         # Lança o container usando os perfis declarados no preseed
-        ${pkgs.incus}/bin/incus launch images:ubuntu/26.04/cloud leonk8s -p default -p microk8s
+        ${pkgs.incus}/bin/incus launch images:ubuntu/26.04/cloud thmbk8s -p default -p microk8s
         else
-        echo "Container leonk8s ja existe. Garantindo que ele esteja rodando..."
+        echo "Container thmbk8s ja existe. Garantindo que ele esteja rodando..."
 
         # Se ele já existir mas estiver parado, inicia o container
-        ${pkgs.incus}/bin/incus start leonk8s || true
+        ${pkgs.incus}/bin/incus start thmbk8s || true
       fi
     '';
   };

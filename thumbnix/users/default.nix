@@ -16,7 +16,7 @@ in
 
   imports = [
     ./env.nix
-    ./home-manager.nix
+#    ./home-manager.nix
   ];
 
   users.defaultUserShell = pkgs.zsh;
