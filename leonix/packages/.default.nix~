@@ -1,12 +1,19 @@
-{ ... }:
+{ pkgs, ... }:
 {
   imports = [
-    ./base.nix
+    ./databases.nix
     ./development.nix
     ./media-desktop.nix
     ./networking.nix
-#     ./pentesting.nix
+    #     ./pentesting.nix
     ./sys-hardware.nix
+    ./security.nix
     ./terminal-utils.nix
+  ];
+  environment.systemPackages = with pkgs; [
+    # ⚓ NixOS configuration
+    nixos-grub2-theme
+    nixfmt
+    nixos-artwork.wallpapers.binary-red
   ];
 }

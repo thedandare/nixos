@@ -1,0 +1,10 @@
+{
+  "version": "0.0.1",
+  "services": {
+    "svc:web-server": {
+      "endpoints": {
+        "tcp:443": "https://localhost:443"
+      }
+    }
+  }
+}

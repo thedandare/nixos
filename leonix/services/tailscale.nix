@@ -1,14 +1,14 @@
 { ... }:
 {
-
+  # https://wiki.nixos.org/wiki/Tailscale
   services.tailscale = {
     enable = true;
     openFirewall = true;
-    authKeyFile = "../secret/tailscale_key";
+    authKeyFile = "/etc/nixos/secret/tailscale_key";
     serve = {
       enable = true;
 
-      configFile = "/opt/secrets/tailscale-serve.json";
+      configFile = ./tailscale-serve.json;
 
     };
   };

@@ -1,10 +1,14 @@
-{ pkgs, ... }:
+{ ... }:
 {
 
   imports = [
+    ./mailing.nix
     ./startup.nix
     ./tailscale.nix
   ];
+
+  services.outline.enable = false;
+  services.outline.secretKeyFile = "/etc/nixos/secret/outline_key";
 
   # 📺 Display
   services.displayManager.sddm = {
