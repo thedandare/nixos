@@ -35,6 +35,7 @@ JSON_PAYLOAD=$(cat <<EOF
 EOF
 )
 
+echo $JSON_PAYLOAD
 # Faz a requisição HTTP usando curl e extrai o texto gerado de forma compatível
 API_RESPONSE=$(curl -s https://api.openai.com/v1/responses \
   -H "Content-Type: application/json" \
