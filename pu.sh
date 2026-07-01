@@ -23,8 +23,12 @@ fi
 
 # 4. Captura as alterações atuais e prepara o prompt para a LLM
 echo "🤖 Solicitando mensagem de commit para a IA..."
-GIT_CHANGES=$(git diff --cached | head -c 4000) # Limita a 4000 caracteres para não estourar o limite da API
-
+# GIT_CHANGES=$(git diff --cached | head -c 4000) # Limita a 4000 caracteres para não estourar o limite da API
+GIT_CHANGES=$(git diff --cached | head -c 4000 | awk '{
+    gsub(/\\/, "\\\\");
+    gsub(/"/, "\\\"");
+    printf "%s\\n", $0
+}')
 # Monta o JSON para enviar à API da OpenAI
 JSON_PAYLOAD=$(cat <<EOF
 {
