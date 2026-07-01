@@ -37,6 +37,7 @@ JSON_PAYLOAD=$(cat <<EOF
 EOF
 )
 
+echo $JSON_PAYLOAD
 # Faz a requisição HTTP usando curl para o seu endpoint /v1/responses
 API_RESPONSE=$(curl -s https://api.openai.com/v1/responses\
   -H "Content-Type: application/json" \
