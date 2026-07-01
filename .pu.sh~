@@ -38,7 +38,7 @@ EOF
 )
 
 # Faz a requisição HTTP usando curl para o seu endpoint /v1/responses
-API_RESPONSE=$(curl -s https://openai.com \
+API_RESPONSE=$(curl -s https://api.openai.com/v1/responses\
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer $OPENAI_API_KEY" \
   -d "$JSON_PAYLOAD")

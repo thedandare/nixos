@@ -43,8 +43,11 @@ API_RESPONSE=$(curl -s https://api.openai.com/v1/responses\
   -H "Authorization: Bearer $OPENAI_API_KEY" \
   -d "$JSON_PAYLOAD")
 
-# Extrai o conteúdo do campo "text" tratando os escapes textuais do seu endpoint
-IA_COMMIT_MSG=$(echo "$API_RESPONSE" | tr -d '\n' | tr -d '\r' | awk -F'"text": *"' '{print $2}' | awk -F'"' '{print $1}' | sed 's/\\n/\n/g' | sed 's/\\"/"/g')
+# 1. Extrai o texto cru do JSON com os escapes Unicode nativos (\uXXXX)
+RAW_MSG=$(echo "$API_RESPONSE" | tr -d '\n' | tr -d '\r' | awk -F'"text": *"' '{print $2}' | awk -F'"' '{print $1}')
+
+# 2. Converte os caracteres Unicode (\uXXXX) para acentos reais usando o printf nativo
+IA_COMMIT_MSG=$(printf '%b' "$(echo "$RAW_MSG" | sed 's/\\u\([0-9a-fA-F]\{4\}\)/\\u\1/g; s/\\n/\n/g; s/\\"/"/g')")
 
 # Se a API falhar por qualquer motivo, usa um fallback seguro compatível com NixOS
 if [ -z "$IA_COMMIT_MSG" ] || [ "$IA_COMMIT_MSG" = "null" ]; then
