@@ -2,7 +2,7 @@
 
 # 1. Configurações Iniciais
 export GIT_SSH_COMMAND="ssh -i ~/.ssh/tdd_id_ed25519"
-OPENAI_API_KEY=$(cat thumbnix/secret/openai_key 2>/dev/null || cat leonix/secret/openai_key 2>/dev/null)
+OPENAI_API_KEY=$(cat leonix/secret/openai_key 2>/dev/null || cat leonix/secret/openai_key 2>/dev/null)
 
 # Garante que o remote origin está correto
 git remote set-url origin git@github.com:thedandare/nixos.git 2>/dev/null || git remote add origin git@github.com:thedandare/nixos.git
@@ -50,11 +50,14 @@ IA_COMMIT_MSG=$(curl -s https://openai.com \
   -H "Authorization: Bearer $OPENAI_API_KEY" \
   -d "$JSON_PAYLOAD" | awk -F'"content": "' '{print $2}' | awk -F'"},' '{print $1}' | sed 's/\\n/\n/g' | sed 's/\\"/"/g')
 
-# Se a API falhar por qualquer motivo, usa um fallback seguro
+# Se a API falhar por qualquer motivo, usa um fallback seguro compatível com NixOS
 if [ -z "$IA_COMMIT_MSG" ] || [ "$IA_COMMIT_MSG" = "null" ]; then
     echo "⚠️  Falha ao obter resposta da LLM. Usando mensagem padrão."
-    IA_COMMIT_MSG="auto-commit IP: $(hostname -I | awk '{print $1}') em $(date)"
+    # Captura o primeiro IP local válido usando o comando 'ip' nativo do Linux/NixOS
+    NIX_IP=$(ip route get 1.1.1.1 2>/dev/null | awk '{print $7}' || hostname -i | awk '{print $1}')
+    IA_COMMIT_MSG="auto-commit IP: $NIX_IP em $(date)"
 fi
+
 
 echo "📝 Mensagem gerada: \"$IA_COMMIT_MSG\""
 

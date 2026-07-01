@@ -44,17 +44,23 @@ JSON_PAYLOAD=$(cat <<EOF
 EOF
 )
 
-# Faz a requisição HTTP usando curl e extrai o texto gerado via sed/awk nativos do shell
-IA_COMMIT_MSG=$(curl -s https://openai.com \
+# Faz a requisição HTTP usando curl e extrai o texto gerado de forma compatível
+API_RESPONSE=$(curl -s https://openai.com \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer $OPENAI_API_KEY" \
-  -d "$JSON_PAYLOAD" | awk -F'"content": "' '{print $2}' | awk -F'"},' '{print $1}' | sed 's/\\n/\n/g' | sed 's/\\"/"/g')
+  -d "$JSON_PAYLOAD")
 
-# Se a API falhar por qualquer motivo, usa um fallback seguro
+# Extrai o conteúdo do campo "content" tratando escapes textuais
+IA_COMMIT_MSG=$(echo "$API_RESPONSE" | grep -o '"content": "[^"]*' | head -n 1 | cut -d'"' -f4 | sed 's/\\n/\n/g' | sed 's/\\"/"/g')
+
+# Se a API falhar por qualquer motivo, usa um fallback seguro compatível com NixOS
 if [ -z "$IA_COMMIT_MSG" ] || [ "$IA_COMMIT_MSG" = "null" ]; then
     echo "⚠️  Falha ao obter resposta da LLM. Usando mensagem padrão."
-    IA_COMMIT_MSG="auto-commit IP: $(hostname -I | awk '{print $1}') em $(date)"
+    # Captura o primeiro IP local válido usando o comando 'ip' nativo do Linux/NixOS
+    NIX_IP=$(ip route get 1.1.1.1 2>/dev/null | awk '{print $7}' || hostname -i | awk '{print $1}')
+    IA_COMMIT_MSG="auto-commit IP: $NIX_IP em $(date)"
 fi
+
 
 echo "📝 Mensagem gerada: \"$IA_COMMIT_MSG\""
 
