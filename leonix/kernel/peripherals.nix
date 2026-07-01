@@ -1,0 +1,38 @@
+{ pkgs, ... }:
+
+{
+
+  imports = [
+    ../drivers/printers.nix
+    ../drivers/radeon.nix
+    ../drivers/ryzen.nix
+  ];
+
+  # 🔋 Energy
+  services.acpid.enable = true;
+
+  # ⌨️ Keymap
+  console.keyMap = "us";
+
+  # 📻 SDR
+  hardware.rtl-sdr.enable = true; # Lembrar de add users.users.<name>.extraGroups = [ "plugdev" ];
+
+  # 📳 Touchpad support
+  services.libinput.enable = true;
+
+  # 🖼️ Scanner
+  hardware.sane.enable = true;
+  services.saned.enable = true;
+
+  /*
+    💾 SSD
+    On NixOS, TRIM support is enabled by default by the services.fstrim.enable option.
+    This periodically discards unused blocks on supported storage devices  over time.
+    The trimming schedule is controlled by the services.fstrim.interval option.
+    Continuous trimming (as set by the discard, see man mount(8)) mount option is not
+    recommended as it can negatively impact SSD performance.
+    Additionally, setting noatime can reduce the number of disk writes and can improve system performance.
+  */
+  fileSystems."/".options = [ "noatime" ];
+
+}

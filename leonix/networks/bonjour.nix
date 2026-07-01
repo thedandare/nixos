@@ -1,0 +1,11 @@
+{ ... }:
+{
+  # 🔎 mDNS / Bonjour discovery
+  services.avahi = {
+    # Avahi is a system which facilitates
+    enable = true; # service discovery on a local network
+    nssmdns4 = true; # via the mDNS/DNS-SD protocol suite.
+    openFirewall = true; # c.f.
+    #     https://avahi.org/
+  };
+}

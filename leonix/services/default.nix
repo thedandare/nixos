@@ -1,0 +1,133 @@
+{ ... }:
+{
+
+  imports = [
+    ./bluetooth.nix
+    ./mailing.nix
+    ./startup.nix
+    ./sshd.nix
+
+    ./tailscale.nix
+  ];
+
+  services.journald.extraConfig = ''
+    MaxRetentionSec=1day
+  '';
+
+  services.alerta.enable = true;
+
+  services.outline.enable = false;
+  services.outline.secretKeyFile = "/etc/nixos/secret/outline_key";
+
+  # 📺 Display
+  services.displayManager.sddm = {
+    enable = true;
+    wayland.enable = true;
+
+    settings = {
+      Autologin = {
+        Relogin = false;
+        Session = "plasma.desktop";
+        User = "leo";
+      };
+    };
+    #     setupScript = ''
+    #       echo -e '\033[1m' '\033[31m' Iniciando CorsairMouse  '\033[0m'
+    #        su leo - -c /run/current-system/sw/bin/ckb-next &
+    #     '';
+    #     stopScript = "      echo -e '\033[1m' '\033[31m' SDDM Finalizando'\033[0m'
+    # ";
+  };
+
+  services.desktopManager.plasma6.enable = true;
+  # Certifique-se de habilitar o Hyprland no sistema:
+  programs.hyprland = {
+    enable = true;
+    xwayland.enable = true; # Permite rodar apps antigos de X11 dentro do Wayland
+  };
+  services.displayManager.defaultSession = "hyprland";
+  #   services.displayManager.defaultSession = "xmonad+xfce";
+
+  #   Configure keymap in X11
+  services.xserver.xkb = {
+    layout = "us";
+    variant = "alt-intl";
+  };
+
+  services.xserver = {
+    enable = true;
+    desktopManager = {
+      xterm.enable = true;
+      retroarch.enable = true;
+      xfce = {
+        noDesktop = true;
+        enable = true;
+        #         enableXfwm = false;
+
+      };
+      wallpaper.combineScreens = true;
+    };
+    windowManager = {
+      xmonad = {
+        enable = true;
+        enableContribAndExtras = true;
+        extraPackages = haskellPackages: [
+          haskellPackages.xmonad-contrib
+          haskellPackages.xmonad-extras
+          haskellPackages.xmonad
+        ];
+      };
+    };
+  };
+
+  #     };
+
+  #   services.displayManager.
+
+  xdg.terminal-exec = {
+    enable = true;
+    settings = {
+      default = [ "alacritty-leo.desktop" ];
+    };
+  };
+
+  # Some programs need SUID wrappers, can be configured further or are
+  # started in user sessions.
+  # programs.mtr.enable = true;
+  # programs.gnupg.agent = {
+  #   enable = true;
+  #   enableSSHSupport = true;
+  # };
+  # List services that you want to enable:
+
+  # 🚰 Hydra
+  services.hydra = {
+    enable = true;
+    hydraURL = "http://localhost:3000";
+    notificationSender = "hydra@localhost";
+    useSubstitutes = true;
+  };
+
+  #services.pdfding.enable=true;
+
+  # 🔗 Networking
+  services.rqbit.enable = true; # A bittorrent client in Rust https://github.com/ikatson/rqbit
+
+  services.samba.enable = true;
+
+  services.spice-vdagentd.enable = true;
+  virtualisation.spiceUSBRedirection.enable = true;
+
+  #   services.kiwix-serve = {
+  #
+  #     enable = true;
+  #     library = {
+  #       wikipedia = "/data/wikipedia_en_all_maxi_2026-02.zim";
+  #       nix = pkgs.fetchurl {
+  #         url = "https://download.kiwix.org/zim/devdocs/devdocs_en_nix_2026-01.zim";
+  #         hash = "sha256-QxB9qDKSzzEU8t4droI08BXdYn+HMVkgiJMO3SoGTqM=";
+  #       };
+  #     };
+  #
+  #   };
+}
