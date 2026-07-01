@@ -11,7 +11,7 @@ git remote set-url origin git@github.com:thedandare/nixos.git 2>/dev/null || git
 if [ -n "$1" ]; then
     git add "$1"
 else
-    echo "\033[0;31mNenhum arquivo passado. Adicionando todas as modificações atuais...\033[0m"
+    printf "\033[0;31mNenhum arquivo passado. Adicionando todas as modificações atuais...\033[0m\n"
     git add .
 fi
 
@@ -24,17 +24,14 @@ fi
 # 4. Captura as alterações atuais e prepara o prompt para a LLM
 echo "🤖 Solicitando mensagem de commit para a IA..."
 
-# Captura o diff bruto limitado a 4000 caracteres
-RAW_DIFF=$(git diff --cached | head -c 4000)
+# Transforma todo o diff bruto em uma única linha de texto Base64 (zero problemas de aspas ou quebras)
+GIT_CHANGES_BASE64=$(git diff --cached | head -c 4000 | base64 | tr -d '\n' | tr -d '\r')
 
-# ESCAPE EM SHELL PURO: Escapa barras, aspas e transforma quebras de linha em '\n'
-GIT_CHANGES=$(echo "$RAW_DIFF" | sed 's/\\/\\\\/g' | sed 's/"/\\"/g' | awk '{printf "%s\\n", $0}' | sed 's/\t/\\t/g')
-
-# Monta o JSON para enviar à API da OpenAI (Sintaxe corrigida com vírgula e aspas)
+# Monta o JSON perfeitamente estável enviando o conteúdo codificado
 JSON_PAYLOAD=$(cat <<EOF
 {
   "model": "gpt-4o-mini",
-  "input": "Você é um assistente especialista em Git. Escreva uma mensagem de commit curta, concisa, no imperativo e em português, baseando-se estritamente no código fornecido. Não adicione saudações, explicações ou formatação markdown (como crases). Apenas o texto direto da mensagem. Gere uma mensagem de commit para as seguintes alterações de código:\n\n$GIT_CHANGES",
+  "input": "Você é um assistente especialista em Git. Escreva uma mensagem de commit curta, concisa, no imperativo e em português. O código de alteração abaixo está codificado em Base64 para proteção de transporte de caracteres. Decodifique-o mentalmente e faça o commit baseado estritamente nele. Não adicione saudações ou markdown. Código em Base64:\n\n$GIT_CHANGES_BASE64",
   "store": false
 }
 EOF
