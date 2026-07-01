@@ -20,18 +20,17 @@ if git diff --cached --quiet; then
     echo "ℹ️  Nenhuma alteração detectada para commitar."
     exit 0
 fi
-
 # 4. Captura as alterações atuais e prepara o prompt para a LLM
 echo "🤖 Solicitando mensagem de commit para a IA..."
 
-# Transforma todo o diff bruto em uma única linha de texto Base64 (zero problemas de aspas ou quebras)
-GIT_CHANGES_BASE64=$(git diff --cached | head -c 4000 | base64 | tr -d '\n' | tr -d '\r')
+# Limpa o diff deixando-o em uma única linha segura para o JSON sem quebrar a estrutura
+GIT_CHANGES=$(git diff --cached | head -c 4000 | sed 's/\\/\\\\/g; s/"/\\"/g; s/$/\\n/' | tr -d '\n' | tr -d '\r')
 
-# Monta o JSON perfeitamente estável enviando o conteúdo codificado
+# Monta o JSON com o DIFF PURO (sem Base64 para a IA não se confundir)
 JSON_PAYLOAD=$(cat <<EOF
 {
   "model": "gpt-4o-mini",
-  "input": "Você é um assistente especialista em Git. Escreva uma mensagem de commit curta, concisa, no imperativo e em português. O código de alteração abaixo está codificado em Base64 para proteção de transporte de caracteres. Decodifique-o mentalmente e faça o commit baseado estritamente nele. Não adicione saudações ou markdown. Código em Base64:\n\n$GIT_CHANGES_BASE64",
+  "input": "Escreva uma mensagem de commit curta, concisa, no imperativo e em português para este diff do Git. Não use markdown, saudações ou jargões de permissão de arquivo (como 100644). Apenas a mensagem direta. Diff:\\n\\n$GIT_CHANGES",
   "store": false
 }
 EOF
