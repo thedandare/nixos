@@ -29,17 +29,8 @@ GIT_CHANGES=$(git diff --cached | head -c 4000) # Limita a 4000 caracteres para 
 JSON_PAYLOAD=$(cat <<EOF
 {
   "model": "gpt-4o-mini",
-  "messages": [
-    {
-      "role": "system",
-      "content": "Você é um assistente especialista em Git. Escreva uma mensagem de commit curta, concisa, no imperativo e em português, baseando-se estritamente no código fornecido. Não adicione saudações, explicações ou formatação markdown (como crases). Apenas o texto direto da mensagem."
-    },
-    {
-      "role": "user",
-      "content": "Gere uma mensagem de commit para as seguintes alterações de código:\n\n$GIT_CHANGES"
-    }
-  ],
-  "temperature": 0.8
+  "input":  "Você é um assistente especialista em Git. Escreva uma mensagem de commit curta, concisa, no imperativo e em português, baseando-se estritamente no código fornecido. Não adicione saudações, explicações ou formatação markdown (como crases). Apenas o texto direto da mensagem. Gere uma mensagem de commit para as seguintes alterações de código:\n\n$GIT_CHANGES"
+ "store": false
 }
 EOF
 )
