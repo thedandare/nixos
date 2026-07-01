@@ -2,7 +2,7 @@
 
 # 1. Configurações Iniciais
 export GIT_SSH_COMMAND="ssh -i ~/.ssh/tdd_id_ed25519"
-OPENAI_API_KEY=$(cat leonix/secret/openai_key 2>/dev/null || cat leonix/secret/openai_key 2>/dev/null)
+OPENAI_API_KEY=$(cat leonix/secret/openai_key 2>/dev/null || cat thumbnix/secret/openai_key 2>/dev/null)
 
 # Garante que o remote origin está correto
 git remote set-url origin git@github.com:thedandare/nixos.git 2>/dev/null || git remote add origin git@github.com:thedandare/nixos.git
@@ -23,40 +23,41 @@ fi
 
 # 4. Captura as alterações atuais e prepara o prompt para a LLM
 echo "🤖 Solicitando mensagem de commit para a IA..."
-# GIT_CHANGES=$(git diff --cached | head -c 4000) # Limita a 4000 caracteres para não estourar o limite da API
-GIT_CHANGES=$(git diff --cached | head -c 4000 | awk '{
-    gsub(/\\/, "\\\\");
-    gsub(/"/, "\\\"");
-    printf "%s\\n", $0
-}')
-# Monta o JSON para enviar à API da OpenAI
+
+# Captura o diff bruto
+RAW_DIFF=$(git diff --cached | head -c 4000)
+
+# Escapa TODOS os caracteres especiais (aspas, novas linhas, tabs) de forma nativa e indestrutível para o JSON
+GIT_CHANGES=$(python3 -c 'import sys, json; print(json.dumps(sys.stdin.read())[1:-1])' <<EOF
+$RAW_DIFF
+EOF
+)
+
+# Monta o JSON para enviar à API da OpenAI (Sintaxe corrigida com vírgula e aspas)
 JSON_PAYLOAD=$(cat <<EOF
 {
   "model": "gpt-4o-mini",
-  "input":  "Você é um assistente especialista em Git. Escreva uma mensagem de commit curta, concisa, no imperativo e em português, baseando-se estritamente no código fornecido. Não adicione saudações, explicações ou formatação markdown (como crases). Apenas o texto direto da mensagem. Gere uma mensagem de commit para as seguintes alterações de código:\n\n$GIT_CHANGES"
- "store": false
+  "input": "Você é um assistente especialista em Git. Escreva uma mensagem de commit curta, concisa, no imperativo e em português, baseando-se estritamente no código fornecido. Não adicione saudações, explicações ou formatação markdown (como crases). Apenas o texto direto da mensagem. Gere uma mensagem de commit para as seguintes alterações de código:\n\n$GIT_CHANGES",
+  "store": false
 }
 EOF
 )
 
-echo $JSON_PAYLOAD
 # Faz a requisição HTTP usando curl e extrai o texto gerado de forma compatível
 API_RESPONSE=$(curl -s https://api.openai.com/v1/responses \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer $OPENAI_API_KEY" \
   -d "$JSON_PAYLOAD")
 
-# Extrai o conteúdo do campo "content" tratando escapes textuais
-IA_COMMIT_MSG=$(echo "$API_RESPONSE" | grep -o '"content": "[^"]*' | head -n 1 | cut -d'"' -f4 | sed 's/\\n/\n/g' | sed 's/\\"/"/g')
+# Extrai o conteúdo do campo gerado tratando os escapes textuais do endpoint /responses
+IA_COMMIT_MSG=$(echo "$API_RESPONSE" | tr -d '\n' | tr -d '\r' | awk -F'"text": *"' '{print $2}' | awk -F'"' '{print $1}' | sed 's/\\n/\n/g' | sed 's/\\"/"/g')
 
 # Se a API falhar por qualquer motivo, usa um fallback seguro compatível com NixOS
 if [ -z "$IA_COMMIT_MSG" ] || [ "$IA_COMMIT_MSG" = "null" ]; then
     echo "⚠️  Falha ao obter resposta da LLM. Usando mensagem padrão."
-    # Captura o primeiro IP local válido usando o comando 'ip' nativo do Linux/NixOS
     NIX_IP=$(ip route get 1.1.1.1 2>/dev/null | awk '{print $7}' || hostname -i | awk '{print $1}')
     IA_COMMIT_MSG="auto-commit IP: $NIX_IP em $(date)"
 fi
-
 
 echo "📝 Mensagem gerada: \"$IA_COMMIT_MSG\""
 

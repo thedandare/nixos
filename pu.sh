@@ -24,14 +24,11 @@ fi
 # 4. Captura as alterações atuais e prepara o prompt para a LLM
 echo "🤖 Solicitando mensagem de commit para a IA..."
 
-# Captura o diff bruto
+# Captura o diff bruto limitado a 4000 caracteres
 RAW_DIFF=$(git diff --cached | head -c 4000)
 
-# Escapa TODOS os caracteres especiais (aspas, novas linhas, tabs) de forma nativa e indestrutível para o JSON
-GIT_CHANGES=$(python3 -c 'import sys, json; print(json.dumps(sys.stdin.read())[1:-1])' <<EOF
-$RAW_DIFF
-EOF
-)
+# ESCAPE EM SHELL PURO: Escapa barras, aspas e transforma quebras de linha em '\n'
+GIT_CHANGES=$(echo "$RAW_DIFF" | sed 's/\\/\\\\/g' | sed 's/"/\\"/g' | awk '{printf "%s\\n", $0}' | sed 's/\t/\\t/g')
 
 # Monta o JSON para enviar à API da OpenAI (Sintaxe corrigida com vírgula e aspas)
 JSON_PAYLOAD=$(cat <<EOF
@@ -43,13 +40,13 @@ JSON_PAYLOAD=$(cat <<EOF
 EOF
 )
 
-# Faz a requisição HTTP usando curl e extrai o texto gerado de forma compatível
-API_RESPONSE=$(curl -s https://api.openai.com/v1/responses \
+# Faz a requisição HTTP usando curl para o seu endpoint /v1/responses
+API_RESPONSE=$(curl -s https://openai.com \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer $OPENAI_API_KEY" \
   -d "$JSON_PAYLOAD")
 
-# Extrai o conteúdo do campo gerado tratando os escapes textuais do endpoint /responses
+# Extrai o conteúdo do campo "text" tratando os escapes textuais do seu endpoint
 IA_COMMIT_MSG=$(echo "$API_RESPONSE" | tr -d '\n' | tr -d '\r' | awk -F'"text": *"' '{print $2}' | awk -F'"' '{print $1}' | sed 's/\\n/\n/g' | sed 's/\\"/"/g')
 
 # Se a API falhar por qualquer motivo, usa um fallback seguro compatível com NixOS
