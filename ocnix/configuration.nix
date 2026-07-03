@@ -323,8 +323,8 @@ EOF
     };
   };
 
-  systemd.services.init-incus-leonk8s = {
-    description = "Garante a existencia e execucao do container MicroK8s leonk8s";
+  systemd.services.init-incus-ocnix8s = {
+    description = "Garante a existencia e execucao do container MicroK8s ocnix8s";
 
     after = [
       "incus.service"
@@ -346,17 +346,17 @@ EOF
     };
 
     script = ''
-      if ! ${pkgs.incus}/bin/incus info leonk8s >/dev/null 2>&1; then
-        echo "Container leonk8s nao encontrado. Criando de forma declarativa..."
-        ${pkgs.incus}/bin/incus launch images:ubuntu/26.04/cloud leonk8s -p default -p microk8s
+      if ! ${pkgs.incus}/bin/incus info ocnix8s >/dev/null 2>&1; then
+        echo "Container ocnix8s nao encontrado. Criando de forma declarativa..."
+        ${pkgs.incus}/bin/incus launch images:ubuntu/26.04/cloud ocnix8s -p default -p microk8s
       else
-        echo "Container leonk8s ja existe. Garantindo que ele esteja rodando..."
-        ${pkgs.incus}/bin/incus start leonk8s || true
+        echo "Container ocnix8s ja existe. Garantindo que ele esteja rodando..."
+        ${pkgs.incus}/bin/incus start ocnix8s || true
       fi
       sleep 5
-      ${pkgs.incus}/bin/incus exec leonk8s -- ip addr add 10.10.10.2/24 dev eth0 || true
-      ${pkgs.incus}/bin/incus exec leonk8s -- ip route add default via 10.10.10.1 || true
-      ${pkgs.incus}/bin/incus exec leonk8s -- bash -c 'chattr -i /etc/resolv.conf 2>/dev/null; echo nameserver 1.1.1.1 > /etc/resolv.conf; chattr +i /etc/resolv.conf' || true
+      ${pkgs.incus}/bin/incus exec ocnix8s -- ip addr add 10.10.10.2/24 dev eth0 || true
+      ${pkgs.incus}/bin/incus exec ocnix8s -- ip route add default via 10.10.10.1 || true
+      ${pkgs.incus}/bin/incus exec ocnix8s -- bash -c 'chattr -i /etc/resolv.conf 2>/dev/null; echo nameserver 1.1.1.1 > /etc/resolv.conf; chattr +i /etc/resolv.conf' || true
     '';
   };
 
