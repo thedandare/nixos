@@ -87,109 +87,109 @@
 
     # Equivalent to global .zshrc
     interactiveShellInit = ''
-                #       eval "$(zoxide init zsh --cmd cd)"
-                # Adiciona ou atualiza aliases NixOS em /etc/nixos/users/env.nix
-                # Uso:
-                #   nixa ll "ls -lah"
-                #   nixa gst "git status"
-                #   nixa rebuild "sudo nixos-rebuild switch --show-trace"
-                #
-                # Também aceita:
-                #   nixa ll=ls -lah
-                #
-                nixa() {
-                  local file="/etc/nixos/users/env.nix"
+                      #       eval "$(zoxide init zsh --cmd cd)"
+                      # Adiciona ou atualiza aliases NixOS em /etc/nixos/users/env.nix
+                      # Uso:
+                      #   nixa ll "ls -lah"
+                      #   nixa gst "git status"
+                      #   nixa rebuild "sudo nixos-rebuild switch --show-trace"
+                      #
+                      # Também aceita:
+                      #   nixa ll=ls -lah
+                      #
+                      nixa() {
+                        local file="/etc/nixos/users/env.nix"
 
-                  if [ "$#" -lt 2 ]; then
-                    echo "Uso:"
-                    echo "  nixa NOME COMANDO..."
-                    echo "  nixa ll \"ls -lah\""
-                    echo "  nixa gst \"git status\""
-                    return 1
-                  fi
+                        if [ "$#" -lt 2 ]; then
+                          echo "Uso:"
+                          echo "  nixa NOME COMANDO..."
+                          echo "  nixa ll \"ls -lah\""
+                          echo "  nixa gst \"git status\""
+                          return 1
+                        fi
 
-                  local name cmd
+                        local name cmd
 
-                  # Forma: nixa ll=ls -lah
-                  if [[ "$1" == *=* ]]; then
-                    name="''${1%%=*}"
-                    cmd="''${1#*=}"
-                    shift
-                    if [ "$#" -gt 0 ]; then
-                      cmd="$cmd $*"
-                    fi
-                  else
-                    name="$1"
-                    shift
-                    cmd="$*"
-                  fi
+                        # Forma: nixa ll=ls -lah
+                        if [[ "$1" == *=* ]]; then
+                          name="''${1%%=*}"
+                          cmd="''${1#*=}"
+                          shift
+                          if [ "$#" -gt 0 ]; then
+                            cmd="$cmd $*"
+                          fi
+                        else
+                          name="$1"
+                          shift
+                          cmd="$*"
+                        fi
 
-                  if [ -z "$name" ] || [ -z "$cmd" ]; then
-                    echo "Erro: nome e comando são obrigatórios."
-                    return 1
-                  fi
+                        if [ -z "$name" ] || [ -z "$cmd" ]; then
+                          echo "Erro: nome e comando são obrigatórios."
+                          return 1
+                        fi
 
-                  if [ ! -f "$file" ]; then
-                    echo "Erro: arquivo não encontrado: $file"
-                    return 1
-                  fi
+                        if [ ! -f "$file" ]; then
+                          echo "Erro: arquivo não encontrado: $file"
+                          return 1
+                        fi
 
-                  sudo cp "$file" "$file.bak.$(date +%Y%m%d-%H%M%S)"
-       local cmd_escaped="$cmd"
-      cmd_escaped="''${cmd_escaped//\\/\\\\}"
-      cmd_escaped="''${cmd_escaped//\"/\\\"}"
-      cmd_escaped="''${cmd_escaped//\$\{/\\\$\{}"
+                        sudo cp "$file" "$file.bak.$(date +%Y%m%d-%H%M%S)"
+             local cmd_escaped="$cmd"
+            cmd_escaped="''${cmd_escaped//\\/\\\\}"
+            cmd_escaped="''${cmd_escaped//\"/\\\"}"
+            cmd_escaped="''${cmd_escaped//\$\{/\\\$\{}"
 
-      sudo awk -v name="$name" -v cmd="$cmd_escaped" '
-        BEGIN {
-          in_aliases = 0
-          added = 0
-          new_line = "    \"" name "\" = \"" cmd "\";"
-        }
+            sudo awk -v name="$name" -v cmd="$cmd_escaped" '
+              BEGIN {
+                in_aliases = 0
+                added = 0
+                new_line = "    \"" name "\" = \"" cmd "\";"
+              }
 
-        /environment\.shellAliases[[:space:]]*=[[:space:]]*\{/ {
-          in_aliases = 1
-          print
-          next
-        }
+              /environment\.shellAliases[[:space:]]*=[[:space:]]*\{/ {
+                in_aliases = 1
+                print
+                next
+              }
 
-        in_aliases && $0 ~ "^[[:space:]]*\"?" name "\"?[[:space:]]*=" {
-          next
-        }
+              in_aliases && $0 ~ "^[[:space:]]*\"?" name "\"?[[:space:]]*=" {
+                next
+              }
 
-        in_aliases && /^[[:space:]]*\};/ {
-          print new_line
-          in_aliases = 0
-          added = 1
-          print
-          next
-        }
+              in_aliases && /^[[:space:]]*\};/ {
+                print new_line
+                in_aliases = 0
+                added = 1
+                print
+                next
+              }
 
-        { print }
+              { print }
 
-        END {
-          if (!added) {
-            exit 2
-          }
-        }
-      ' "$file" | sudo tee "$file.tmp" >/dev/null && sudo mv "$file.tmp" "$file"
-
-                  if command -v nixfmt >/dev/null 2>&1; then
-                    sudo nixfmt "$file"
-                  fi
-
-                  echo "Alias NixOS adicionado/atualizado:"
-                  echo "  $name = $cmd"
-                 if whiptail \
-              --title "NixOS rebuild" \
-              --yes-button "Switch now" \
-              --no-button "Later" \
-              --yesno "Alias added successfully.\n\nRun 'nixos-rebuild switch' now?" \
-              10 60
-          then
-              sudo nixos-rebuild switch --show-trace
-          fi
+              END {
+                if (!added) {
+                  exit 2
                 }
+              }
+            ' "$file" | sudo tee "$file.tmp" >/dev/null && sudo mv "$file.tmp" "$file"
+
+                        if command -v nixfmt >/dev/null 2>&1; then
+                          sudo nixfmt "$file"
+                        fi
+
+                        echo "Alias NixOS adicionado/atualizado:"
+                        echo "  $name = $cmd"
+                       if whiptail \
+                    --title "NixOS rebuild" \
+                    --yes-button "Switch now" \
+                    --no-button "Later" \
+                    --yesno "Alias added successfully.\n\nRun 'nixos-rebuild switch' now?" \
+                    10 60
+                then
+                    sudo nixos-rebuild switch --show-trace
+                fi
+                      }
 
 
 
