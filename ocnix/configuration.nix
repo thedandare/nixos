@@ -36,7 +36,7 @@ let
       - path: /etc/sysctl.d/99-kubernetes.conf
         permissions: '0644'
         content: |
-           net.ipv4.ip_forward = 1
+          net.ipv4.ip_forward = 1
           fs.inotify.max_user_instances = 512
           fs.inotify.max_user_watches = 524288
           net.bridge.bridge-nf-call-iptables = 1
@@ -142,16 +142,6 @@ networkConfig = ''
 networking.nameservers = [
   "1.1.1.1"          # Cloudflare Public DNS (Reliable fallback for the internet)
 ];
-  services.dnsmasq = {
-    enable = true;
-    settings = {
-      port = 0; # desabilita DNS, so DHCP (evita conflito com systemd-resolved na porta 53)
-      interface = "br0";
-      bind-interfaces = true;
-      dhcp-range = [ "10.10.10.2,10.10.10.254,24h" ];
-      dhcp-option = [ "3,10.10.10.1" "6,1.1.1.1,8.8.8.8" ];
-    };
-  };
 
   networking.nftables.ruleset = ''
     table inet filter {
