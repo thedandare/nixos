@@ -7,6 +7,7 @@ let
       clientSecret = "tskey-client-kxixTezVgB21CNTRL-jiN4D8nU7sbYCg1vcCtWrb1nA2D4gRCa";
     };
   };
+  
 
   cloudInitRaw = ''
     #cloud-config
