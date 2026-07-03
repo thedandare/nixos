@@ -48,6 +48,9 @@ let
         content: INJECT_TAILSCALE_B64_HERE
 
     runcmd:
+      - ip addr add 10.10.10.2/24 dev eth0 || true
+      - ip route add default via 10.10.10.1 || true
+      - echo "nameserver 1.1.1.1" > /etc/resolv.conf
       - apt-get update
       - apt-get install -y snapd jq curl
       - systemctl unmask snapd.service snapd.socket || true
