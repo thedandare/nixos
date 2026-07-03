@@ -352,6 +352,10 @@ EOF
         echo "Container leonk8s ja existe. Garantindo que ele esteja rodando..."
         ${pkgs.incus}/bin/incus start leonk8s || true
       fi
+      sleep 5
+      ${pkgs.incus}/bin/incus exec leonk8s -- ip addr add 10.10.10.2/24 dev eth0 || true
+      ${pkgs.incus}/bin/incus exec leonk8s -- ip route add default via 10.10.10.1 || true
+      ${pkgs.incus}/bin/incus exec leonk8s -- bash -c 'chattr -i /etc/resolv.conf 2>/dev/null; echo nameserver 1.1.1.1 > /etc/resolv.conf; chattr +i /etc/resolv.conf' || true
     '';
   };
 
