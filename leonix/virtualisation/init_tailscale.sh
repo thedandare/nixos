@@ -58,6 +58,9 @@ fi
 echo "Auth Key descartável gerada: tskey-auth-..."
 
 echo "=== 3. Autenticando na Rede Tailscale ==="
+# Limpa estado anterior (necessário para clones de container)
+tailscale logout 2>/dev/null || true
+rm -f /var/lib/tailscale/tailscaled.state
 # Executa a junção à malha usando a chave validada
 tailscale up --auth-key="${REQ_KEY}" --accept-dns=true --ssh=true --stateful-filtering=false
 echo "Nó autenticado com sucesso!"
@@ -67,12 +70,12 @@ echo "Nó autenticado com sucesso!"
  echo "=== 4. Extraindo e Fixando o IP da Interface Tailscale ==="
    # Aguarda até que a interface tailscale0 ganhe um IP válido (Timeout de 15 segundos)
 TAILSCALE_IP=""
-FOR TRIES IN {1..15}; DO
+for tries in {1..15}; do
     TAILSCALE_IP=$(ip -4 addr show dev tailscale0 2>/dev/null | awk '/inet / {print $2}' | cut -d/ -f1)
     [ -n "${TAILSCALE_IP}" ] && break
-    echo "Aguardando interface tailscale0 ganhar IP... (Tentativa $TRIES/15)"
+    echo "Aguardando interface tailscale0 ganhar IP... (Tentativa $tries/15)"
     sleep 1
-DONE
+done
 
 if [ -z "${TAILSCALE_IP}" ]; then
     echo "ERRO CRITICO: Interface tailscale0 subiu, mas nao recebeu IP a tempo."
@@ -88,8 +91,6 @@ export MICROK8S_IP="${TAILSCALE_IP}"
     else
         echo "Aviso: Script tailscale_choose_ip.sh nao localizado. Prosseguindo..."
     fi
-
-fi
 
 sleep 5
 tailscale set --webclient=true

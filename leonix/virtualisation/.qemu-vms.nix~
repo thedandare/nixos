@@ -16,7 +16,7 @@ let
       device = "/dev/disk/by-id/nvme-WD_BLACK_SN750_SE_500GB_22064Y801267";
       cdrom = ""; # constantes.UBUNTU_CDROM; # Certifique-se de que está definido no seu constants.nix;
       discosAdicionais = "";
-      ram = "8G";
+      ram = "10G";
     };
   };
 
