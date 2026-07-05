@@ -1,0 +1,27 @@
+digraph G {
+    rankdir=LR;
+    node [shape=folder, style=filled, fillcolor=lightblue, fontname="Sans"];
+    "." [label=Root, fillcolor=deepskyblue, shape=box]
+    "." -> "./estrutura.png";
+    "./estrutura.png" [label="estrutura.png", shape=note, fillcolor=lightgray];
+    "." -> "./handle_tmux_client_and_session.sh";
+    "./handle_tmux_client_and_session.sh" [label="handle_tmux_client_and_session.sh", shape=note, fillcolor=lightgray];
+    "." -> "./popup_for_nixos_build_name.sh~";
+    "./popup_for_nixos_build_name.sh~" [label="popup_for_nixos_build_name.sh~", shape=note, fillcolor=lightgray];
+    "." -> "./handle_tmux_client_and_session.sh~";
+    "./handle_tmux_client_and_session.sh~" [label="handle_tmux_client_and_session.sh~", shape=note, fillcolor=lightgray];
+    "." -> "./nixos-leonix-git-sync.sh";
+    "./nixos-leonix-git-sync.sh" [label="nixos-leonix-git-sync.sh", shape=note, fillcolor=lightgray];
+    "." -> "./popup_for_nixos_build_name.sh";
+    "./popup_for_nixos_build_name.sh" [label="popup_for_nixos_build_name.sh", shape=note, fillcolor=lightgray];
+    "." -> "./compactar a memória RAM e limpar os caches do kernel.sh ";
+    "./compactar a memória RAM e limpar os caches do kernel.sh " [label="compactar a memória RAM e limpar os caches do kernel.sh ", shape=note, fillcolor=lightgray];
+    "." -> "./reset_permissions.sh";
+    "./reset_permissions.sh" [label="reset_permissions.sh", shape=note, fillcolor=lightgray];
+    "." -> "./directory_structure.dot";
+    "./directory_structure.dot" [label="directory_structure.dot", shape=note, fillcolor=lightgray];
+    "." -> "./ls2dot.sh";
+    "./ls2dot.sh" [label="ls2dot.sh", shape=note, fillcolor=lightgray];
+    "." -> "./tree.png";
+    "./tree.png" [label="tree.png", shape=note, fillcolor=lightgray];
+}

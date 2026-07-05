@@ -1,0 +1,147 @@
+#!/bin/sh
+# ==============================================================================
+# SCRIPT 3: tailscale_sub_module_actions.sh (Sugestao Dinamica de IP + 1)
+# ORG: Chamado via execucao pelo Orquestrador Principal
+# ==============================================================================
+export GPM_SUPPORT=yes
+
+TMP_DETAILS="$1"
+BASE_PID="$2"
+
+# 1. Resgata o IP que o operador selecionou na lista de dispositivos
+IP_SELECIONADO=$(cat "/tmp/ts_data.choice.$BASE_PID" 2>/dev/null)
+
+# Fallback de seguranca caso o arquivo temporario falhe ou venha nulo
+if [ -z "$IP_SELECIONADO" ] || [ "$IP_SELECIONADO" = "null" ]; then
+    IP_SUGESTAO="100.100.1.1"
+else
+    # 2. ENGENHARIA POSIX PARA EXTRAÇÃO E SOMA DO OCTETO
+    # Isola os 3 primeiros octetos (ex: 100.100.1)
+    PREFIXO_IP=$(echo "$IP_SELECIONADO" | cut -d. -f1-3)
+
+    # Isola o quarto octeto (ex: 2)
+    ULTIMO_OCTETO=$(echo "$IP_SELECIONADO" | cut -d. -f4)
+
+    # Executa a soma aritmetica estrita (+1) aceita pelo Dash
+    NOVO_OCTETO=$((ULTIMO_OCTETO + 1))
+
+    # Trata estouro de escopo do bloco /24 (Se bater em 255, fixa no IP valido final)
+    if [ "$NOVO_OCTETO" -gt 254 ]; then
+        NOVO_OCTETO=254
+    fi
+
+    # Monta a string de sugestao final calculada
+    IP_SUGESTAO="${PREFIXO_IP}.${NOVO_OCTETO}"
+fi
+
+# 3. Garante a presenca do whiptail no ecossistema
+if ! command -v whiptail > /dev/null 2>&1; then
+    echo "Whiptail nao encontrado. Instalando..."
+    sudo apt update && sudo apt install -y whiptail
+fi
+
+# 4. Abre a janela injetando a variavel calculada $IP_SUGESTAO no campo inicial
+IP_USER=$(whiptail --title "Configuracao de Rede Cluster HA" \
+    --inputbox "Por favor, confirme ou altere o endereco de IP desejado:" \
+    10 65 "$IP_SUGESTAO" \
+    3>&1 1>&2 2>&3 < /dev/tty)
+
+STATUS=$?
+
+# 5. Processamento dos botoes com retorno sincronizado via exit status para a Tela 2
+if [ $STATUS -eq 0 ] && [ -n "$IP_USER" ]; then
+    whiptail --title "Sucesso" \
+        --msgbox "O IP parametrizado para o cluster foi: $IP_USER" \
+        8 50 3>&1 1>&2 2>&3 < /dev/tty
+    exit 3
+else
+    whiptail --title "Cancelado" \
+        --msgbox "Operacao abortada. Retornando para a lista de dispositivos." \
+        8 55 3>&1 1>&2 2>&3 < /dev/tty
+    exit 3
+fi
+
+# #!/bin/sh
+# # ==============================================================================
+# # SCRIPT 3: tailscale_sub_module_actions.sh (Modo de Teste InputBox Manual)
+# # ORG: Chamado via execucao pelo Orquestrador Principal
+# # ==============================================================================
+#
+# # Atualiza a lista de pacotes e instala o whiptail caso nao esteja instalado
+# if ! command -v whiptail > /dev/null 2>&1; then
+#     echo "Whiptail nao encontrado. Instalando..."
+#     sudo apt update && sudo apt install -y whiptail
+# fi
+#
+# # Abre a janela do whiptail para receber o IP
+# IP_USER=$(whiptail --title "Configuracao de Rede" \
+#     --inputbox "Por favor, digite o endereco de IP desejado:" \
+#     10 60 "192.168.1.1" \
+#     3>&1 1>&2 2>&3 < /dev/tty)
+#
+# # Captura o status de saida do botao clicado (OK ou Cancelar)
+# STATUS=$?
+#
+# # Trata a resposta do usuario e retorna o controle para a Tela 3 (Acoes)
+# if [ $STATUS -eq 0 ]; then
+#     whiptail --title "Sucesso" \
+#         --msgbox "O IP digitado foi: $IP_USER" \
+#         8 45 3>&1 1>&2 2>&3 < /dev/tty
+#     exit 3
+# else
+#     whiptail --title "Cancelado" \
+#         --msgbox "Operacao cancelada pelo usuario." \
+#         8 45 3>&1 1>&2 2>&3 < /dev/tty
+#     exit 3
+# fi
+#
+# # ==============================================================================
+# # LOGICA ANTIGA PRESERVADA E COMENTADA PARA REFERENCIA FUTURA
+# # ==============================================================================
+# # TMP_DETAILS="$1"
+# # BASE_PID="$2"
+# # CHOICE=$(cat "/tmp/ts_data.choice.$BASE_PID" 2>/dev/null)
+# # SELECTED_DEVICE_ID=$(cat "/tmp/ts_data.id.$BASE_PID" 2>/dev/null)
+# # ACAO=$(cat "/tmp/ts_data.action.$BASE_PID" 2>/dev/null)
+# # JSON_DATA=$(sudo tailscale status --json)
+# # TMP_LIVRES="/tmp/ts_livres.$BASE_PID"
+# # echo "$JSON_DATA" | jq -r --arg ip "$CHOICE" '[.Self, .Peer[]] | .[] | select(.TailscaleIPs[]? == $ip)' > "$TMP_DETAILS"
+# # case "$ACAO" in
+# #     1)
+# #         HOST=$(jq -r '.HostName' "$TMP_DETAILS")
+# #         OS_PEER=$(jq -r '.OS // "unknown"' "$TMP_DETAILS")
+# #         ONLINE=$(jq -r '.Online' "$TMP_DETAILS")
+# #         LAST_SEEN=$(jq -r '.LastSeen' "$TMP_DETAILS")
+# #         RELAY=$(jq -r '.Relay // "nenhum"' "$TMP_DETAILS")
+# #         if [ "$ONLINE" = "true" ]; then STATUS_TXT="Online"; else STATUS_TXT="Offline"; fi
+# #         INFO="Hostname: $HOST\nSistema: $OS_PEER\nIP Selecionado: $CHOICE\nStatus: $STATUS_TXT\n"
+# #         whiptail --title 'Especificacoes do No' --ok-button 'Voltar' --msgbox "$INFO" 15 70 3>&1 1>&2 2>&3
+# #         exit 3
+# #         ;;
+# #     2)
+# #         clear
+# #         ping -c 4 "$CHOICE"
+# #         printf "Pressione [Enter] para retornar..." && read -r _
+# #         exit 3
+# #         ;;
+# #     3)
+# #         USER_SSH=$(whiptail --title 'Acesso SSH' --inputbox 'Digite o usuario:' 11 50 "$USER" 3>&1 1>&2 2>&3)
+# #         if [ $? -eq 0 ] && [ -n "$USER_SSH" ]; then clear; ssh "$USER_SSH@$CHOICE"; fi
+# #         exit 3
+# #         ;;
+# #     4)
+# #         clear
+# #         BASE_IP=$(echo "$CHOICE" | cut -d. -f1-3)
+# #         true > "$TMP_LIVRES"
+# #         IPS_OCUPADOS=$(echo "$JSON_DATA" | jq -r '[.Self.TailscaleIPs[], .Peer[].TailscaleIPs[]] | .[]' | grep "^$BASE_IP\.")
+# #         i=1
+# #         while [ "$i" -le 254 ]; do
+# #             TEST_IP="$BASE_IP.$i"
+# #             case "$IPS_OCUPADOS" in *"$TEST_IP"*) ;; *) echo "$TEST_IP" >> "$TMP_LIVRES"; echo "Disponivel" >> "$TMP_LIVRES";; esac
+# #             i=$((i + 1))
+# #         done
+# #         IP_SELECIONADO=$(xargs -a "$TMP_LIVRES" whiptail --title 'Livres' --menu "Selecione:" 22 75 12 3>&1 1>&2 2>&3 < /dev/tty)
+# #         rm -f "$TMP_LIVRES"
+# #         exit 3
+# #         ;;
+# # esac

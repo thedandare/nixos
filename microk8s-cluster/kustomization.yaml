@@ -1,0 +1,9 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+# Definição global de recursos ordenados
+resources:
+  - namespaces/self-healing/
+  # À medida que criar novos apps, basta descomentar as linhas abaixo:
+  # - apps/mail-server/
+  # - apps/storage/

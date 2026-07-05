@@ -1,0 +1,98 @@
+#🅂🅈🅂🅃🄴🄼
+{ pkgs, ... }:
+{
+  environment.systemPackages = with pkgs; [
+
+    #▐▀▀▀▀▀▀▀▀▀▀▀▌
+    #▐ 🅃🅃🅈   ▀
+    screen # ˙   ▌
+    tio # ˙      ▌ https://github.com/tio/tio Connect to TTY device via profile or topology ID
+    bootterm # ˙ ▌ https://github.com/wtarreau/bootterm A simple, reliable terminal
+    toybox # ˙   ▌
+    #▐▄▄▄▄▄▄▄▄▄▄▄▌
+
+    #▐▀▀▀▀▀▀▀▀▀▀▀▌
+    #▐ ℍ𝕒𝕣𝕕𝕨𝕒𝕣𝕖
+    #▐
+    #▐ 🄲🄿🅄
+    cpu-x
+    zenstates
+    zenmonitor
+    cfs-zen-tweaks
+    ryzen-monitor-ng
+    #▐
+    #▐ 🄶🄿🅄
+    gpu-viewer
+    #▐
+    #▐ 🅄🅂🄱
+    usbutils
+    #▐
+    #▐ 🄿🄲🄸
+    pciutils # [https://mj.ucw.cz/sw/pciutils/] For inspecting and manipulating configuration of PCI devices
+    #▐        Programs provided:
+    #▐        🔧 lspci – for displaying information about PCI buses in the system and devices connected to them 🔩▌
+    #▐        🔧 setpci – for querying and poking configuration registers of PCI devices.                       🔩▌
+    #▐        🔧 pcilib – manual on the libpci library and options common to all tools using it.                🔩▌
+    #▐        🔧 pci.ids – the list of known identifiers related to PCI devices..                               🔩▌
+    #▐        🔧 update-pciids – for downloading a new version of the PCI ID list.                              🔩▌
+    #▐        🔧 pcilmr – for margining PCIe links.                                                             🔩▌
+    #▐▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▌
+
+    # ▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄
+    #▐  𝔽𝕚𝕝𝕖 𝕊𝕪𝕤𝕥𝕖𝕞𝕤                                                                                          🏁 ▌
+    #▐  ＳｑｕａｓｈＦＳ is a highly compressed, read-only file system for Linux.                                🏁 ▌
+    #▐     It shrinks files, inodes, and directories to a fraction of their original size,                       ▌
+    #▐     making it ideal for Linux live USBs, embedded devices, container images, and system archiving.        ▌
+    #▐     It supports modern compression algorithms like Zstd, XZ, and Gzip                                     ▌
+    #▐                                                        c.f: https://github.com/plougher/squashfs-tools &  ▌
+    #▐                                                        https://docs.kernel.org/filesystems/squashfs.html  ▌
+    squashfsTools
+    sshfs-fuse
+
+    zstd
+    xz # successor of LZMA. Programs provided:
+    #  # lzcat lzcmp lzdiff lzegrep lzfgrep lzgrep lzless lzma lzmadec lzmainfo lzmore
+    # ... unlzma unxz xz xzcat xzcmp xzdec xzdiff xzegrep xzfgrep xzgrep xzless xzmore
+    #▐▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▌
+
+    libsigrok # https://github.com/sipeed/libsigrok/
+    sigrok-cli # Signal analysis software suite
+
+    #▐▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▌
+    #▐ 🄱🄾🄾🅃🄸🄽🄶  ▐
+    efibooteditor # ˫   ▐
+    efivar # ˫          ▐ https://github.com/rhboot/efivar
+    refind # ˫          ▐
+    goldboot # ˫        ▐ https://github.com/fossable/goldboot
+    grub2_efi # ˫       ▐
+    uefitool # ˫        ▐ https://github.com/LongSoft/uefitool
+    gptfdisk
+    #▐▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▌
+
+    #▐▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▌
+    #▐ 🄿🄰🅁🅃🄸🅃🄸🄾🄽🄸🄽🄶 🥧 ▐
+    btrfs-progs # ˫                  ▐
+    gparted-full # ˫                 ▐
+    tparted # ˫                      ▐
+    #▐▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▌
+
+    # 🧹 Cleanup
+    bleachbit
+    nix-janitor
+
+    # 📀 Drivers
+    ckb-next # 🖱️ Corsair mouse configuration tool
+
+    rpi-imager # Raspberry Pi Imaging Utility
+
+    # Audio
+    qpwgraph # Patchbay visual para você gerenciar os nós das suas 3 interfaces
+    deadbeef # Player leve que suporta outputs multicanal e roteamento JACK
+    alsa-utils # added by TUINIX  P.P: aconnect alsa-info alsabat alsabat-test.sh alsaconf alsactl alsaloop alsamixer alsatplg alsaucm amidi amixer aplay aplaymidi aplaymidi2 arecord arecordmidi2 aseqdump aseqnet aseqsend axfer iecset nhlt-dmic-info speaker-test
+    calf # Contém as tabelas de processamento surround e matrizes para o Linux
+    ladspaPlugins # Plugins básicos de processamento de sinal
+    real_time_config_quick_scan # Linux configuration checker for systems to be used for real-time audio
+
+  ];
+}
+# 🄵🄸🄻🄴 🅂

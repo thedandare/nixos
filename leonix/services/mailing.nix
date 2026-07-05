@@ -1,0 +1,5 @@
+{ ... }:
+{
+
+  services.postfix.enable = true;
+}
