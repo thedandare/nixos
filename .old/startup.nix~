@@ -1,0 +1,122 @@
+{ config, pkgs, ... }:
+let
+  # 1. Importa o flake diretamente da sua pasta local de desenvolvimento
+  fiboFlake = builtins.getFlake "path:/home/leo/flakes/fibo-serverpod";
+
+  # 2. Extrai o pacote default compilado por ele
+  fiboPackage = fiboFlake.packages.x86_64-linux.default;
+
+  tokenApi = "F1bo6600";
+
+in
+
+{
+
+  services.gnome.gnome-keyring.enable = false;
+
+  programs.ssh.startAgent = true;
+
+  systemd.services.before-graphical-target = {
+    description = "graphical.target";
+    environment = {
+      # Injeta uma variável Nix no ambiente do processo
+      API_TOKEN = tokenApi;
+    };
+    serviceConfig = {
+      Type = "oneshot";
+      RemainAfterExit = true;
+    };
+    script = ''
+      echo -e '\033[1m' '\033[31m' Pré graphical-target. Injetando variáveis de ambiente    '\033[0m'
+    '';
+    wantedBy = [ "graphical.target" ];
+  };
+
+  systemd.services.before-multi-user-targeta = {
+    description = "multi-user.target";
+
+    # Ensures the script runs once at system boot and finishes
+    serviceConfig = {
+      Type = "oneshot";
+      RemainAfterExit = true;
+    };
+
+    script = ''
+
+        echo -e '\033[1m' '\033[31m' Normal multi-user mode. Compactando memória e iniciando daemon do mouse '\033[0m'
+        echo "CorsairMouse daemon started at $(date)" >> /var/log/initCorsairMouse.log
+
+        ${pkgs.ckb-next}/bin/ckb-next-daemon >> /var/log/initCorsairMouse.log 2>&1 &
+            echo -e " '\033[1m' '\033[31m' Forçando o kernel a juntar a RAM antes de alocar os Hugepages '\033[0m'  "
+        echo -e " '\033[1m' '\033[21m' Por que no multi-user.target ?"
+        echo -e " '\033[1n' '\033[11m' Momento Ideal do Boot: O multi-user.target é o marco do systemd onde os serviços de rede, discos e, no seu caso, as suas VMs do QEMU começam a inicializar (já que o seu script de VMs usa wantedBy multi-user.target."
+        echo -e " '\033[0m' '\033[10m' Rodar a compactação aqui garante que a memória seja limpa imediatamente antes do QEMU tentar alocar os 8GB de Hugepages. '\033[0m'"
+      echo 1 > /proc/sys/vm/compact_memory
+        echo 3 > /proc/sys/vm/drop_caches
+
+
+    '';
+    # Systemd to run this when the system reaches normal multi-user mode
+    wantedBy = [ "multi-user.target" ];
+  };
+
+  environment.interactiveShellInit = ''
+    alias gs='git status'
+    alias vim='nvim'
+     alias E='tmux new-window edit'
+     alias S='tmux split-window edit'
+  '';
+
+  environment.shellAliases = {
+    vi = "nvim";
+    vim = "gnvim";
+
+    E = "tmux split-window edit";
+    Bt = "sudo nixos-rebuild boot  --show-trace";
+    Tst = "sudo nixos-rebuild test  --show-trace";
+    Sw = "sudo nixos-rebuild switch  --show-trace";
+    Rbt = "sudo shutdown -r now";
+    Sht = "sudo shutdown now";
+  };
+
+  environment.sessionVariables = rec {
+
+    S = "/etc/nixos/startup.nix";
+    C = "/etc/nixos/configuration.nix";
+    H = "/etc/nixos/hardware-configuration.nix";
+
+    XDG_CACHE_HOME = "$HOME/.cache";
+    XDG_CONFIG_HOME = "$HOME/.config";
+    XDG_DATA_HOME = "$HOME/.local/share";
+    XDG_STATE_HOME = "$HOME/.local/state";
+
+    # Not officially in the specification
+    XDG_BIN_HOME = "$HOME/.local/bin";
+    PATH = [
+      "${XDG_BIN_HOME}"
+    ];
+  };
+
+  # Dynamically generate 3-letter aliases for Zsh
+  programs.zsh.interactiveShellInit = ''
+#     if [ -d /etc/nixos ]; then
+#       for file in /etc/nixos/*; do
+#         if [ -f "$file" ]; then
+#           # Get filename without path (e.g., "configuration.nix")
+#           filename=$(basename "$file")
+#
+#           # Remove the extension (e.g., "configuration")
+#           clean_name="''${filename%.*}"
+#
+#           # Extract only the first 3 characters using Zsh substring slicing
+#           alias_name="''${clean_name[1,3]}"
+#
+#           # Create the alias (e.g., alias con="nano /etc/nixos/configuration.nix")
+#           # Replace 'nano' with your preferred editor
+#           alias "$alias_name"="nano $file"
+#         fi
+#       done
+#     fi
+  '';
+
+}

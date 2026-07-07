@@ -1,0 +1,237 @@
+{ config, pkgs, ... }:
+let
+  # 1. Importa o flake diretamente da sua pasta local de desenvolvimento
+  fiboFlake = builtins.getFlake "path:/home/leo/flakes/fibo-serverpod";
+
+  # 2. Extrai o pacote default compilado por ele
+  fiboPackage = fiboFlake.packages.x86_64-linux.default;
+
+  tokenApi = "F1bo6600";
+
+  # Gerenciamento rápido das VMs
+  makeRestartVmScript = serviceName: ''
+    # Captura a resposta direto na variável Bash usando $( ... )
+    ESCOLHA=\$(whiptail --title "Painel de Controle: \${serviceName}" --menu "Selecione a ação:" 12 55 3 \
+      "1" "Reiniciar Serviço" \
+      "2" "Apenas Monitorar Logs" \
+      "3" "Sair" 3>&1 1>&2 2>&3)
+
+    # Processamento de fluxo baseado na variável
+    case "\$ESCOLHA" in
+      1)
+        tmux split-window -v -p 45 "sudo systemctl restart \${serviceName} && sudo journalctl -u \${serviceName} -f"
+        ;;
+      2)
+        tmux split-window -v -p 45 "sudo journalctl -u \${serviceName} -f -n 50"
+        ;;
+      *)
+        echo "Operação cancelada."
+        ;;
+    esac
+  '';
+  #     # 1. Cria o arquivo temporário para ler a resposta do menu do operador
+  #      ARQUIVO_TEMP=\$(mktemp)
+  #
+  #      # 2. Roda o Whiptail DIRETO no terminal atual (Garanta que renderize a TUI perfeitamente)
+  #      whiptail --title "Painel de Controle: \${serviceName}" --menu "Selecione a ação desejada para esta VM:" 12 55 3 \
+  #        "1" "Reiniciar Serviço (Stop -> Start -> Logs)" \
+  #        "2" "Apenas Monitorar Logs (Live Stream)" \
+  #        "3" "Sair" 3>&1 1>&2 2>&3 > \$ARQUIVO_TEMP
+  #
+  #      # 3. Captura a opção escolhida pelo operador e limpa o arquivo temporário
+  #      ESCOLHA=\$(cat \$ARQUIVO_TEMP)
+  #      rm -f \$ARQUIVO_TEMP
+  #
+  #      # 4. Processamento de fluxo: O Tmux entra apenas para criar os painéis de logs
+  #      case "\$ESCOLHA" in
+  #        1)
+  #          echo -e "\n\033[1;31m[=== PARANDO O SERVIÇO: \${serviceName} ===]\033[0m"
+  #          sudo systemctl stop \${serviceName}
+  #
+  #          echo -e "\n\033[1;32m[=== INICIANDO O SERVIÇO: \${serviceName} ===]\033[0m"
+  #          sudo systemctl start \${serviceName}
+  #
+  #          # O Tmux entra aqui: Cria o split inferior apenas para segurar e monitorar o log ao vivo
+  #          echo -e "\n\033[1;34m[=== Abrindo subjanela de monitoramento... ===]\033[0m"
+  #          tmux split-window -v -p 45 "sudo journalctl -u \${serviceName} -f -n 20"
+  #          ;;
+  #
+  #        2)
+  #          # Abre os logs diretamente em um split inferior focado apenas em leitura
+  #          tmux split-window -v -p 45 "sudo journalctl -u \${serviceName} -f -n 50"
+  #          ;;
+  #
+  #        *)
+  #          echo -e "\033[0;33mOperação cancelada ou abortada pelo operador.\033[0m"
+  #          ;;
+  #      esac
+  #   '';
+  #   makeOpenVmScript = serviceName: ''
+  #     journalctl -u ${serviceName} -f -n 0 > /dev/tty 2>&1 & sleep 1 \
+  #     && echo -e "\n\e[1;31m[=== Iniciando o Spicy: ${serviceName} ===]\e[0m" \
+  #     && remote-viewer spice+unix:///home/leo/emulators/socks/${serviceName}-spice.sock \
+  #     && echo -e "\n\e[1;32m[=== AGUARDANDO O SERVIÇO: ${serviceName} ===]\e[0m" \
+  #     && echo -e "\n\e[1;34m[===  Ctrl+C para sair ===]\e[0m"
+  #   '';
+
+  makeOpenVmScript = serviceName: ''
+    # 1. Cria o arquivo temporário para ler a resposta do menu do operador
+    ARQUIVO_TEMP=\$(mktemp)
+
+    # 2. Abre o menu rápido de inicialização direto no terminal principal do operador
+    whiptail --title "Conexão Gráfica: \${serviceName}" --menu "O que deseja fazer com esta VM?" 12 55 3 \
+      "1" "Abrir VM (Interface Gráfica + Logs)" \
+      "2" "Apenas Monitorar Logs" \
+      "3" "Cancelar" 3>&1 1>&2 2>&3 > \$ARQUIVO_TEMP
+
+    # 3. Captura a opção escolhida pelo operador e limpa o arquivo temporário
+    ESCOLHA=\$(cat \$ARQUIVO_TEMP)
+    rm -f \$ARQUIVO_TEMP
+
+    # 4. Processamento de fluxo baseado na escolha do operador
+    case "\$ESCOLHA" in
+      1)
+        echo -e "\n\033[1;34m[=== Preparando subjanelas para a VM: \${serviceName} ===]\033[0m"
+
+        # O Tmux cria a subjanela inferior (40% da tela) de forma assíncrona para jogar os logs
+        tmux split-window -v -p 40 "
+          echo -e '\n\033[1;33m[=== MONITORANDO LOGS AO VIVO: \${serviceName} ===]\033[0m'
+          sudo journalctl -u \${serviceName} -f -n 20
+        "
+
+        # No painel ativo (superior), dispara a inicialização do visualizador SPICE
+        echo -e "\n\033[1;31m[=== Iniciando o Spicy Viewer: \${serviceName} ===]\033[0m"
+        remote-viewer spice+unix:///home/leo/emulators/socks/\${serviceName}-spice.sock
+
+        echo -e "\n\033[1;32m[=== Visualizador fechado para: \${serviceName} ===]\033[0m"
+        ;;
+
+      2)
+        # Abre os logs diretamente em um split inferior focado apenas em leitura
+        tmux split-window -v -p 45 "sudo journalctl -u \${serviceName} -f -n 50"
+        ;;
+
+      *)
+        echo -e "\033[0;33mOperação cancelada ou abortada pelo operador.\033[0m"
+        ;;
+    esac
+  '';
+in
+
+{
+
+  services.gnome.gnome-keyring.enable = false;
+
+  programs.ssh.startAgent = true;
+
+  systemd.services.before-graphical-target = {
+    description = "graphical.target";
+    environment = {
+      # Injeta uma variável Nix no ambiente do processo
+      API_TOKEN = tokenApi;
+    };
+    serviceConfig = {
+      Type = "oneshot";
+      RemainAfterExit = true;
+    };
+    script = ''
+      echo -e '\033[1m' '\033[31m' Pré graphical-target. Injetando variáveis de ambiente    '\033[0m'
+      /run/current-system/sw/bin/tmux display-popup -E -w 65 -h 15 "whiptail --menu 'Menu' 12 55 3 '1' 'Opção A' '2' 'Opção B' 3>&1 1>&2 2>&3"
+
+
+    '';
+    wantedBy = [ "graphical.target" ];
+  };
+
+  systemd.services.before-multi-user-targeta = {
+    description = "multi-user.target";
+
+    # Ensures the script runs once at system boot and finishes
+    serviceConfig = {
+      Type = "oneshot";
+      RemainAfterExit = true;
+    };
+
+    script = ''
+
+        echo -e '\033[1m' '\033[31m' Normal multi-user mode. Compactando memória e iniciando daemon do mouse '\033[0m'
+        echo "CorsairMouse daemon started at $(date)" >> /var/log/initCorsairMouse.log
+
+        ${pkgs.ckb-next}/bin/ckb-next-daemon >> /var/log/initCorsairMouse.log 2>&1 &
+            echo -e " '\033[1m' '\033[31m' Forçando o kernel a juntar a RAM antes de alocar os Hugepages '\033[0m'  "
+        echo -e " '\033[1m' '\033[21m' Por que no multi-user.target ?"
+        echo -e " '\033[1n' '\033[11m' Momento Ideal do Boot: O multi-user.target é o marco do systemd onde os serviços de rede, discos e, no seu caso, as suas VMs do QEMU começam a inicializar (já que o seu script de VMs usa wantedBy multi-user.target."
+        echo -e " '\033[0m' '\033[10m' Rodar a compactação aqui garante que a memória seja limpa imediatamente antes do QEMU tentar alocar os 8GB de Hugepages. '\033[0m'"
+      echo 1 > /proc/sys/vm/compact_memory
+        echo 3 > /proc/sys/vm/drop_caches
+
+
+    '';
+    # Systemd to run this when the system reaches normal multi-user mode
+    wantedBy = [ "multi-user.target" ];
+  };
+
+  environment.interactiveShellInit = ''
+    alias gs='git status'
+    alias vim='nvim'
+     alias E='tmux new-window edit'
+     alias S='tmux split-window edit'
+  '';
+
+  environment.shellAliases = {
+    vi = "nvim";
+    vim = "gnvim";
+
+    E = "tmux split-window edit";
+    Bt = "sudo nixos-rebuild boot  --show-trace";
+    Tst = "sudo nixos-rebuild test  --show-trace";
+    Sw = "sudo nixos-rebuild switch  --show-trace";
+    Rbt = "sudo shutdown -r now";
+    UbntRst = makeRestartVmScript "ubuntu-vm.service"; # 🚨 Este nome tem que bater com o configurado em startup.nix!
+    WinRst = makeRestartVmScript "windows-server.service"; # 🚨 Este nome tem que bater com o configurado em startup.nix!
+    SockUbnt = makeOpenVmScript "ubuntu-vm"; # 🚨 Este nome tem que bater com o configurado em qemu-vms.nix!
+    SockWin = makeOpenVmScript "windows-server"; # 🚨 Este nome tem que bater com o configurado em qemu-vms.nix!
+
+  };
+
+  environment.sessionVariables = rec {
+
+    S = "/etc/nixos/startup.nix";
+    C = "/etc/nixos/configuration.nix";
+    H = "/etc/nixos/hardware-configuration.nix";
+
+    XDG_CACHE_HOME = "$HOME/.cache";
+    XDG_CONFIG_HOME = "$HOME/.config";
+    XDG_DATA_HOME = "$HOME/.local/share";
+    XDG_STATE_HOME = "$HOME/.local/state";
+
+    # Not officially in the specification
+    XDG_BIN_HOME = "$HOME/.local/bin";
+    PATH = [
+      "${XDG_BIN_HOME}"
+    ];
+  };
+
+  # Dynamically generate 3-letter aliases for Zsh
+  programs.zsh.interactiveShellInit = ''
+    #     if [ -d /etc/nixos ]; then
+    #       for file in /etc/nixos/*; do
+    #         if [ -f "$file" ]; then
+    #           # Get filename without path (e.g., "configuration.nix")
+    #           filename=$(basename "$file")
+    #
+    #           # Remove the extension (e.g., "configuration")
+    #           clean_name="''${filename%.*}"
+    #
+    #           # Extract only the first 3 characters using Zsh substring slicing
+    #           alias_name="''${clean_name[1,3]}"
+    #
+    #           # Create the alias (e.g., alias con="nano /etc/nixos/configuration.nix")
+    #           # Replace 'nano' with your preferred editor
+    #           alias "$alias_name"="nano $file"
+    #         fi
+    #       done
+    #     fi
+  '';
+
+}
