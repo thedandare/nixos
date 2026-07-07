@@ -1,9 +1,0 @@
-#!/bin/sh
-# 1. Força o kernel a compactar a memória RAM para juntar blocos vazios
-sudo sysctl -w vm.compact_memory=1
-
-# 2. Limpa o cache de páginas e inodes que ficam presos na RAM
-sudo sysctl -w vm.drop_caches=3
-# Força o kernel a juntar os blocos de RAM antes de alocar os 8GB de Hugepages
-echo 1 | sudo tee /proc/sys/vm/compact_memory > /dev/null
-echo 3 | sudo tee /proc/sys/vm/drop_caches > /dev/null

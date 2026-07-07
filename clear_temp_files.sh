@@ -3,8 +3,8 @@ input_dir="${1:-..}"
 target_dir="$2"
 
 if [[ -z "$2" ]]; then
-    mkdir -p .old
-    target_dir=".old"
+    mkdir -p /osnix/nixos.old
+    target_dir="/osnix/nixos.old"
 fi
 
 find $input_dir -type f -name "*~" -exec mv -t "$target_dir" {} +

@@ -55,6 +55,20 @@ in
     JctlWin = "journalctl -u windows-server.service -e --no-page";
     JctlUbnt = "journalctl -u ubuntu-vm.service -e --no-page";
 
+    OsnixCP = ''
+      if [ "$EUID" -ne 0 ]; then
+        echo "Error:   run as root." >&2
+        exit 1
+      fi
+      cd /osnix/nixos
+      ./rsync.sh
+      ./clear_temp_files.sh
+      ./pu.sh
+      cd ../ubunix
+      ./clear_temp_files.sh
+      ./pu.sh
+
+    '';
     #
 
     Swl = ''
