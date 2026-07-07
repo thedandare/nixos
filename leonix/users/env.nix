@@ -20,6 +20,7 @@ in
 {
   environment.variables.EDITOR = "nvim";
   environment.variables.OPENAI_API_KEY = openai_key;
+  environment.variables.GIT_SSH_COMMAND = "ssh -i ~/.ssh/tdd_id_ed25519";
 
   environment.interactiveShellInit = ''
     alias gs='git status'
@@ -61,10 +62,12 @@ in
         exit 1
       fi
       cd /osnix/nixos
+      git pull
       ./rsync.sh
       ./clear_temp_files.sh
       ./pu.sh
       cd ../ubunix
+      git pull
       ./clear_temp_files.sh
       ./pu.sh
 
