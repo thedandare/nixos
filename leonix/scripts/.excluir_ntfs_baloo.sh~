@@ -1,0 +1,172 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# Definição de caminhos absolutos baseados no padrão XDG
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE}")" && pwd)"
+INI_FILE="${SCRIPT_DIR}/discos_ntfs.ini"
+BALOO_CONFIG="${XDG_CONFIG_HOME:-$HOME/.config}/baloofilerc"
+
+# Função interna para garantir a existência e integridade do arquivo .ini
+checkIni() {
+    # Se não achar o .ini localmente no diretório do script, define o caminho XDG padrão
+    if [ ! -f "$INI_FILE" ]; then
+        INI_FILE="${XDG_CONFIG_HOME:-$HOME/.config}/baloo-ntfs/discos_ntfs.ini"
+    fi
+
+    # Se o arquivo não existir em nenhum dos locais, cria a estrutura com a configuração padrão
+    if [ ! -f "$INI_FILE" ]; then
+        echo "Configuração inicial: Criando estrutura padrão em $INI_FILE"
+        mkdir -p "$(dirname "$INI_FILE")"
+        cat << 'EOF' > "$INI_FILE"
+[Discos]
+/dev/disk/by-id/ata-ST1000DM010-2EP102_ZN1LPA8P-part1
+/dev/disk/by-id/ata-ST1000DM010-2EP102_ZN1LPA8P-part3
+/dev/disk/by-id/ata-ST4000VX016-3CV104_WW60QZE2-part1
+/dev/disk/by-id/ata-WDC_WD40PURZ-85TTDY0_WD-WCC7K2ZF3NT1-part1
+/dev/disk/by-id/ata-WDC_WD40PURZ-85TTDY0_WD-WCC7K2ZF3NT1-part2
+/dev/disk/by-id/ata-WDC_WD40PURZ-85TTDY0_WD-WCC7K2ZF3NT1-part3
+/dev/disk/by-id/nvme-WD_BLACK_SN750_SE_500GB_22064Y801267-part4
+/dev/disk/by-id/nvme-WD_BLACK_SN750_SE_500GB_22064Y801267-part7
+/dev/disk/by-id/wwn-0x53a5a27068050511-part8
+EOF
+    fi
+
+    # Validação estrutural: Garante que o cabeçalho [Discos] exista mesmo se o arquivo for modificado incorretamente
+    if ! grep -q "\[Discos\]" "$INI_FILE"; then
+        sed -i '1i\[Discos\]' "$INI_FILE"
+    fi
+}
+
+# Garante a existência do arquivo de configuração do Baloo
+mkdir -p "$(dirname "$BALOO_CONFIG")"
+
+# Função interna para parsear o arquivo .ini de forma limpa
+carregar_ids_ini() {
+    grep -v '^\[.*\]' "$INI_FILE" | grep -v '^#' | sed '/^$/d' || true
+}
+
+# Sincroniza a lista do .ini para o arquivo do Baloo (Idempotente)
+sincronizar_baloo() {
+    if [ ! -f "$BALOO_CONFIG" ]; then
+        echo -e "[Basic Settings]\nIndexing-Enabled=true" > "$BALOO_CONFIG"
+    fi
+
+    if ! grep -q "\[General\]" "$BALOO_CONFIG"; then
+        echo -e "\n[General]" >> "$BALOO_CONFIG"
+    fi
+
+    mapfile -t ids_do_ini < <(carregar_ids_ini)
+
+    for id_path in "${ids_do_ini[@]}"; do
+        # Validação física se o disco está conectado no boot/momento atual
+        if [ ! -L "$id_path" ] && [ ! -b "$id_path" ]; then
+            echo "Aviso (Sync): $id_path não detectado fisicamente no hardware. Pulando..."
+            continue
+        fi
+
+        if grep -q "exclude folders=" "$BALOO_CONFIG" && grep "exclude folders=" "$BALOO_CONFIG" | grep -Fq "$id_path"; then
+            continue
+        fi
+
+        echo "Sincronizando: Adicionando $id_path ao baloofilerc..."
+        if grep -q "exclude folders=" "$BALOO_CONFIG"; then
+            sed -i "/exclude folders=/ s|=|= ${id_path},|" "$BALOO_CONFIG"
+        else
+            sed -i "/\[General\]/a exclude folders=${id_path}" "$BALOO_CONFIG"
+        fi
+    done
+
+    sed -i 's/, \+/,/g; s/= \+/=/g; s/,\+/,/g; s/,$//g' "$BALOO_CONFIG"
+}
+
+# --- COMANDOS DA CLI ---
+
+comando_ls() {
+    echo "=== DISCOS NTFS CONFIGURADOS NO .INI ==="
+    carregar_ids_ini
+    echo ""
+    echo "=== STATUS ATUAL NO BALOOFILERC ==="
+    grep "exclude folders=" "$BALOO_CONFIG" || echo "Nenhum mapeamento ativo encontrado."
+}
+
+comando_add() {
+    local novo_id="$1"
+
+    if [[ ! "$novo_id" =~ ^/dev/disk/by-id/ ]]; then
+        echo "Erro: Forneça um caminho absoluto persistente iniciando com /dev/disk/by-id/"
+        exit 1
+    fi
+
+    if carregar_ids_ini | grep -Fq "$novo_id"; then
+        echo "Idempotência: $novo_id já existe no seu arquivo .ini."
+    else
+        echo "$novo_id" >> "$INI_FILE"
+        echo "Sucesso: $novo_id adicionado ao .ini!"
+    fi
+    sincronizar_baloo
+}
+
+comando_rm() {
+    local alvo_id="$1"
+
+    if ! carregar_ids_ini | grep -Fq "$alvo_id"; then
+        echo "Erro: $alvo_id não foi encontrado na lista do .ini."
+        exit 1
+    fi
+
+    sed -i "\|\^${alvo_id}\$|d" "$INI_FILE"
+
+    if [ -f "$BALOO_CONFIG" ]; then
+        sed -i "s|${alvo_id},*||g" "$BALOO_CONFIG"
+        sed -i 's/,,/,/g; s/=,/=/g; s/,$//g' "$BALOO_CONFIG"
+    fi
+    echo "Sucesso: $alvo_id removido do .ini e do Baloo!"
+}
+# --- ROTEAMENTO DO MÓDULO CLI / SERVIÇO ---
+
+# Roda a verificação de sanidade do arquivo .ini antes de qualquer operação
+checkIni
+
+exibir_ajuda() {
+    echo -e "\033[7;36m"
+    echo -e "▐▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▌"
+    echo -e "▐  GERENCIADOR DE EXCLUSÃO NTFS PARA O KDE BALOO (bntfs)      ▐"
+    echo -e "▐▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▌\033[0m"
+    cat << 'EOF'
+Este script atua tanto como um daemon invisível no boot (Systemd do NixOS) quanto
+como uma ferramenta CLI manual para gerenciamento de discos.
+
+ 1. Sem argumentos, o script apenas lê o arquivo 'discos_ntfs.ini' e sincroniza
+    de forma IDEMPOTENTE com o arquivo de configuração do KDE (~/.config/baloofilerc).
+ 2. A sincronização manipula diretamente as strings do arquivo usando 'sed',
+    evitando depender do daemon do Baloo estar ativo no momento do boot.
+ 3. Discos desconectados fisicamente no momento da execução serão pulados para
+    evitar erros de amostragem, mas suas regras permanecem guardadas no .ini.
+ 4. O uso de caminhos '/dev/disk/by-id/' é OBRIGATÓRIO devido à volatilidade
+    dos nós '/dev/sd*' induzida pelo kernel a cada inicialização.
+
+USO DA CLI:
+  bntfs               - Modo Automático (Sync idempotente .ini -> baloofilerc)
+  bntfs ls            - Lista os discos salvos no .ini e o status atual no Baloo
+  bntfs add <by-id>   - Adiciona um novo ID de partição ao .ini e força o Sync
+  bntfs rm <by-id>    - Remove o ID do .ini e limpa os registros do baloofilerc
+  bntfs -h | --help   - Exibe esta tela de ajuda técnica
+
+EXEMPLO DE USO:
+  bntfs add /dev/disk/by-id/ata-ST4000VX016-3CV104_WW60QZE2-part1
+================================================================================
+EOF
+}
+
+if [ $# -eq 0 ]; then
+    # Sem argumentos, o script apenas sincroniza as regras do .ini de forma idempotente
+    sincronizar_baloo
+else
+    case "$1" in
+        ls)  comando_ls ;;
+        add) shift; if [ $# -eq 0 ]; then echo "Erro: Forneça o caminho do disco."; echo "Uso: bntfs add /dev/disk/by-id/..."; exit 1; fi; comando_add "$1" ;;
+        rm)  shift; if [ $# -eq 0 ]; then echo "Erro: Forneça o caminho do disco."; echo "Uso: bntfs rm /dev/disk/by-id/..."; exit 1; fi; comando_rm "$1" ;;
+        -h|--help) exibir_ajuda ;;
+        *)   echo "Comando inválido. Use 'bntfs -h' para ver os comandos disponíveis."; exit 1 ;;
+    esac
+fi
