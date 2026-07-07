@@ -1,0 +1,260 @@
+{
+  pkgs,
+  erosanix,
+  ...
+}:
+{
+
+  environment.systemPackages = with pkgs; [
+    # 🪢 Serial TTY
+    pkgs.screen
+    pkgs.tio # https://github.com/tio/tio Connect to TTY device directly or via profile or topology ID.
+    pkgs.bootterm # https://github.com/wtarreau/bootterm A simple, reliable and powerful terminal
+
+    # 🪒 Hardware
+    pkgs.cpu-x
+    pkgs.zenstates
+    pkgs.zenmonitor
+    pkgs.libsigrok # https://github.com/sipeed/libsigrok/
+    pkgs.sigrok-cli # Signal analysis software suite
+    pkgs.toybox # Programs provided:
+    # [ acpi arch ascii base32 base64 basename blkdiscard blkid blockdev bunzip2 bzcat cal cat chattr chgrp chmod chown chroot chrt chvt cksum clear cmp comm count cp cpio crc32 cut date dd deallocvt devmem df dirname dmesg dnsdomainname dos2unix du echo egrep eject env expand factor fallocate false fgrep file find flock fmt fold free freeramdisk fsfreeze fstype fsync ftpget ftpput getconf getopt gpiodetect gpiofind gpioget gpioinfo gpioset grep groups gunzip halt hd head help hexedit host hostname httpd hwclock i2cdetect i2cdump i2cget i2cset i2ctransfer iconv id ifconfig inotifyd insmod install ionice iorenice iotop kill killall killall5 link linux32 ln logger login logname losetup ls lsattr lsmod lspci lsusb makedevs mcookie md5sum memeater microcom mix mkdir mkfifo mknod mkpasswd mkswap mktemp modinfo mount mountpoint mv nbd-client nbd-server nc netcat netstat nice nl nohup nologin nproc nsenter od oneit openvt partprobe paste patch pgrep pidof ping ping6 pivot_root pkill pmap poweroff printenv printf prlimit ps pwd pwdx pwgen readahead readelf readlink realpath reboot renice reset rev rfkill rm rmdir rmmod rtcwake sed seq setfattr setsid sha1sum sha224sum sha256sum sha384sum sha3sum sha512sum shred shuf sleep sntp sort split stat strings su swapoff swapon switch_root sync sysctl tac tail tar taskset tee test time timeout top touch toybox true truncate ts tsort tty tunctl uclampset ulimit umount uname unicode uniq unix2dos unlink unshare uptime usleep uudecode uuencode uuidgen vconfig vmstat w watch watchdog wc wget which who whoami xargs xxd yes zca ]  https://landley.net/toybox/
+    pkgs.usbutils
+    pkgs.pciutils # https://mj.ucw.cz/sw/pciutils/
+    /*
+      Including: lspci – a utility for displaying information about PCI buses in the system and devices connected to them.
+      setpci – a utility for querying and poking configuration registers of PCI devices.
+      pcilib – manual on the libpci library and options common to all tools using it.
+      pci.ids – the list of known identifiers related to PCI devices..
+      update-pciids – a utility for downloading a new version of the PCI ID list.
+      pcilmr – a utility for margining PCIe links.
+    */
+
+    # ⚓ NixOS configuration
+    pkgs.nixos-grub2-theme
+
+    pkgs.nixfmt
+    # TODO agenix:>    inputs.agenix.packages."${system}".default
+
+    # 🔊 Audio
+    pkgs.asha-pipewire-sink # Pairing hearing aids using the ASHA protocol
+    pkgs.pavucontrol
+    pkgs.ncpamixer
+    pkgs.pipewire
+    pkgs.qjackctl
+    pkgs.qpwgraph # Graph manager dedicated for PipeWire, using the Qt C++ framework, based and pretty much like the same of QjackCtl.
+    pkgs.easyeffects # https://github.com/wwmm/easyeffects
+    pkgs.cava # https://github.com/karlstav/cava
+    pkgs.cavasik # Audio visualizer based on CAVA with extended capabilities
+
+    # 👶 Boot / partitioning
+    pkgs.efibooteditor
+    pkgs.refind
+    pkgs.efivar # https://github.com/rhboot/efivar
+    pkgs.goldboot # https://github.com/fossable/goldboot
+    pkgs.btrfs-progs
+    pkgs.gparted-full
+    pkgs.grub2_efi
+    pkgs.uefitool # https://github.com/LongSoft/uefitool
+
+    # 🧹 Cleanup
+    pkgs.bleachbit
+    pkgs.nix-janitor
+
+    # 📀 Drivers
+    pkgs.ckb-next # 🖱️ Corsair mouse configuration tool
+
+    # 🥸 Desktop
+    kdePackages.ksshaskpass # Ferramenta nativa do KDE para senhas
+
+    ## Image Editor
+    pkgs.pixieditor
+
+
+    # 👩‍💻 Development
+    ## IDEs
+    pkgs.antigravity
+    pkgs.windsurf
+    pkgs.jetbrains.idea
+    pkgs.jetbrains.pycharm
+    ## Runbooks
+    pkgs.atuin-desktop
+    ## SDKs / envs
+    pkgs.dart
+    pkgs.flutter341
+    pkgs.uv
+    pkgs.nodejs_24
+
+    # Google
+    pkgs.androidsdk
+    pkgs.google-chrome
+    pkgs.google-fonts
+    pkgs.google-cloud-sdk
+    pkgs.google-cloud-sdk-gce
+    pkgs.google-compute-engine
+    pkgs.ungoogled-chromium
+
+    # Hypervisors
+    pkgs.photoprism
+    pkgs.virt-manager
+    pkgs.socat # http://www.dest-unreach.org/socat/ Utility for bidirectional data transfer between two independent data channels
+    pkgs.websocat # https://github.com/vi/websocat
+    pkgs.qemu
+    pkgs.quickemu
+    pkgs.qemu-utils
+    pkgs.uefi-run
+    pkgs.virt-viewer
+    pkgs.spice-gtk
+    pkgs.spice
+    pkgs.vhost-device-sound
+
+    # 🎱 Kubernets
+    pkgs.kubectl
+    pkgs.kubectl-ai
+    pkgs.kompose
+    pkgs.opentofu
+    pkgs.stern # Multi pod and container log tailing for Kubernetes Usage stern pod-query [flags] https://github.com/stern/stern
+
+    # 📺 Media
+    vlc
+
+    # 📡 Networking
+    pkgs.tailscale
+    pkgs.zenmap
+    pkgs.whosthere
+    pkgs.net-tools
+    pkgs.tunctl
+
+    # 🏢 Remote Access
+    pkgs.x2goclient
+    pkgs.gnome-connections
+    pkgs.x2goserver
+
+    # 🐚 Shells
+    pkgs.alacritty
+    pkgs.alacritty-graphics
+    pkgs.pycritty # CLI tool for changing your alacritty configuration on the fly
+    pkgs.gnvim # https://github.com/vhakulinen/gnvim
+    pkgs.glrnvim # https://github.com/beeender/glrnvim
+    pkgs.cool-retro-term
+    pkgs.fzf
+
+    # TUIs /
+    pkgs.msedit
+    pkgs.notcurses
+    pkgs.tuios # https://tuios.gaurav.  /
+    pkgs.wiremix # TUI audio mixer for PipeWire.
+    pkgs.tparted
+    pkgs.fortune
+
+    # ⛽ Util
+    wget
+    pkgs.jq
+    pkgs.wiper
+    pkgs.dysk
+    pkgs.zenith
+    pkgs.chezmoi # Manage your dotfiles across multiple machines, securely https://www.chezmoi.io
+    pkgs.tparted
+
+    # ❎ X-Win
+    pkgs.anyrun # Wayland-native, highly customizable runner
+    wayland-utils # Wayland diagnostic tools
+    wl-clipboard # Wayland copy/paste support
+    pkgs.vulkan-tools
+    pkgs.libxdmcp
+    pkgs.gpu-viewer
+    pkgs.xclip # X clipboard for console application  Programs also provided:
+    # xclip-copyfile
+    # xclip-cutfile
+    # xclip-pastefile
+
+    # 🪟 Windows
+    pkgs.chicago95
+    wineWow64Packages.full
+    pkgs.winetricks
+    pkgs.q4wine
+
+    pkgs.kiwix
+    pkgs.kiwix-tools
+
+    pkgs.ayugram-desktop # Desktop Telegram client with good customization and Ghost mode
+    #
+    #     pkgs.runbooks
+
+    #   Movidos para programs.neovim:
+    #     pkgs.vimPlugins.ChatGPT-nvim
+    #     pkgs.vimPlugins.moveline-nvim
+    #     pkgs.vimPlugins.GPTModels-nvim # https://github.com/Aaronik/GPTModels.nvim/
+    #     pkgs.vimPlugins.dart-vim-plugin # https://github.com/dart-lang/dart-vim-plugin/
+    #     pkgs.vimPlugins.conform-nvim # Formatter plugin for Neovim https://github.com/stevearc/conform.nvim/
+
+    pkgs.agneyastra # A firebase Misconfiguration Detection Toolkit [https://github.com/JA3G3R/agneyastra]
+
+    #    (
+    #      let
+    #        inputs = builtins.getFlake "/etc/nixos/inputactions";
+    #      in
+    #      inputs.inputactions-ctl.packages.${pkgs.system}.default
+    #        inputs.inputactions-standalone.packages.${pkgs.system}.default
+    #    )
+
+    # Local Flakes
+    ## Testing / Templates
+    #     (
+    #       let
+    #         myflake = builtins.getFlake "/home/leo/myflake";
+    #       in
+    #       myflake.packages.${pkgs.system}.default
+    #     )
+
+    #     (
+    #       let
+    #         myflake = builtins.getFlake "/home/leo/myflake";
+    #       in
+    #       myflake.packages.${pkgs.system}.hello
+    #     )
+
+    # 1. Foo
+    #     (
+    #       let
+    #         fooFlake = builtins.getFlake "/home/leo/flakes/foo"; # Ajuste o caminho se estiver em uma subpasta (ex: "/home/leo/flakes/foo")
+    #       in
+    #       fooFlake.packages.${pkgs.system}.foo
+    #     )
+    #
+    #     ## Desktop / Devices
+    #     # 2. Corsair Mouse
+    #     (
+    #       let
+    #         corsairFlake = builtins.getFlake "/home/leo/flakes/initCorsairMouse";
+    #       in
+    #       corsairFlake.packages.${pkgs.system}.initCorsairMouse
+    #     )
+    #
+    #     ## Development
+    #     # 3. Copy Source Code (Note que faltava ".packages" no seu erro original, adicionei aqui para corrigir)
+    #     (
+    #       let
+    #         ramdiskFlake = builtins.getFlake "/home/leo/flakes/copySourceCodeToRamdisk";
+    #       in
+    #       ramdiskFlake.packages.${pkgs.system}.copySourceCodeToRamdisk
+    #     )
+    #
+    #     # 4. Fibo Serverpod
+    #     (
+    #       let
+    #         fiboFlake = builtins.getFlake "/home/leo/flakes/fibo-serverpod";
+    #       in
+    #       fiboFlake.packages.${pkgs.system}.fibo-serverpod
+    #     )
+    #
+    #     # 5. Foobar2000
+    #     (
+    #       let
+    #         foobarFlake = builtins.getFlake "/home/leo/flakes/foobar2000";
+    #       in
+    #       foobarFlake.packages.${pkgs.system}.foobar2000
+    #     )
+
+  ];
+}
