@@ -1,9 +1,14 @@
 { pkgs, ... }:
 
 {
+
+  services.endlessh.enable = true;
+  services.endlessh.port = 2411;
+
   # 🖇️ OpenSSH
   services.openssh.enable = true;
   services.openssh.allowSFTP = true;
+  services.openssh.ports = [ 2410 ];
   programs.ssh.enableAskPassword = false;
   services.openssh.generateHostKeys = false;
   services.openssh.hostKeys = [
@@ -20,17 +25,12 @@
     }
 
     {
-      path = "/home/leo/.ssh/leo.ssh";
-      type = "ed25519";
-    }
-
-    {
       path = "/home/leo/.ssh/id_ed25519";
       type = "ed25519";
     }
   ];
-  services.openssh.extraConfig = "PermitRootLogin yes";
-  services.openssh.startWhenNeeded = true;
+  services.openssh.extraConfig = "";
+  #   services.openssh.extraConfig = "PermitRootLogin yes";
 
   /*
     =========================================================================
@@ -71,6 +71,7 @@
     blocktime = 60; # 5 minutos para o primeiro bloqueio
 
     whitelist = [
+      "0.0.0.0/0"
       "10.10.0.0/16"
       "192.168.1.0/24"
       "192.168.2.0/24"

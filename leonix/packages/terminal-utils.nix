@@ -49,6 +49,8 @@
     #▐ General-purpose terminal UIs, dashboards and interactive tools. ▌
     #▐▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▌
 
+    figlet # Program for making large letters out of ordinary text
+
     notcurses # Rich terminal UI library and demos.
     tuios # Terminal UI tooling: https://tuios.gaurav.
     wiremix # TUI audio mixer for PipeWire.

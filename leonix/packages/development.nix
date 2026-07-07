@@ -83,7 +83,7 @@
     #▐ ☸️ Kubernetes / IaC                                         ▌
     #▐ Kubernetes operations, diagnostics and infrastructure code. ▌
     #▐▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▌
-
+    lens # https://k8slens.dev/
     kubectl
     kubectl-ai
     k9s

@@ -7,7 +7,8 @@ let
     "windows-server" = {
       mac = "52:54:00:AB:12:34";
       device = "/dev/disk/by-id/ata-Lexar_SSD_NQ100_1TB_QE6068R0049370S30T";
-      cdrom = "-device qemu-xhci -device usb-host,hostbus=1,hostaddr=11 "; # constantes.WIN_SRV_CDROM;
+      cdrom = ""; # constantes.WIN_SRV_CDROM;
+      # garmin gps: -device qemu-xhci -device usb-host,hostbus=1,hostaddr=11
       discosAdicionais = "${constantes.PASS_WD40} ${constantes.PASS_ST40} ${constantes.PASS_ST10}"; # ${constantes.WIN_VIRTIO_CDROM}
       ram = "3G";
     };
@@ -18,6 +19,13 @@ let
       discosAdicionais = "";
       ram = "10G";
     };
+    #      "kali-vm" = {
+    #       mac = "52:54:00:AB:56:78";
+    #       device = "/dev/disk/by-id/nvme-WD_BLACK_SN750_SE_500GB_22064Y801267";
+    #       cdrom = ""; # constantes.UBUNTU_CDROM; # Certifique-se de que está definido no seu constants.nix;
+    #       discosAdicionais = "";
+    #       ram = "10G";
+    #     };
   };
 
 in

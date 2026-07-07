@@ -13,6 +13,8 @@
     # comsatd decodemail dotlock frm from imap4d lmtpd mail mailutils mailutils-config mda messages mimeview movemail pop3d popauth putmail readmsg sieve
 
     # 📡 Networking
+    netbird
+    netbird-ui
     tailscale
     nmap
     zenmap
@@ -25,6 +27,9 @@
     wireshark-cli
     pihole-ftl
     dublin-traceroute # NAT-aware multipath traceroute tool
+    iperf3
+
+    owamp # one-way active measurements http://software.internet2.edu/owamp/
 
     # 🏢 Remote Access
     # x2goclient

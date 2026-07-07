@@ -9,6 +9,10 @@
   systemd.network.enable = true;
   networking.hostName = "leonix";
 
+  services.iperf3 = {
+    enable = true;
+  };
+
   networking.networkmanager.enable = true;
   # 3. Optimization: Prevent systemd from waiting for network online
   # (Optional but recommended for faster boot with VPNs)
@@ -112,9 +116,10 @@
 
   networking.defaultGateway = "192.168.0.1";
   networking.nameservers = [
-    "127.0.0.1"
-    "192.168.0.1"
-    "1.1.1.1"
+    "181.213.132.5"
+    #     "127.0.0.1"
+    #     "192.168.0.1"
+    #     "1.1.1.1"
     #     "192.168.0.1"
   ];
 
