@@ -1,0 +1,541 @@
+{ pkgs, ... }:
+{
+  environment.systemPackages = with pkgs; [
+    # nix search flake: let
+    # evaluating # 'legacyPackages.x86_64-linux'...
+    # * # [0;1mlegacyPackages.x86_64-linux.aaxtomp3[0m (1.3)
+    # Convert # Audible's .aax fi[32;1mlet[0mype to MP3, FLAC, M4A, or OPUS
+    # Program # for computing the AccurateRip checksum of sing[32;1mlet[0mrack WAV files
+    # Secure # ACME/[32;1mLet[0m's Encrypt client
+    # GNOME # Inspired LibAdwaita Bluetooth App[32;1mlet[0m
+    # Obtains # certificates from [32;1mLet[0m's Encrypt using DNS-01 without the need for API access to the DNS provider
+    # Inadvisible # pure-Scheme TLS 1.2 client
+    # And # with local bindings compatible with SRFI 2
+    # Fixing # [32;1mlet[0mrec
+    # Fully-featured # alarm clock with an indicator
+    # Control # lightning wal[32;1mlet[0ms over nostr
+    # (deprecated) # Comp[32;1mlet[0me set of free CAD tools and portable libraries for VLSI design
+    # Convenient # authentication method that [32;1mlet[0ms you use your android device as a key for your Linux machine
+    # GUI # for alsa controls presented by Focusrite Scar[32;1mlet[0mt Gen 2/3/4 Mixer Driver
+    # LSP # for angular comp[32;1mlet[0mions, AOT diagnostic, quick info and go to definitions
+    # Import # Quiz[32;1mlet[0m Decks into Anki
+    # Adds # extra features for creating image-based cloze-de[32;1mlet[0mions
+    # Arduino # Language Server based on Clangd to Arduino code autocomp[32;1mlet[0mion
+    # Dark # theme deeply inspired by the Ayu Dark color pa[32;1mlet[0mte
+    # Ayatana # Indicator Messages App[32;1mlet[0m
+    # Microsoft # Azure Command-Line Tools Durab[32;1mlet[0mask Extension
+    # Most # Comp[32;1mlet[0me All-In-One Mod Library for Minecraft with 100+ Mods, FPS Improvements, and more
+    # Programmable # comp[32;1mlet[0mion for the bash shell
+    # Simple # comp[32;1mlet[0mion script for pinyin, written in rust
+    # Powerful # cross platform Bible study tool
+    # Companion # app for the BitBox02 hardware wal[32;1mlet[0m
+    # Bridge # service that connects web wal[32;1mlet[0ms like Rabby to BitBox02
+    # CLI # used to comp[32;1mlet[0me coding challenges and lessons on Boot.dev
+    # Cursor # theme using a custom color pa[32;1mlet[0mte inspired by boreal colors
+    # [32;1mLet[0ms # you run x86_64 Linux programs on non-x86_64 Linux systems
+    # Daemon # (or service on Windows) that acts as a bridge between the Bricks/Brick[32;1mlet[0ms and the API bindings for the different programming languages
+    # Try # to find password of encrypted cryptocurrency wal[32;1mlet[0m
+    # Analogue # Clock App[32;1mlet[0m for the Budgie desktop
+    # Media # Control App[32;1mlet[0m for the Budgie Panel
+    # Budgie # app[32;1mlet[0m to show cpu frequency, ram, swap, network and uptime
+    # Professional # free 3D Game Multiphysics Library
+    # C++ # library to handle Bul[32;1mlet[0mML easily
+    # Terminal # UI RSS/ATOM feed reader
+    # Command-line # tool to manipulate Android App Bundles
+    # Don't # [32;1mlet[0m your Mac fall asleep
+    # Turing-comp[32;1mlet[0me # language for creating provable programs for general computation
+    # Comp[32;1mlet[0me # emulation of CPC464, CPC664 and CPC6128
+    # Multi-shell # multi-command argument comp[32;1mlet[0mer
+    # Alternative # cargo frontend that implements dynamic shell comp[32;1mlet[0mion for usual cargo commands
+    # Fast, # portable, non-Turing comp[32;1mlet[0me expression evaluation with gradual typing
+    # SRFI-5: # A compatible [32;1mlet[0m form with signatures and rest arguments
+    # SRFI-71: # Extended [32;1mLET[0m-syntax for multiple values
+    # Free # time tracker and timesheet app that [32;1mlet[0ms you track work hours across projects
+    # Tool # for cleaning up your cloud accounts by nuking (de[32;1mlet[0ming) all resources within it
+    # Cross-platform # virtual tab[32;1mlet[0mop for multiplayer card games
+    # Makes # it easy to add robust, high-performance, file upload capability to your serv[32;1mlet[0ms and web applications
+    # Automagical # shell alias comp[32;1mlet[0mion
+    # Generate # bash comp[32;1mlet[0mion scripts using a simple configuration file
+    # Image # pa[32;1mlet[0mte quantization
+    # Reflective # PHOAS rewriting/pattern-matching-compilation framework for simply-typed equalities and [32;1mlet[0m-lifting, experimental and tailored for use in Fiat Cryptography
+    # App[32;1mlet[0ms # for the COSMIC Desktop Environment
+    # Caffeine # App[32;1mlet[0m for the COSMIC desktop
+    # App[32;1mlet[0m # to control the brightness of external monitors
+    # COSMIC # app[32;1mlet[0m for displaying CPU/Memory/Network/Disk/GPU usage in the Panel or Dock
+    # Privacy # indicator app[32;1mlet[0m for the COSMIC Desktop Environment
+    # Crypto.org # Chain desktop wal[32;1mlet[0m (Beta)
+    # Blazing-fast # pywal-like color pa[32;1mlet[0mte generator written in C
+    # Obso[32;1mlet[0me # glib bindings for D-Bus lightweight IPC mechanism
+    # Tab[32;1mlet[0mop # Yugioh Experience
+    # [32;1mLet[0msencrypt/acme # client implemented as a shell-script
+    # Codespaces # but open-source, client-only and unopinionated: Works with any IDE and [32;1mlet[0ms you use any cloud, kubernetes or just localhost docker
+    # Open-source # developer tool for Kubernetes that [32;1mlet[0ms you develop and deploy cloud-native software faster
+    # QT # based application for the Digital Bitbox hardware wal[32;1mlet[0m
+    # DigitalOcean # drop[32;1mlet[0m system metrics agent
+    # Font # that provides comp[32;1mlet[0me support for the International Phonetic Alphabet
+    # Mini # Web server that [32;1mlet[0m others upload files to your computer
+    # Provides # fast jumps to text based on initial [32;1mlet[0mter
+    # Protocol # and desktop application for swapping Monero and Bitcoin
+    # Bitcoin # Cash SPV Wal[32;1mlet[0m
+    # Lightweight # Bitcoin wal[32;1mlet[0m
+    # Store # your color pa[32;1mlet[0mtes in an easy way
+    # Coordinate # your volunteers in teams, assign them to work shifts or [32;1mlet[0m them decide for themselves when and where they want to help with what
+    # Everforest # colour pa[32;1mlet[0mte for GTK
+    # Top-rated # cryptocurrency wal[32;1mlet[0m with Trezor integration and built-in Exchange
+    # Recover # / unde[32;1mlet[0me files from ext3 or ext4 partitions
+    # Utility # that can recover de[32;1mlet[0med files from an ext3 or ext4 partition
+    # Typeface # fashioned after the square [32;1mlet[0mter forms of the typography of the Biblia Hebraica Stuttgartensia (BHS)
+    # Comp[32;1mlet[0me, # cross-platform solution to record, convert and stream audio and video
+    # IOTA's # New Wal[32;1mlet[0m
+    # Commandline-utility # to list/view/edit/de[32;1mlet[0me entries in a firefox-sync account
+    # Puzzle # game
+    # Auto-comp[32;1mlet[0me # matching pairs in the Fish command line
+    # Comp[32;1mlet[0mions # and integrations with the AWS CLI
+    # Fzf # powers on top of fish comp[32;1mlet[0mion engine and allows customizable comp[32;1mlet[0mion rules
+    # Framework # that enables you to easily build realtime web, mobile, and desktop apps in Python. The frontend part
+    # Native # web3 interface that [32;1mlet[0ms you sign data, securely manage accounts and transparently interact with dapps via web3 protocols like Ethereum and IPFS
+    # Backend # service for rich editing or intellisense features for editors
+    # Comp[32;1mlet[0mion # script adding fzf over all know bash comp[32;1mlet[0mion functions
+    # Examine # the contents of the IE's cookie files for forensic purposes
+    # Old-school # vertical shoot-em-up / bul[32;1mlet[0m hell
+    # Gauge # plugin that [32;1mlet[0ms you write tests in C#
+    # Uinput # driver for Android GfxTab[32;1mlet[0m tab[32;1mlet[0m-as-input-device app
+    # Simple, # pretty terminal tool that [32;1mlet[0ms you search and download files from GitHub without leaving your CLI
+    # Terminal-native # autocomp[32;1mlet[0me engine using PTY proxying for macOS terminals
+    # Gnome # Comp[32;1mlet[0mion-Run Utility
+    # Application # that [32;1mlet[0ms you manage Bluetooth in the GNOME desktop
+    # Component # of Gnome Flashback that provides panels and default app[32;1mlet[0ms for the desktop
+    # Software # store that [32;1mlet[0ms you install and update applications and system extensions
+    # Dim # comp[32;1mlet[0med events in the top panel menu to easily distinguish between upcoming and past events. You can also highlight events that are ongoing.
+    # Discrete # brightness indicator changes brightness in discrete steps, unlike default smooth brightness bar in Gnome Shell. Extension for notebooks/tab[32;1mlet[0ms only, default brightness bar must be present in Gnome Shell.
+    # [32;1mLet[0m # Calendar, Clocks and Weather icons show current date, time and weather. This is a fork of the original Dynamic Calendar, Clocks and Weather Icons extension.
+    # A # GNOME Shell extension (GNOME Panel app[32;1mlet[0m) to be able to generally control your available Docker containers.
+    # Organize # your notes in folders directly from the GNOME Shell panel. Create, edit, rename, and de[32;1mlet[0me text notes and folders with a simple menu interface. Provide both light and dark themes. **Note: This extension accesses the clipboard to support copy/paste operations (Ctrl+C/Ctrl+V) within the note editor.**
+    # Gnome[32;1mlet[0ms # 🎅 - Brighten up your GNOME desktop with Gnome[32;1mlet[0ms! This extension brings small, animated 2D characters to life, [32;1mlet[0mting them roam freely across your screen. They walk, jump, and even balance on top of your open windows.
+    # De[32;1mlet[0me # notifications for an application when its window is focused or closed.
+    # Lomotion # extension [32;1mlet[0ms you switch and manage Gnome's workspaces seamlessly
+    # An # indicator that [32;1mlet[0m you run models with Ollama.
+    # It # [32;1mlet[0ms you change the names of your audio devices in the Quick Settings Audio Panel. This works for both speakers and microphones. It's useful when you need to switch quickly between different audio devices and their default names aren't very clear or they're a bit too explicit. This extension makes it easy to customize devices names so that, e.g. "Speaker - Family 17h/19h HD Audio Controller" could become just "Laptop Speakers". Emojis are supported as well!
+    # Comp[32;1mlet[0mely # disable the touchpad from the quick settings menu.
+    # [32;1mLet[0m's # tweak gnome's quick settings! You can add Media Controls, Notifications, Volume Mixer on quick settings and remove useless buttons!
+    # Save # My Windows periodically records all open windows along with their monitors and workspaces. It [32;1mlet[0ms you restore your window layout whenever Wayland resets or scrambles positions (e.g. after suspend).
+    # Minimize/unminimize # all open windows with a single click.
+    # Draw # a semi-transparent rectangle on screen to indicate the OpenTab[32;1mlet[0mDriver mapped area
+    # Fork # of 'todoit-gnome' by Wassim Ben Jdida (@wassimbj) — enhanced with task renaming, confirm de[32;1mlet[0mion prompt and improved UX (v3.0.0)
+    # Minimal # service monitor for Va[32;1mlet[0m Linux and MySQL/MariaDB
+    # Customize # your GNOME Shell UX to suit your workflow, whether you like horizontally or vertically stacked workspaces. V-Shell [32;1mlet[0ms you experiment with different Overview and App Grid layouts, add new window and workspace management features and fixes multiple GNOME Shell issues and bugs.
+    # Provide # menu to run VirtualBox machines and switch between running VMs
+    # This # extension [32;1mlet[0ms you view server statuses and power on remote servers directly from a GNOME Shell indicator. Each configured server displays its current online status (checked via ping). If a MAC address is provided, you can send a Wake-on-LAN (WOL) packet to power it on remotely.
+    # Workspace # Overlay [32;1mlet[0ms you quickly show windows from one workspace across all your workspaces, creating a convenient overlay. Perfect for multitasking, it keeps essential windows always visible as you switch between tasks. Easily toggle overlays on and off with customizable shortcuts, and even overlay multiple workspaces simultaneously.
+    # Reasonably # comp[32;1mlet[0me and well-tested golang port of httpbin, with zero dependencies outside the go stdlib
+    # Autocomp[32;1mlet[0mion # daemon for the Go programming language
+    # Execute # scripts on IMAP mailbox changes (new/de[32;1mlet[0med/updated messages) using IDLE
+    # Performance # software for cyclists, runners and triath[32;1mlet[0mes. Built from source and without API tokens
+    # Alias # and navigate to directories with tab comp[32;1mlet[0mion
+    # Public # domain font based on Frederic Goudy’s Kennerley Oldstyle
+    # Text # comp[32;1mlet[0mion and compression using GPT-2
+    # Gradle # tab comp[32;1mlet[0mion for bash and zsh
+    # GTK # theme based on the Gruvbox colour pa[32;1mlet[0mte
+    # Template # haskell for reading ConfigFiles
+    # Forkable # monad transformers
+    # Interface # to Google Translate API
+    # OBSO[32;1mLET[0mE. # Please use happstack-helpers
+    # Windows # Game Engine for the Haskell Programmer - Bul[32;1mlet[0m Bindings
+    # European # option implied vol calculation
+    # mecha # are the most complex composite machines known to humanity, [32;1mlet[0ms build them well!
+    # Sing[32;1mlet[0mon # Tuple
+    # RNA # folding with non-canonical basepairs and base-trip[32;1mlet[0ms
+    # Parse # Advent of Code ASCII art [32;1mlet[0mters
+    # ASCII # [32;1mlet[0mter case
+    # an # incomp[32;1mlet[0me 2d space game
+    # Atlassian # Connect snap[32;1mlet[0m for the Snap Framework and helper code
+    # Type-safe, # feature-comp[32;1mlet[0me SQL query and manipulation interface for Haskell
+    # BIP-0032: # Hierarchical Deterministic Wal[32;1mlet[0ms for Bitcoin and other cryptocurrencies
+    # Bul[32;1mlet[0mproofs # are short zero-knowledge proofs without a trusted setup
+    # De[32;1mlet[0mes # a directory and retains its contents in the parent directory
+    # Multivariate # Dirich[32;1mlet[0m distribution
+    # Object-oriented # programming with duck typing and sing[32;1mlet[0mon classes
+    # Semi-explicit # parallel programming ske[32;1mlet[0mon library
+    # Dependently # typed elimination functions using sing[32;1mlet[0mons
+    # Carlson # Elliptic Integrals and Incomp[32;1mlet[0me Elliptic Integrals
+    # Type-safe # EDSL for SQL queries on persistent backends
+    # Compatibility # operators for Persistent and Esque[32;1mlet[0mo
+    # Esque[32;1mlet[0mo # support for the pgcrypto PostgreSQL module
+    # postgis # bindings for esque[32;1mlet[0mo
+    # Memory-constant # streaming of Esque[32;1mlet[0mo results from PostgreSQL
+    # PostgreSQL # full text search for Esque[32;1mlet[0mo
+    # Operational-based # extensible effect library
+    # Recursively # de[32;1mlet[0me CloudFormation stacks and their dependants
+    # Form[32;1mlet[0ms # implemented in Haskell
+    # HSP # support for Form[32;1mlet[0ms
+    # Haar # wave[32;1mlet[0m transforms
+    # Hakyll # Ham[32;1mlet[0m compiler
+    # Haml-like # template files that are compile-time checked (deprecated)
+    # "Haskell # App[32;1mlet[0ms" provides an event handler and a canvas for building simple GUI apps
+    # The # "Haskell App[32;1mlet[0ms" Gtk+ ver. 2 back-end for "happ[32;1mlet[0ms".
+    # Support # for Ham[32;1mlet[0m HTML templates in Happstack
+    # Implementation # of the rules of Love [32;1mLet[0mter
+    # Find # and annotate ITDs with assembly or read pair joining
+    # Fast # algorithms for single, average/UPGMA and comp[32;1mlet[0me linkage clustering
+    # monadic, # reactive Form[32;1mlet[0ms running in the Web browser
+    # Ske[32;1mlet[0mon # for new Haskell programs
+    # HTML # to Ham[32;1mlet[0m converter
+    # Example # for combining LambdaCube and Bul[32;1mlet[0m
+    # Online # Latent Dirich[32;1mlet[0m Allocation
+    # Type-level # lenses using sing[32;1mlet[0mons
+    # Native, # comp[32;1mlet[0me-ish, matrix-free linear algebra
+    # Group # and de[32;1mlet[0me duplicates from a list
+    # Easily # and clearly create lists with only one element in them
+    # Math # using lists, including FFT and Wave[32;1mlet[0m
+    # Maximal # sharing of terms in the lambda calculus with [32;1mlet[0mrec
+    # These # as a transformer, Chronic[32;1mleT[0m
+    # Monads # of program ske[32;1mlet[0ma
+    # this # package is obso[32;1mlet[0me; see cabal2nix instead
+    # Utilities # for choosing and creating color schemes
+    # Enumeration # of common fi[32;1mlet[0mype extensions for use with the path library
+    # Efficient # and correct pagination for persistent or esque[32;1mlet[0mo queries
+    # Monad # classes for running queries with Persistent and Esque[32;1mlet[0mo
+    # Plotter-like # fonts i.e. a series of straight lines which make [32;1mlet[0mter shapes.
+    # Create # a temporary database that is de[32;1mlet[0med after performing some operation
+    # BIP32 # hierarchical deterministic wal[32;1mlet[0ms
+    # Classes # and data structures complementing the sing[32;1mlet[0mons library
+    # Datatypes # used by the Pushbul[32;1mlet[0m APIs
+    # Add # support for using Ham[32;1mlet[0m with Reform
+    # Enables # [32;1mlet[0m-binding and [32;1mlet[0m-expansion for s-cargot defined S-expressions
+    # CPS # resource allocation but as a Monad and comp[32;1mlet[0mely safe
+    # Bindings # to the Pushbul[32;1mlet[0m API using servant-client
+    # Snap[32;1mlet[0m # for the ses-html package
+    # Library # of modules shared by siff[32;1mlet[0m and its tests and its exporters
+    # raehik's # sing[32;1mlet[0mons
+    # Like # sing[32;1mlet[0mons, but much smaller
+    # Type # level booleans
+    # Typelevel # balanced search trees via a sing[32;1mlet[0monized Data.Map
+    # Unary # natural numbers relying on the sing[32;1mlet[0mons infrastructure
+    # Sing[32;1mlet[0mons # and induction over GHC TypeLits
+    # Basic # sing[32;1mlet[0mon types and definitions
+    # Code # generator for the sing[32;1mlet[0mons-base test suite
+    # Presburger # Arithmetic Solver for GHC Type-level natural numbers with Sing[32;1mlet[0mons package
+    # Nat # sing[32;1mlet[0mons represented by Int
+    # Ske[32;1mlet[0mal # set - a set with equivalence relation different from equality
+    # Batteries-included, # opinionated test framework
+    # a # tool to access the OSX keychain
+    # Manage # project ske[32;1mlet[0mons
+    # SLIP-0032: # Extended serialization format for BIP-32 wal[32;1mlet[0ms
+    # Methods # to manipulate Configurator objects for Snap & Snap[32;1mlet[0ms
+    # acid-state # snap[32;1mlet[0m for Snap Framework
+    # Generic # action log snap[32;1mlet[0m for the Snap Framework
+    # Snap # framework snap[32;1mlet[0m for the AMQP library
+    # CoffeeScript # for Snap, auto-compilation and pre-compilation
+    # Alternate # authentication snap[32;1mlet[0m
+    # DEPRECATED! # You should use standard Snap >= 0.9 "environments" functionality. It provided ability to easly read configuration based on given app environment given at command line, envs are defined in app configuration file
+    # Fay # integration for Snap with request- and pre-compilation
+    # Serve # javascript files compiled with GHCJS
+    # HDBC # snap[32;1mlet[0m for Snap Framework
+    # snap[32;1mlet[0m-i18n
+    # Lexical # Style Sheets - Snap Web Framework adaptor
+    # Minimalistic # MongoDB Snap[32;1mlet[0m
+    # mysql-simple # snap[32;1mlet[0m for the Snap Framework
+    # snap[32;1mlet[0m-oauth
+    # persistent # snap[32;1mlet[0m for the Snap Framework
+    # postgresql-simple # snap[32;1mlet[0m for the Snap Framework
+    # Postmark # snap[32;1mlet[0m for the Snap Framework
+    # Automatic # (re)compilation of purescript projects
+    # Redis # support for Snap Framework
+    # CRUD # for JSON data with Redis storage
+    # REST # resources for the Snap web framework
+    # Sass # integration for Snap with request- and pre-compilation
+    # Modularised # session state for Snap[32;1mlet[0ms, in a Snap[32;1mlet[0m
+    # sqlite-simple # snap[32;1mlet[0m for the Snap Framework
+    # Stripe # snap[32;1mlet[0m for the Snap Framework
+    # Typed # session snap[32;1mlet[0ms and continuation-based programming for the Snap web framework
+    # Integer # sing[32;1mlet[0mons with flexible representation
+    # Build # and install Debian packages comp[32;1mlet[0mely from source
+    # Functions # for working with Dirich[32;1mlet[0m densities and mixtures on vectors
+    # Derivation # of symbols and coordinate trip[32;1mlet[0ms Library
+    # comp[32;1mlet[0me # binding to the Telegram Database Library
+    # Portable # temporary files and directories with automatic de[32;1mlet[0mion
+    # Implicit # (recursive) [32;1mlet[0m insertion
+    # Ab[32;1mlet[0mon # Link integration for Tidal
+    # Applications # for interacting with the Pushbul[32;1mlet[0m API
+    # Interop # between /type-combinators/ and /sing[32;1mlet[0mons/
+    # Make # Esque[32;1mlet[0mo handy with type-level-kv-list
+    # Plugin # to faciliate type-level [32;1mlet[0m
+    # Existential # witnesses, sing[32;1mlet[0mons, and classes for operations on GHC TypeLits
+    # Just # [32;1mlet[0m me draw nice text already
+    # Typson # Esque[32;1mlet[0mo Integration
+    # Wrappers # for web frameworks to ease usage with the FP Comp[32;1mlet[0me environment
+    # Ham[32;1mlet[0m-style # quasiquoter for XML content
+    # Script # that listens on TCP port 443 and responds with comp[32;1mlet[0mely bogus SSL heartbeat responses
+    # Feature-comp[32;1mlet[0me # Web UI for Headscale
+    # Quite # comp[32;1mlet[0me and fast LATEX to HTML translator
+    # Experimental # version of Home Assistant integration for Goodwe solar inverters
+    # Va[32;1mlet[0mudo # for Home Assistant
+    # Display # the map from a va[32;1mlet[0mudo-enabled robot in a home assistant dashboard card
+    # Proof # that Idris is pacman comp[32;1mlet[0me
+    # IDE # style command line auto comp[32;1mlet[0me
+    # Set # of nine separate and highly configurable menu items that [32;1mlet[0m you know exactly what's going on inside your Mac
+    # jack_link # bridges JACK transport with Ab[32;1mlet[0mon Link
+    # Chemical # 2D structure editor application/app[32;1mlet[0m based on the Chemistry Development Kit
+    # Web # server and javax.serv[32;1mlet[0m container
+    # Icon # theme for the Kanagawa colour pa[32;1mlet[0mte
+    # KDE # Plasma App[32;1mlet[0m for use as a desktop/workspace pager
+    # Plasma # 6 app[32;1mlet[0m in order to show window buttons in your panels
+    # [32;1mLet[0mter # Order Game
+    # KComp[32;1mlet[0mion
+    # KId[32;1mleT[0mime
+    # Learn # The Alphabet
+    # Apple # Wal[32;1mlet[0m Pass reader
+    # ssh-add # helper that uses KWal[32;1mlet[0m and KPasswordDialog
+    # KWal[32;1mlet[0m: # Credential Storage
+    # PAM # Integration with KWal[32;1mlet[0m - Unlock KWal[32;1mlet[0m when you login
+    # KWal[32;1mlet[0m # integration for the SignOn framework (gitlab.com/accounts-sso)
+    # Organise # secure online meetings via your web browser, your mobile, your tab[32;1mlet[0m or your computer
+    # First # ever comic [32;1mlet[0mtering super family
+    # Interactive # kubernetes client featuring auto-comp[32;1mlet[0me
+    # Simulate # massive Kubernetes clusters with low resource usage locally without kube[32;1mlet[0m
+    # Bubb[32;1mleT[0mea-based # Terminal User Interface for efficient Git worktree management
+    # Browser # and wal[32;1mlet[0m for LBRY, the decentralized, user-controlled content marketplace
+    # App # for Ledger hardware wal[32;1mlet[0ms
+    # Fully # feature comp[32;1mlet[0me YAML parser and emitter, supporting the latest YAML spec and passing the full YAML testsuite
+    # Caslon # fonts based on hand-[32;1mlet[0mtered American Caslons of 1960s
+    # Libraries, # configuration, and diagnostic tools for Wacom tab[32;1mlet[0ms running under Linux
+    # String # internment library for netsurf browser
+    # DIGImend # graphics tab[32;1mlet[0m drivers for the Linux kernel
+    # High # performance, self-hosted, news[32;1mlet[0mter and mailing list manager with a modern dashboard
+    # Latin # Modern Math (LM Math) font comp[32;1mlet[0mes the modernization of the Computer Modern family of typefaces designed and programmed by Donald E. Knuth
+    # Wal[32;1mlet[0m # initializer utility for lnd
+    # Forked # version of log4cpp that has been created for the Shibbo[32;1mlet[0mh project
+    # Hosted # VPN service that [32;1mlet[0ms you securely extend LAN-like networks to distributed teams
+    # Blazingly # fast interpolated LUT generator and applicator for arbitrary and popular color pa[32;1mlet[0mtes
+    # Clean, # simple RPM packager reimplemented comp[32;1mlet[0mely from scratch
+    # Virtual # Tab[32;1mlet[0mop for playing roleplaying games with remote players or face to face
+    # MATE # panel indicator app[32;1mlet[0m
+    # LV2 # port of the MDA plugins by Paul Kel[32;1mlet[0mt
+    # Headline # typeface that could be used as a movie title
+    # udev # rules to configure Me[32;1mlet[0mrix keyboards
+    # Language # server for Standard ML
+    # Incomp[32;1mlet[0me, # idiomatic implementation of a Redis client and server built with Tokio, for learning purposes
+    # User-friendly # desktop wal[32;1mlet[0m with support for transaction history, encrypted contact book, gift codes, and payments
+    # Small # MPD client that [32;1mlet[0m's you view covers and has controls suitable for small touchscreens
+    # Crossplatform # mud client
+    # Minimalist # UTXO tracker for HD Cryptocurrency Wal[32;1mlet[0ms
+    # Helps # you to find/fix obso[32;1mlet[0me nerd font icons in your project
+    # NetworkManager # control app[32;1mlet[0m for GNOME
+    # Reverse # proxy and lightweight webserver
+    # Bash # comp[32;1mlet[0mions for Nix, NixOS, and NixOps
+    # ZSH # comp[32;1mlet[0mions for Nix, NixOS, and NixOps
+    # Nix # background based on the Dracula color pa[32;1mlet[0mte
+    # Gtk # and KDE themes using the Nord color pal[32;1mlet[0me
+    # Little # application that [32;1mlet[0ms you send desktop notifications with one command
+    # MirageOS # [32;1mlet[0m's encrypt certificate retrieval
+    # Tidy, # feature-comp[32;1mlet[0me Web framework
+    # Minimal/incomp[32;1mlet[0me # Ocaml interface to Eigen3, mostly for Owl
+    # Monadic # [32;1mlet[0m-bindings
+    # Spiritual # equivalent of [32;1mlet[0m%expect_test, but for property based tests
+    # Re2_stable # adds an incomp[32;1mlet[0me but stable serialization of Re2
+    # ACME # implementation in OCaml
+    # DNS # solver for the ACME implementation in OCaml
+    # OCaml # library for creating and sending emails over SMTP using LWT
+    # Fun, # functional, and stateful way to build terminal apps in OCaml heavily inspired by Go's Bubb[32;1mleT[0mea
+    # Eliom # application ske[32;1mlet[0mon
+    # Toolbox # for working with time-frequency analysis, wave[32;1mlet[0ms and signal processing
+    # Module # to analyze MS OLE2 files and MS Office documents
+    # Onscreen # keyboard useful for tab[32;1mlet[0m PC users and for mobility impaired users
+    # Anime1 # third-party client with bul[32;1mlet[0m screen
+    # Middleware # that [32;1mlet[0ms you use OnlyKey as a hardware SSH/GPG device
+    # Open # source, cross-platform, user-mode tab[32;1mlet[0m driver
+    # Index, # block explorer, and command-line wal[32;1mlet[0m for Ordinals
+    # Extract # the dominant colors from any image
+    # Colour # Pa[32;1mlet[0mte tool
+    # Very # comp[32;1mlet[0me easy-to-use OO interface to DBI
+    # Test # your dist with every testing plugin conceivable
+    # Run # many fi[32;1mlet[0mest checks on a tree
+    # Perl # extension for reading from continously updated files
+    # Update # file access and modification times, optionally creating files if needed
+    # Uses # magic numbers (typically at the start of a file) to determine the MIME type of that file
+    # Represent # an operation awaiting comp[32;1mlet[0mion
+    # 2-[32;1mlet[0mter, # 3-[32;1mlet[0mter, and numerical codes for countries
+    # Color # pa[32;1mlet[0mte constructor
+    # Locale::TextDomain::OO # - Perl OO Interface to Uniforum Message Translation
+    # Locale::TextDomain::OO::Util # - Lexicon utils
+    # Turn # your Moo class into sing[32;1mlet[0mon
+    # Roles: # a nouvelle cuisine portion size slice of Moose
+    # Get # the idle time of X11
+    # Server # equivalent of the popular Phoenix wal[32;1mlet[0m for mobile
+    # PHP # PDO_OCI extension [32;1mlet[0ms you access Oracle Database
+    # SCM # by Unity for game development
+    # Searchable # command pa[32;1mlet[0mte in every modern GTK application
+    # Graphical # front-end and tray app[32;1mlet[0m for configuring Razer peripherals on GNU/Linux
+    # Roman # serif with black[32;1mlet[0mter elements
+    # Audio # tag editor similar to the Windows program, Mp3tag
+    # Tiny # script to issue and renew TLS certs from [32;1mLet[0m's Encrypt
+    # Beets # plugin to move non-music files during the import process
+    # Firmware # code of the BitBox02 hardware wal[32;1mlet[0m
+    # Bittensor # wal[32;1mlet[0m implementation
+    # Python # communication library for Ledger Hardware Wal[32;1mlet[0m products
+    # Seamlessly # prevent duplicate executions of celery tasks
+    # Check # MANIFEST.in in a Python source package for comp[32;1mlet[0meness
+    # Extension # for colcon-core to provide command line comp[32;1mlet[0mion using argcomp[32;1mlet[0me
+    # Official # Te[32;1mlet[0mhon extension to provide much faster cryptography for Telegram API requests
+    # front-end # agnostic toolbox for autocomp[32;1mlet[0mion fields
+    # Fresh # approach to autocomp[32;1mlet[0me implementations, specially for Django
+    # Automatically # de[32;1mlet[0mes old file for FileField and ImageField. It also de[32;1mlet[0mes files on models instance de[32;1mlet[0mion
+    # Allows # you to use Leaf[32;1mlet[0m in your Django projects
+    # Soft # de[32;1mlet[0me models, managers, queryset for Django
+    # Concurrent # networking library for Python
+    # Extract, # add, modify, or de[32;1mlet[0me document data in OpenDocument (ODF) files
+    # Infer # file type and MIME type of any file/buffer
+    # Compiled # Flutter F[32;1mlet[0m desktop client
+    # F[32;1mlet[0m # web client in Flutter
+    # Signatures # for entire Python programs. Extract the structure, the frame, the ske[32;1mlet[0mon of your project, to generate API documentation or find breaking changes in your API
+    # Development # tool for grabbing the dominant color or representative color pa[32;1mlet[0mte from an image
+    # Pure # Python library that [32;1mlet[0ms one to read metadata from media files
+    # Easy-to-use, # Pythonic and comp[32;1mlet[0me IMAP client library
+    # Authentication # library for Star[32;1mlet[0mte and FastAPI
+    # Platform-independent # module for I/O comp[32;1mlet[0mion events
+    # Trait[32;1mlet[0ms # and widgets to efficiently data tables (e.g. Pandas DataFrame) using the jupyter notebook
+    # Asynchronous # Python client for [32;1mLet[0mPot hydroponic gardens
+    # Using # hardware wal[32;1mlet[0ms as SSH/GPG agent
+    # Classification # Schemes for Chorop[32;1mlet[0mh Maps
+    # Pytest # plugin that [32;1mlet[0ms you run tests in parallel with MPI
+    # Microservices # framework that [32;1mlet[0ms service developers concentrate on application logic and encourages testability
+    # Package # that [32;1mlet[0ms you define quantities with unit
+    # Sphinx # theme for Pal[32;1mlet[0ms projects
+    # Access # Python dictionary as a class with type hinting and autocomp[32;1mlet[0mion
+    # PyAutoGUI # [32;1mlet[0ms Python control the mouse and keyboard, and other GUI automation tasks
+    # FIG[32;1mlet[0m # in pure Python
+    # Fixtures # as classes that work well with dependency injection, autocomp[32;1mlet[0metion, type checkers, and language servers
+    # Wave[32;1mlet[0m # transform module
+    # Read # v6 .rm files from the reMarkable tab[32;1mlet[0m
+    # Modernised # ske[32;1mlet[0mon for Sphinx themes
+    # Compression # middleware for Star[32;1mlet[0mte - supporting ZStd, Brotli, and GZip
+    # Advanced # sessions for Star[32;1mlet[0mte and FastAPI frameworks
+    # Full-featured # Telegram client library for Python 3
+    # SQLAlchemy # backend for Te[32;1mlet[0mhon session storage
+    # High-level # cross platform tty library
+    # Comprehensive # fi[32;1mlet[0mype and mimetype detection using libmagic and Pygments
+    # Typing # stubs for green[32;1mlet[0m
+    # Passbook # file generator
+    # Incomp[32;1mlet[0me # xcb-util port plus some extras
+    # HTTP # server library in C++, inspired by Java Serv[32;1mlet[0ms
+    # Permanently # de[32;1mlet[0me your files (also named File Shredder)
+    # Private # DeFi wal[32;1mlet[0m for Linux
+    # Utitity # to display comp[32;1mlet[0me revision history of a set of RCS files
+    # All-in-one # offline/local management software for reMarkable e-paper tab[32;1mlet[0ms
+    # Toolchain # for cross-compiling to reMarkable tab[32;1mlet[0ms
+    # Take # screnshots of your reMarkable tab[32;1mlet[0m over SSH
+    # urxvt # plugin allowing user to easily comp[32;1mlet[0me arbitrary text
+    # Friends # don't [32;1mlet[0m friends leak secrets on their terminal window
+    # Cross‑platform, # non‑custodial wal[32;1mlet[0m and atomic swap marketplace for the Liquid Network
+    # Activate, # edit, de[32;1mlet[0me and add Sieve scripts with a convenient interface
+    # Open-source, # self-hosted, offline-capable Personal Knowledge Management (PKM) web application
+    # Privacy-first # personal knowledge management system that supports comp[32;1mlet[0me offline usage, as well as end-to-end encrypted data sync
+    # Fun # rounded display face that’s great for headlines
+    # Extensive # set of frameworks which form a comp[32;1mlet[0me Web application server environment
+    # Modern # desktop Bitcoin wal[32;1mlet[0m application supporting most hardware wal[32;1mlet[0ms and built on common standards such as PSBT, with an emphasis on transparency and usability
+    # Directory # service to resolve wal[32;1mlet[0m mailboxes by messenger addresses
+    # Modernized, # comp[32;1mlet[0me, self-contained TeX/LaTeX engine, powered by XeTeX and TeXLive
+    # Console # NOS Te[32;1mlet[0mekst viewer in Python
+    # Terra # station is the official wal[32;1mlet[0m of the Terra blockchain
+    # Wrapper # around testers.testBuildFailure to simplify common use cases
+    # Insert # Bible passages by their reference
+    # T1-encoded # versions of Haralambous old German fonts
+    # Aids # for printing simple book[32;1mlet[0ms
+    # Copperplate # calligraphic [32;1mlet[0mters in LaTeX
+    # Business # [32;1mlet[0mters in the Italian style
+    # Upright # Greek [32;1mlet[0mters in chemistry
+    # Class # for typesetting [32;1mlet[0mters to Swiss rules
+    # Typeset # "comma-below" [32;1mlet[0mters, as in Romanian
+    # ConTeXt # package for writing [32;1mlet[0mters
+    # LaTeX # class for articles submitted to the CSTUG Bul[32;1mlet[0min (Zpravodaj)
+    # German # [32;1mlet[0mter DIN style
+    # Enumerate # with lower- or uppercase Greek [32;1mlet[0mters
+    # [32;1mLet[0mters # to multiple recipients
+    # Left-blocking # for [32;1mlet[0mter class
+    # Minipage # spanning a comp[32;1mlet[0me page
+    # Flexible # and comp[32;1mlet[0me interface to document dimensions
+    # Emulation # of obso[32;1mlet[0me package for "here" floats
+    # Cover # [32;1mlet[0mter for journal submissions
+    # KOMA-Script # [32;1mlet[0mter class option for Finnish
+    # English # translation of "Obso[32;1mlet[0me packages and commands"
+    # Italian # Translation of Obso[32;1mlet[0me packages and commands
+    # Spanish # translation of "Obso[32;1mlet[0me packages and commands"
+    # Lato-based # OpenType Math font for LuaTeX and XeTeX
+    # Greek # [32;1mlet[0mters in math mode from Libertinus or Linux Libertine/Biolinum
+    # Prevent # line breaks after single [32;1mlet[0mter words, units, or academic titles
+    # Use # different Greek [32;1mlet[0mter fonts in math mode
+    # Uppercase # the first [32;1mlet[0mter of a word
+    # Detecting # and warning about obso[32;1mlet[0me LaTeX commands
+    # Write # [32;1mlet[0mters, facsimiles, and memos
+    # Macros # for making news[32;1mlet[0mters with Plain TeX
+    # Change # small texts to remove the depth of the [32;1mlet[0mters
+    # SPIE # Optical Engineering and OE [32;1mLet[0mters manuscript template
+    # Define # simple macros for greek [32;1mlet[0mters
+    # Stamp # [32;1mlet[0mters with >>Deutsche Post<<'s service >>Internetmarke<<
+    # Shape # selection for PX fonts Greek [32;1mlet[0mters
+    # Icons # for tab[32;1mlet[0mop role-playing games
+    # Resize # the \textbul[32;1mlet[0m without changing its vertical center
+    # Bibliography # styles for alphabetic sorting
+    # Hyphenation # for [32;1mlet[0mterspacing, underlining, and more
+    # Tabbing # with accented [32;1mlet[0mters
+    # Unofficial # [32;1mlet[0mterhead template for the University of Amsterdam
+    # Defines # the 256 colors from Google Material Color Pa[32;1mlet[0mte
+    # Extremely # flexible macros for [32;1mlet[0mters, envelopes, and label sheets
+    # When # refactoring a Terraform codebase, you often need to write moved blocks. This can be tedious. [32;1mLet[0m tfautomv do it for you
+    # THC's # Secure De[32;1mlet[0me tools
+    # Screen # rotation, docking and other scripts for ThinkPad® X220 and X230 Tab[32;1mlet[0m
+    # Download # and backup assets for your Tab[32;1mlet[0mop Simulator mods
+    # Correspond # with business associates and your friends via mail
+    # Easier # diagrams with f[32;1mlet[0mcher
+    # Retro-gaming # in Typst. Reach the goal and comp[32;1mlet[0me the mission
+    # Rebuttal/response # [32;1mlet[0mter template that allows authors to respond to feedback given by reviewers in a peer-review process on a point-by-point basis
+    # Visualizes # Calabi–Yau manifolds
+    # Time # to kill? Search for words in a box of [32;1mlet[0mters
+    # Computer # network topology icons for cetz or f[32;1mlet[0mcher
+    # Draws # control blocks using f[32;1mlet[0mcher and CeTZ
+    # Customizable # dropped capitals
+    # Visual # toolkit for Typst in Portuguese: heading themes with color pa[32;1mlet[0mtes, math environments, decorative boxes, Gantt charts, exams and annotations
+    # French # formal [32;1mlet[0mter template
+    # Replace # [32;1mlet[0mters in equations with fruit emoji
+    # DIN # 5008 [32;1mlet[0mter template for Typst
+    # Renders # Roman [32;1mlet[0mters into polytonic Greek
+    # 📖 # a french move out [32;1mlet[0mter
+    # Invoice # and offer template for Austrian freelancers
+    # ✨ # Colorful and elegant 2-column CV and cover [32;1mlet[0mter template. Simple to use and adapt to your needs
+    # UMap # [32;1mlet[0ms you create maps with OpenStreetMap layers in a minute and embed them in your site
+    # Free, # open-source UML tool with a simple user interface
+    # Notifies # you when long-running terminal commands comp[32;1mlet[0me
+    # Unifi # controller device inventory exporter, analyses all device and stat records for comp[32;1mlet[0me records
+    # Extracts # downloads for Radarr, Sonarr, Lidarr - De[32;1mlet[0mes extracted files after import
+    # WiFi # mapping companion app for Va[32;1mlet[0mudo
+    # Code-comp[32;1mlet[0mion # engine for Vim
+    # Performant, # batteries-included comp[32;1mlet[0mion plugin for Neovim
+    # Offline # word and synonym comp[32;1mlet[0mion provider for Neovim
+    # Address-comp[32;1mlet[0mion # for khard via deop[32;1mlet[0me
+    # code-comp[32;1mlet[0mion # for python using python-jedi
+    # Standard # ML support for VS Code
+    # Ruby # language server featuring code comp[32;1mlet[0mion, intellisense, and inline documentation
+    # Elixir # support with debugger, autocomp[32;1mlet[0me, and more. Powered by ElixirLS
+    # VSCode # extension for SCSS
+    # Light # theme for VSCode based on the Nord color pa[32;1mlet[0mte
+    # CloudFormation # Linter IDE integration, autocomp[32;1mlet[0mion, and documentation
+    # C/C++ # comp[32;1mlet[0mion, navigation, and insights
+    # Gruvbox # Material theme VSCode extension with Material pa[32;1mlet[0mte
+    # Rust # library for generating cryptocurrency wal[32;1mlet[0ms
+    # C # Implementation of Discrete Wave[32;1mlet[0m Transform (DWT,SWT and MODWT)
+    # Feature # comp[32;1mlet[0me cross-platform Wii Remote access library
+    # Mapmaking # tool for Tab[32;1mlet[0mop Roleplaying Games, designed for city, region, or world scale
+    # TV # application for Linux with apps and tools such as a te[32;1mlet[0mext browser
+    # Unde[32;1mlet[0me # tool for the XFS filesystem
+    # Command # line tool for manipulating and querying XML data
+    # Dmenu # rip-off with contextual comp[32;1mlet[0mion
+    # X-windows # application that will [32;1mlet[0m it snow on the root, in between and on windows
+    # Fetch # top for gen Z with X written by bubb[32;1mlet[0mea enjoyer
+    # Shell # comp[32;1mlet[0mions for the Zig compiler
+    # Real-time # type-ahead comp[32;1mlet[0mion for Zsh. Asynchronous find-as-you-type autocomp[32;1mlet[0mion
+    # Better # comp[32;1mlet[0mion for npm
+    # Additional # comp[32;1mlet[0mion definitions for zsh
+    # Zsh # plugin that [32;1mlet[0ms you use zsh in nix-shell shell
+    # IRC # client for the terminal made in Go with Bubb[32;1mlet[0mea
+  ];
+}

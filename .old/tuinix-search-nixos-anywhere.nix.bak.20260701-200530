@@ -1,0 +1,16 @@
+{ pkgs, ... }:
+{
+  environment.systemPackages = with pkgs; [
+    # nix-search: nixos-anywhere
+    # nixos-anywhere # Install nixos everywhere via ssh # https://github.com/nix-community/nixos-anywhere
+    # lixPackageSets.stable.nixos-anywhere # Install nixos everywhere via ssh # https://github.com/nix-community/nixos-anywhere
+    # lixPackageSets.lix_2_95.nixos-anywhere # Install nixos everywhere via ssh # https://github.com/nix-community/nixos-anywhere
+    # lixPackageSets.lix_2_94.nixos-anywhere # Install nixos everywhere via ssh # https://github.com/nix-community/nixos-anywhere
+    # lixPackageSets.latest.nixos-anywhere # Install nixos everywhere via ssh # https://github.com/nix-community/nixos-anywhere
+    # lixPackageSets.git.nixos-anywhere # Install nixos everywhere via ssh # https://github.com/nix-community/nixos-anywhere
+    # nixos-init
+    # nixos-shell # Spawns lightweight nixos vms in a shell # https://github.com/Mic92/nixos-shell
+    # nixos-icons # Icons of the Nix logo, in Freedesktop Icon Directory Layout # https://github.com/NixOS/nixos-artwork
+    # nixos-enter # Run a command in a NixOS chroot environment # https://github.com/NixOS/nixpkgs/tree/master/pkgs/by-name/ni/nixos-install
+  ];
+}
