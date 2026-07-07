@@ -63,4 +63,3 @@ echo "📝 Mensagem gerada: \"$IA_COMMIT_MSG\""
 # 5. Executa o Commit e faz o Push
 git commit -m "$IA_COMMIT_MSG"
 git push -u origin main
-=======
