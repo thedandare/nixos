@@ -1,28 +1,26 @@
 #!/bin/sh
-
-# 1. Configurações Iniciais
+echo $1
 export GIT_SSH_COMMAND="ssh -i ~/.ssh/tdd_id_ed25519"
-OPENAI_API_KEY=$(cat leonix/secret/openai_key 2>/dev/null || cat thumbnix/secret/openai_key 2>/dev/null)
+if [ -n $1 ]; then
+    git add $1 -A
+    git commit -m 'auto-commit $(uname -a) em $(date) '
 
-# Garante que o remote origin está correto
-git remote set-url origin git@github.com:thedandare/nixos.git 2>/dev/null || git remote add origin git@github.com:thedandare/nixos.git
-
-# 2. Adiciona os arquivos na fila
-if [ -n "$1" ]; then
-    git add "$1"
 else
-    printf "\033[0;31mNenhum arquivo passado. Adicionando todas as modificações atuais...\033[0m\n"
-    git add .
+    echo [0;31m git add não executado
+
+    git status | grep Untracked
+    read -n 1 -p 'Commit?' answer
+    case "${answer,,}" in
+    s/y)
+        git commit -m 'auto-commit $(uname -a) em $(date) '
+        ;;
+    esac
 fi
 
-# 3. Verifica se realmente há algo para commitar
-if git diff --cached --quiet; then
-    echo "ℹ️  Nenhuma alteração detectada para commitar."
-    exit 0
-fi
-# 4. Captura as alterações atuais e prepara o prompt para a LLM
-echo "🤖 Solicitando mensagem de commit para a IA..."
+# git push -u origin main git@github.com:thedandare/ubunix.git
+git push --set-upstream git@github.com:thedandare/nixos.git main
 
+<<<<<<< HEAD
 # Limpa o diff deixando-o em uma única linha segura para o JSON sem quebrar a estrutura
 GIT_CHANGES=$(git diff --cached | head -c 4000 | sed 's/\\/\\\\/g; s/"/\\"/g; s/$/\\n/' | tr -d '\n' | tr -d '\r')
 
@@ -61,3 +59,5 @@ echo "📝 Mensagem gerada: \"$IA_COMMIT_MSG\""
 # 5. Executa o Commit e faz o Push
 git commit -m "$IA_COMMIT_MSG"
 git push -u origin main
+=======
+>>>>>>> ff8974ed0fc438ec8a67ecbcc487e79bc819f0a7

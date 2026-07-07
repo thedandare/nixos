@@ -1,0 +1,21 @@
+{ pkgs, ... }:
+{
+
+  # 🚀 72G RAM optimization
+  boot.tmp.useTmpfs = true;
+  boot.tmp.tmpfsSize = "24GB"; # RAM pura e sem compressão para arquivos temporários
+
+  # Put compilation/building directory into RAM to speed up Nix builds
+  nix.settings.sandbox = true;
+
+  # ⚕️ ZRAM.
+  # Mantém apenas o Swap em Zram para segurança do Kernel
+  zramSwap.enable = true;
+  zramSwap.priority = 7;
+  zramSwap.swapDevices = 1; # O padrão 1 já é excelente, mas pode manter 2 se preferir
+
+  #   O Zram cria um bloco na memória que compacta os dados (via algorítmos como lz4 ou zstd) para economizar espaço de RAM
+  #   ⁉️ n tem como fazer swap na ram sem o zram?
+  #   🌐 Tecnicamente, sim, é possível, mas fazer Swap diretamente na RAM sem compactação (sem Zram) cria um paradoxo e não traz nenhuma vantagem prática.Para fazer Swap na RAM sem Zram, você teria que usar um módulo do Linux chamado brd (Ramdisk) para criar um disco virtual na memória bruta e, depois, formatá-lo como Swap.Aqui está o porquê de isso ser uma má ideia e por que o comportamento do sistema fica idêntico ou pior do que simplesmente não ter Swap:O "Paradoxo" do Ramdisk como SwapDesperdício Físico Inútil: O Swap serve para o Kernel mover dados da RAM para um local secundário quando quer liberar espaço. Se o seu local secundário é a própria RAM (sem compactação), você está tirando dados do "bolso esquerdo" da RAM e colocando no "bolso direito".Consumo de Memória Duplicado: Ao criar um Ramdisk de 8GB para Swap, esses 8GB ficam permanentemente trancados e inutilizados para o resto do sistema. Você reduz sua RAM utilizável de 72GB para 64GB imediatamente. No Zram isso não acontece, pois ele só consome memória dinamicamente conforme os dados entram lá e são compactados.
+
+}

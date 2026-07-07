@@ -1,0 +1,219 @@
+{ pkgs, erosanix, ... }:
+{
+
+  environment.systemPackages = with pkgs; [
+    # 🪒 Hardware
+    pkgs.cpu-x
+    pkgs.zenstates
+    pkgs.zenmonitor
+    pkgs.libsigrok # https://github.com/sipeed/libsigrok/
+    pkgs.sigrok-cli # Signal analysis software suite
+
+    # NixOS configuration
+    nixfmt-rfc-style
+    # TODO agenix:>    inputs.agenix.packages."${system}".default
+
+    # Util
+    wget
+    pkgs.jq
+    pkgs.wiper
+    pkgs.dysk
+    pkgs.zenith
+    pkgs.chezmoi # Manage your dotfiles across multiple machines, securely https://www.chezmoi.io
+
+    # Boot / partitioning
+    pkgs.efibooteditor
+    pkgs.refind
+    pkgs.efivar # https://github.com/rhboot/efivar
+    pkgs.goldboot # https://github.com/fossable/goldboot
+    pkgs.btrfs-progs
+    pkgs.gparted-full
+    pkgs.tparted
+
+    # Desktop devices
+    pkgs.ckb-next
+
+    # 🔊 Audio
+    pkgs.asha-pipewire-sink # Pairing hearing aids using the ASHA protocol
+    pkgs.pavucontrol
+    pkgs.ncpamixer
+    pkgs.pipewire
+    pkgs.qjackctl
+    pkgs.qpwgraph # Graph manager dedicated for PipeWire, using the Qt C++ framework, based and pretty much like the same of QjackCtl.
+    pkgs.easyeffects # https://github.com/wwmm/easyeffects
+    pkgs.cava # https://github.com/karlstav/cava
+    pkgs.cavasik # Audio visualizer based on CAVA with extended capabilities
+
+    # Printing on Canon G3010
+    pkgs.canon-cups-ufr2
+
+    # SDKs / envs
+    pkgs.dart
+    pkgs.flutter341
+    pkgs.uv
+    pkgs.nodejs_24
+
+    # IDEs
+    pkgs.antigravity
+    pkgs.windsurf
+    pkgs.jetbrains.idea
+    pkgs.jetbrains.pycharm
+
+    # Google
+    pkgs.androidsdk
+    pkgs.google-chrome
+    pkgs.google-fonts
+    pkgs.google-cloud-sdk
+    pkgs.google-cloud-sdk-gce
+    pkgs.google-compute-engine
+    pkgs.ungoogled-chromium
+
+    # Hypervisors
+    pkgs.photoprism
+        pkgs.virt-manager
+    kdePackages.ksshaskpass # Ferramenta nativa do KDE para senhas SSH
+
+    #     pkgs.lxc
+    pkgs.qemu
+    pkgs.quickemu
+    pkgs.qemu-utils
+    #     pkgs.OVMF
+    pkgs.uefi-run
+    pkgs.virt-viewer
+    #     pkgs.libvirt
+    #     pkgs.qemu_xen
+    #     pkgs.xen
+    pkgs.spice-gtk
+    pkgs.vhost-device-sound
+
+    pkgs.usbutils
+    #     pkgs.ubootQemuX86_64 # https://docs.u-boot-project.org/
+
+    # 🪟 Windows
+    #     pkgs.windows.mingw_w64
+    #     pkgs.windows.mingw_w64_headers
+    #     pkgs.windows.pthreads
+    pkgs.chicago95
+    wineWow64Packages.full
+    #     pkgs.wine64Packages.unstableFull
+    pkgs.winetricks
+    pkgs.q4wine
+
+    # 🐚 Shells / Editors
+    pkgs.atuin-desktop
+    pkgs.alacritty
+    pkgs.alacritty-graphics
+    pkgs.pycritty # CLI tool for changing your alacritty configuration on the fly
+    pkgs.tmux
+    pkgs.tmuxPlugins.sidebar
+    pkgs.gnvim # https://github.com/vhakulinen/gnvim
+    pkgs.glrnvim # https://github.com/beeender/glrnvim
+
+    # 📡 Networking
+    pkgs.tailscale
+    pkgs.zenmap
+    pkgs.whosthere
+    pkgs.net-tools
+    pkgs.tunctl
+    #     pkgs.bridge-utils
+
+    # TUIs /
+    pkgs.msedit
+    pkgs.notcurses
+    pkgs.tuios # https://tuios.gaurav.zip/
+    pkgs.wiremix # TUI audio mixer for PipeWire.
+
+    # X-Win
+    wayland-utils # Wayland diagnostic tools
+    wl-clipboard # Wayland copy/paste support
+    pkgs.vulkan-tools
+    pkgs.gpu-viewer
+
+    # OS Cleanup
+    pkgs.bleachbit
+    pkgs.nix-janitor
+
+    pkgs.kiwix
+    pkgs.kiwix-tools
+
+    # Media
+    vlc
+
+    pkgs.anyrun
+    #
+    #     pkgs.runbooks
+
+    #   Movidos para programs.neovim:
+    #     pkgs.vimPlugins.ChatGPT-nvim
+    #     pkgs.vimPlugins.moveline-nvim
+    #     pkgs.vimPlugins.GPTModels-nvim # https://github.com/Aaronik/GPTModels.nvim/
+    #     pkgs.vimPlugins.dart-vim-plugin # https://github.com/dart-lang/dart-vim-plugin/
+    #     pkgs.vimPlugins.conform-nvim # Formatter plugin for Neovim https://github.com/stevearc/conform.nvim/
+
+    pkgs.agneyastra # A firebase Misconfiguration Detection Toolkit [https://github.com/JA3G3R/agneyastra]
+
+    # 🏢 Remote Access
+    pkgs.x2goclient
+
+    pkgs.x2goserver
+
+    # Local Flakes
+    ## Testing / Templates
+    #     (
+    #       let
+    #         myflake = builtins.getFlake "/home/leo/myflake";
+    #       in
+    #       myflake.packages.${pkgs.system}.default
+    #     )
+
+    #     (
+    #       let
+    #         myflake = builtins.getFlake "/home/leo/myflake";
+    #       in
+    #       myflake.packages.${pkgs.system}.hello
+    #     )
+
+    # 1. Foo
+    #     (
+    #       let
+    #         fooFlake = builtins.getFlake "/home/leo/flakes/foo"; # Ajuste o caminho se estiver em uma subpasta (ex: "/home/leo/flakes/foo")
+    #       in
+    #       fooFlake.packages.${pkgs.system}.foo
+    #     )
+    #
+    #     ## Desktop / Devices
+    #     # 2. Corsair Mouse
+    #     (
+    #       let
+    #         corsairFlake = builtins.getFlake "/home/leo/flakes/initCorsairMouse";
+    #       in
+    #       corsairFlake.packages.${pkgs.system}.initCorsairMouse
+    #     )
+    #
+    #     ## Development
+    #     # 3. Copy Source Code (Note que faltava ".packages" no seu erro original, adicionei aqui para corrigir)
+    #     (
+    #       let
+    #         ramdiskFlake = builtins.getFlake "/home/leo/flakes/copySourceCodeToRamdisk";
+    #       in
+    #       ramdiskFlake.packages.${pkgs.system}.copySourceCodeToRamdisk
+    #     )
+    #
+    #     # 4. Fibo Serverpod
+    #     (
+    #       let
+    #         fiboFlake = builtins.getFlake "/home/leo/flakes/fibo-serverpod";
+    #       in
+    #       fiboFlake.packages.${pkgs.system}.fibo-serverpod
+    #     )
+    #
+    #     # 5. Foobar2000
+    #     (
+    #       let
+    #         foobarFlake = builtins.getFlake "/home/leo/flakes/foobar2000";
+    #       in
+    #       foobarFlake.packages.${pkgs.system}.foobar2000
+    #     )
+
+  ];
+}

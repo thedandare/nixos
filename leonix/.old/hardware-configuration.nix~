@@ -1,0 +1,182 @@
+{
+  config,
+  lib,
+  pkgs,
+  modulesPath,
+  ...
+}:
+
+{
+  #   imports = [
+  #     (modulesPath + "/installer/scan/not-detected.nix")
+  #   ];
+
+  boot.initrd.enable = true;
+
+  boot.initrd.availableKernelModules = [
+    "nvme"
+    "xhci_pci"
+    "ahci"
+    "usb_storage"
+    "usbhid"
+    "sd_mod"
+  ];
+  #
+  boot.initrd.supportedFilesystems = {
+    btrfs = true;
+
+  };
+  boot.initrd.kernelModules = [ ];
+  boot.kernelModules = [ "kvm-amd" ];
+  boot.extraModprobeConfig = ''
+    options kvm_intel nested=1
+  '';
+  boot.extraModulePackages = [ ];
+
+  #   boot.initrd.postMountCommands = "echo -e '\033[1m' '\033[31m'  initrd montado! Enter para continuar ; read ; echo -e '\033[0m'prosseguindo... ";
+  #   Failed assertions:
+  #        - systemd stage 1 does not support `boot.initrd.postMountCommands`. Instead, create systemd services using the `boot.initrd.systemd.services` options, which has an API matching the stage 2 `systemd.services` options. Refer to `bootup(7)`, specifically the sections on "Bootup in the Initrd" and "System Manager Bootup", for information about when various units happen, and order services accordingly.
+
+  boot.growPartition = false;
+  boot.loader.systemd-boot.enable = true;
+  boot.loader.efi.canTouchEfiVariables = true;
+  boot.kernelPackages = pkgs.linuxPackages_latest;
+  boot.binfmt.emulatedSystems = [ "aarch64-linux" ];
+  systemd.tmpfiles.rules = [ "L+ /var/lib/qemu/firmware - - - - ${pkgs.qemu}/share/qemu/firmware" ]; # enable UEFI firmware support in Virt-Manager, Libvirt,
+
+  fileSystems = {
+    "/boot" = {
+      device = "/dev/disk/by-uuid/4B67-4BEF";
+      fsType = "vfat";
+      options = [
+        "fmask=0077"
+        "dmask=0077"
+      ];
+    };
+
+    "/" = {
+      device = "/dev/disk/by-uuid/ef55b11a-d3d2-4f69-9cd5-fb7e0706e108";
+      fsType = "ext4";
+
+    };
+
+    "opt" = {
+      mountPoint = "/opt";
+      device = "/dev/disk/by-uuid/85f54a0b-7be3-4c8b-ad21-eeda793b83ee";
+      fsType = "ext4";
+      depends = [ "/" ];
+
+    };
+
+    "A-WD40" = {
+      mountPoint = "/a";
+      device = "/dev/disk/by-uuid/F078FFD678FF9A14";
+      fsType = "ntfs";
+      noCheck = true;
+
+      options = [
+        "nofail lazytime user X-mount.mkdir=0770 X-mount.owner=leo X-mount.group=users"
+      ];
+    };
+
+    "B-WD40" = {
+      mountPoint = "/b";
+      device = "/dev/disk/by-uuid/1054E84354E82CE2";
+      fsType = "ntfs";
+      noCheck = true;
+
+      options = [
+        "nofail lazytime user X-mount.mkdir=0770 X-mount.owner=leo X-mount.group=users"
+      ];
+      depends = [ "/a" ];
+
+    };
+
+    "C-NQ100" = {
+      mountPoint = "/c";
+      device = "/dev/disk/by-uuid/01DCE55906B2BF60";
+      fsType = "ntfs";
+      noCheck = true;
+
+      options = [
+        "nofail lazytime user X-mount.mkdir=0770 X-mount.owner=leo X-mount.group=users"
+      ];
+
+    };
+
+    "L-0day" = {
+      mountPoint = "/L";
+      device = "/dev/disk/by-uuid/CCE64C7DE64C6A32";
+      fsType = "ntfs";
+      noCheck = true;
+
+      options = [
+        "nofail lazytime user X-mount.mkdir=0770 X-mount.owner=leo X-mount.group=users"
+      ];
+
+    };
+
+    "M-ST40_ntfs" = {
+      mountPoint = "/M";
+      device = "/dev/disk/by-uuid/BE9A24099A23BCB1";
+      fsType = "ntfs";
+      noCheck = true;
+
+      options = [
+        "nofail lazytime user X-mount.mkdir=0770 X-mount.owner=leo X-mount.group=users "
+      ];
+      depends = [ "/L" ];
+    };
+
+    #    "N-ST40_ext" = {
+    #      mountPoint = "/N";
+    #      device = "/dev/disk/by-uuid/0501a667-289c-4869-bdda-a649de430b27";
+    #      fsType = "ntfs";
+    #      options = [ "nofail lazytime user X-mount.mkdir=0770 X-mount.owner=leo X-mount.group=users" ];
+    #     depends = [ "/L" ];
+    #  };
+
+    #  "/kali" = {
+    #    mountPoint = "/kali";
+    #
+    #    device = "/dev/disk/by-uuid/b7073fc4-218e-4486-ac06-ac91a7caa392";
+    #  fsType = "ext4";
+    #    noCheck = true;
+
+    #  options = [
+    #    "nofail nolazytime user X-mount.mkdir=0770 X-mount.owner=leo X-mount.group=users"
+    #  ];
+    # };
+    #
+    #  "/kali/var" = {
+    #   mountPoint = "/kali/var";
+    #
+    #    device = "/dev/disk/by-uuid/e7e62581-a62b-4734-aed4-696089450ea1";
+    # fsType = "ext4";
+    #  noCheck = true;
+    # options = [
+    #   "nofail  nolazytime user X-mount.mkdir=0770 X-mount.owner=leo X-mount.group=users"
+    #];
+    # depends = [ "/kali" ];
+
+    #}; #
+
+    #"/kali/usr" = {
+    # mountPoint = "/kali/usr";
+    # device = "/dev/disk/by-uuid/a393de66-f6f8-4d96-9028-15ddc2b35ba8";
+    #  fsType = "ext4";
+    #    noCheck = true;
+    #
+    #   options = [
+    #    "nofail nolazytime user X-mount.mkdir=0770 X-mount.owner=leo X-mount.group=users"
+    # ];
+    #depends = [ "/kali" ];
+
+    #};
+  };
+
+  swapDevices = [ ];
+
+  nixpkgs.hostPlatform = lib.mkDefault "x86_64-linux";
+  hardware.cpu.amd.updateMicrocode = lib.mkDefault config.hardware.enableRedistributableFirmware;
+}
