@@ -1,4 +1,10 @@
 { pkgs, config, ... }:
+let
+  SSID = "THIS_IS_US";
+  SSIDpassword = "C@fezinho403";
+  interface = "wlan0";
+
+in
 {
   imports = [
     ./bonjour.nix
@@ -8,6 +14,12 @@
   ];
   systemd.network.enable = true;
   networking.hostName = "leonix";
+  #   networking.wireless = {
+  #     enable = true;
+  #     networks."${SSID}".psk = SSIDpassword;
+  #     interfaces = [ interface ];
+  #     userControlled.enable = true;
+  #   };
 
   services.iperf3 = {
     enable = true;
@@ -64,7 +76,7 @@
   networking.interfaces = {
     enp7s0.useDHCP = false; # Interface is bridged
     enp5s0.useDHCP = false; # Interface is bridged
-    br0.useDHCP = false; # Bridge gets IP via DHCP
+    br0.useDHCP = true; # Bridge gets IP via DHCP
   };
 
   # libera a rede em Bridge para o QEMU
@@ -81,41 +93,44 @@
   '';
 
   networking.interfaces.br0.ipv4.routes = [
+    {
+      #       # Configure the prefix route.
+      address = "192.168.1.0";
+      prefixLength = 24;
+      via = "192.168.0.15";
+    }
+    /*
+      {
+          # Configure the prefix route.
+          address = "10.1.0.0";
+          prefixLength = 16;
+          via = "192.168.0.15";
+      }
+    */
     #     {
     #       # Configure the prefix route.
-    #       address = "192.168.1.0";
-    #       prefixLength = 24;
+    #       address = "10.152.0.0";
+    #       prefixLength = 16;
     #       via = "192.168.0.15";
     #     }
-    {
-      # Configure the prefix route.
-      address = "10.1.0.0";
-      prefixLength = 16;
-      via = "192.168.0.15";
-    }
-    {
-      # Configure the prefix route.
-      address = "10.152.0.0";
-      prefixLength = 16;
-      via = "192.168.0.15";
-    }
   ];
   networking.interfaces.br0.ipv4.addresses = [
     {
       address = "192.168.0.10";
       prefixLength = 24;
-
     }
 
-    {
-      address = "192.168.1.10";
-      prefixLength = 24;
+    #     {
+    #       address = "192.168.1.10";
+    #       prefixLength = 24;
 
-    }
+    #     }
   ];
 
   networking.defaultGateway = "192.168.0.1";
   networking.nameservers = [
+    "192.168.0.2"
+    "1.1.1.1"
     "181.213.132.5"
     #     "127.0.0.1"
     #     "192.168.0.1"

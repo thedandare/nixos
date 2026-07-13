@@ -104,5 +104,9 @@
     #▐▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▌
 
     zsnes # SNES emulator.
+
+    yabridgectl
+    yabridge
+    zlcompressor # https://zl-audio.github.io/plugins/zlcompressor/manual/
   ];
 }

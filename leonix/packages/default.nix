@@ -24,6 +24,6 @@
     inputs.labcoat.packages.${system}.default
     #     inputs.letta-code.packages.${system}.default
     nixos-anywhere # Install nixos everywhere via ssh # https://github.com/nix-community/nixos-anywhere
-
+    bc
   ];
 }

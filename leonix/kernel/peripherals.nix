@@ -35,4 +35,6 @@
   */
   fileSystems."/".options = [ "noatime" ];
 
+  hardware.enableAllFirmware = true;
+
 }

@@ -1,6 +1,7 @@
 { pkgs, ... }:
 {
   environment.systemPackages = with pkgs; [
+    linuxKernel.packages.linux_5_15.rtw89 # Driver for Realtek 8852AE, 8852BE, and 8853CE, 802.11ax devices
 
     # 📧 Email
     mailutils

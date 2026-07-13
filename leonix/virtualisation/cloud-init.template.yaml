@@ -84,7 +84,7 @@ runcmd:
   - systemctl start snapd.service snapd.socket || true
 
   # 4. Agora sim, instala a interface gráfica e o VNC com segurança
-  - apt-get install -y util-linux jq curl iptables net-tools tigervnc-standalone-server openbox autocutsel xfce4 xfce4-goodies
+  - apt-get install -y util-linux jq curl iptables  net-tools tigervnc-standalone-server openbox autocutsel xfce4 xfce4-goodies
 
   # 🛠️ FIX COMPATIBILIDADE NIXOS: Força o uso do NFTables moderno (ALINHADO)
   # - update-alternatives --set iptables /usr/sbin/iptables-nft || true

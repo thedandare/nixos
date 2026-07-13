@@ -104,8 +104,8 @@ runcmd:
   - vncserver :2 -geometry 1280x720 -rfbauth /root/.vnc/passwd
 
   # 4º Passo: Inicia o VNC Reverso em background direcionado ao Host
-  - sleep 2
-  - vncconfig -display :2 -connect 192.168.0.10:5500 &
+ # - sleep 2
+ # - vncconfig -display :2 -connect 192.168.0.10:5500 &
 
   # 5. Instalação do Tailscale e execução do script de pareamento (ALINHADO)
   - curl -fsSL https://tailscale.com/install.sh | sh
@@ -149,36 +149,3 @@ runcmd:
   # 9. Aplica os parâmetros reiniciando os daemons do MicroK8s
   - snap restart microk8s
   - microk8s status --wait-ready
-
-
-# # 2.1. Aguarda o Socket do Snapd responder
-  # - |
-  #   for i in {1..15}; do
-  #     if snap version >/dev/null 2>&1; then
-  #       echo "Snapd respondendo com sucesso!"
-  #       break
-  #     fi
-  #     echo "Aguardando inicialização do socket do snapd (Tentativa $i/15)..."
-  #     systemctl start snapd.socket
-  #     sleep 2
-  #   done
-
-
-# 3. REDE E FIREWALL NO HOST (net.bridge.bridge-nf-call-iptables = 0):
-#    - Ubuntu/LXD: Definido como '0' para respeitar o roteamento nativo da stack LXD/Net.
-#    - NixOS: Exige '1' devido ao isolamento estrito de tabelas de roteamento do Nix.
-#         O que faz: Força o kernel Linux a processar pacotes que cruzam pontes de rede de Camada 2 (pontes ethernet Virtuais/Bridges) através das tabelas do firewall
-#         de Camada 3 (iptables / nftables).Por que é obrigatório no MicroK8s: O Kubernetes utiliza intensivamente regras de firewall
-#         para interceptar o tráfego direcionado aos IPs virtuais dos Services (ClusterIP / NodePort) e redirecioná-los para os Pods
-#         corretos (via kube-proxy). Se essas opções estiverem configuradas como 0 (desativadas), o tráfego que passa pelas interfaces
-#         de rede internas do Kubernetes ignora as regras do firewall. O resultado prático seria uma falha catastrófica de comunicação
-#         interna: os Pods não conseguiriam resolver ou se comunicar com nenhum Service do cluster.Nota de Produção: No seu script original,
-#         esses valores estavam definidos como 0. A alteração para 1 garante que o isolamento de rede do Kubernetes (Network Policies)
-#         e o roteamento de serviços funcionem conforme o padrão oficial da arquitetura do Kubernetes.3. fs.inotify.max_user_instances = 512
-#         e fs.inotify.max_user_watches = 524288O que faz: Aumenta severamente o limite máximo de instâncias e de arquivos únicos que
-#         um usuário (ou processo) pode monitorar em tempo real no sistema de arquivos do Linux.Por que é obrigatório no Kubernetes:
-#         Daemons internos como o kubelet, controladores de Ingress, ferramentas de log (como Fluentd/Prometheus), e sistemas nativos do
-#         Kubernetes monitoram constantemente alterações em arquivos de configuração (/etc), diretórios de certificados e arquivos de log
-#         em /var/log/pods. Os valores padrão do Ubuntu puro são muito baixos para cenários de microsserviços. Quando o limite padrão é
-#         atingido, o sistema retorna o erro crítico System limit for number of file watchers reached, fazendo com que Pods entrem em estado
-#         de falha ou travem silenciosamXente.

@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: pod-teste-ceph
+  namespace: default
+spec:
+  containers:
+  - name: web-server
+    image: nginx:alpine
+    volumeMounts:
+    - mountPath: /usr/share/nginx/html
+      name: meu-volume-ceph
+  volumes:
+  - name: meu-volume-ceph
+    persistentVolumeClaim:
+      claimName: microceph-pvc-teste

@@ -2,11 +2,35 @@
   config,
   lib,
   pkgs,
+  rtl8851bu-src,
   modulesPath,
   ...
 }:
+let
+  /*
+    rtl8851bu-driver = config.boot.kernelPackages.stdenv.mkDerivation {
+      pname = "rtl8851bu";
+      version = "git";
+      src = rtl8851bu-src;
+
+      nativeBuildInputs = config.boot.kernelPackages.kernel.moduleBuildDependencies;
+
+      # Tell the Makefile where the Nix kernel build tree lives
+      makeFlags = [
+        "KSRC=${config.boot.kernelPackages.kernel.dev}/lib/modules/${config.boot.kernelPackages.kernel.modDirVersion}/build"
+      ];
+
+      # Copy the compiled .ko kernel module into the proper Nix output path
+      installPhase = ''
+        mkdir -p $out/lib/modules/${config.boot.kernelPackages.kernel.modDirVersion}/kernel/drivers/net/wireless/
+        cp 8851bu.ko $out/lib/modules/${config.boot.kernelPackages.kernel.modDirVersion}/kernel/drivers/net/wireless/
+      '';
+    };
+  */
+in
 {
   boot.initrd.enable = true;
+  #boot.extraModulePackages = [ rtl8851bu-driver ];
   boot.initrd.kernelModules = [
     "amdgpu"
   ];
@@ -33,7 +57,10 @@
     #     "ip_tables"
     #     "iptable_filter"
     #     "iptable_nat"
-#     "dvb-usb-rtl28xxu"
+    #     "dvb-usb-rtl28xxu"
+    "8851bu"
+    "rbd"
+
   ];
   boot.kernelParams = [
     "boot.trace"
@@ -45,7 +72,7 @@
     "iommu=pt"
     "processor.max_cstate=4"
     "nohz_full=1-2" # Diz ao kernel que as CPUs de 1 a 7 ficarão sem interrupções periódicas.
-        "modprobe.blacklist=dvb_usb_rtl28xxu"
+    "modprobe.blacklist=dvb_usb_rtl28xxu"
   ];
   boot.kernel.sysctl = {
     "net.bridge.bridge-nf-call-iptables" = 1;

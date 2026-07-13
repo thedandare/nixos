@@ -4,6 +4,7 @@
 {
   config,
   pkgs,
+  #   rtl8851bu-src,
   inputs,
   lib,
   ...
@@ -14,6 +15,7 @@ let
     url = "https://github.com/nix-community/home-manager/archive/release-26.05.tar.gz";
     sha256 = "sha256:10y7xwm4ykcs3pqyj80ri8vwgwwvzzax32f2vgpqb8qc25xv2sv4";
   };
+
   #   foo = builtins.getFlake (toString /home/leo/flakes/foo);
   #   myflake = builtins.getFlake (toString /home/leo/myflake);
   #   initCorsairMouse = builtins.getFlake (toString /home/leo/flakes/initCorsairMouse);

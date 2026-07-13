@@ -85,13 +85,39 @@
 
     rpi-imager # Raspberry Pi Imaging Utility
 
-    # Audio
+    #▐▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▌
+    #▐  Audio
     qpwgraph # Patchbay visual para você gerenciar os nós das suas 3 interfaces
     deadbeef # Player leve que suporta outputs multicanal e roteamento JACK
     alsa-utils # added by TUINIX  P.P: aconnect alsa-info alsabat alsabat-test.sh alsaconf alsactl alsaloop alsamixer alsatplg alsaucm amidi amixer aplay aplaymidi aplaymidi2 arecord arecordmidi2 aseqdump aseqnet aseqsend axfer iecset nhlt-dmic-info speaker-test
     calf # Contém as tabelas de processamento surround e matrizes para o Linux
     ladspaPlugins # Plugins básicos de processamento de sinal
-    real_time_config_quick_scan # Linux configuration checker for systems to be used for real-time audio
+
+    real_time_config_quick_scan
+    /*
+      Linux configuration checker for systems to be used for real-time audio
+      rtcqs is a Python utility to analyze your system and detect possible bottlenecks that could have a negative impact on the performance of your system when working with Linux audio. It is heavily inspired by raboof's excellent realtimeconfigquickscan script.
+      https://github.com/raboof/realtimeconfigquickscan (moved https://codeberg.org/rtcqs/rtcqs)
+
+      Root check ,Audio group check ,CPU frequency check
+      High resolution timers check ,Preempt RT check
+      rtprio check ,Swappiness check ,Filesystem check
+
+      Additional features:
+      SMT, also known as hyper-threading) check, Spectre/Meltdown mitigations check
+      Basic IRQ check of sound cards and USB ports, Power management check tkinter GUI
+
+       Run rtcqs by running ~/path/to/rtcqs/venv/bin/rtcqs in a terminal.
+       The GUI can be run with ~/path/to/rtcqs/venv/bin/rtcqs_gui.
+    */
+
+    #▐▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▌
+
+    #▐▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▌
+    #▐ IoT
+    #▐
+    arduino-ide
+    #▐▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▌
 
   ];
 }

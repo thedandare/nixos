@@ -41,7 +41,7 @@
     flutter341 # Pinned Flutter version; useful when projects depend on a specific SDK release.
     nodejs_24
     uv # Fast Python package/project manager; good replacement for many pip/venv workflows.
-
+    serverpod_cli
     #▐▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▌
     #▐ 📚 Documentation / Diagrams                                 ▌
     #▐ Diagram rendering and documentation-adjacent services.      ▌
@@ -94,7 +94,7 @@
     opentofu # Terraform-compatible open-source IaC tool.
 
     agneyastra # Firebase misconfiguration detection toolkit: https://github.com/JA3G3R/agneyastra
-
+    docker
     #▐▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▌
     #▐ 🖥️ Virtualization / Emulation                               ▌
     #▐ QEMU/KVM, VM viewers, SPICE stack and virtual devices.      ▌

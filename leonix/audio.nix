@@ -17,8 +17,10 @@
     alsa.support32Bit = true;
     pulse.enable = true;
     jack.enable = true; # If you want to use JACK applications
-    extraConfig = {
-      # 🌟 Configurações Audiófilas para o PipeWire:
+    extraConfig = { };
+    #{
+    # 🌟 Configurações Audiófilas para o PipeWire:
+    /*
       pipewire = {
         "99-audiophile" = {
           "context.properties" = {
@@ -38,8 +40,8 @@
             # Define a qualidade máxima de reamostragem caso ela precise acontecer
             "resample.quality" = 10;
             # Um buffer de 64 ou 128 amostras é imperceptível ao ouvido humano e evita estalos
-            "default.clock.quantum" = 64;
-            "default.clock.min-quantum" = 32; # Permite que apps de áudio profissional peçam 32 se precisarem
+            "default.clock.quantum" = 128;
+            "default.clock.min-quantum" = 128; # Permite que apps de áudio profissional peçam 32 se precisarem
             "default.clock.max-quantum" = 1024; # Permite que o sistema aumente o buffer em tarefas leves para poupar energia
 
           };
@@ -114,9 +116,10 @@
             }
           ];
         };
-      };
+    */
+    #   };
 
-    };
+    #};
   };
   security.rtkit.enable = false; # rtkit (optional, recommended) allows Pipewire to use the realtime scheduler for increased performance.
 

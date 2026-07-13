@@ -7,10 +7,19 @@
     nixmate.url = "github:daskladas/nixmate";
     labcoat.url = "github:jhillyerd/labcoat";
     #     letta-code.url = "github:letta-ai/letta-code";
-
+    # Track the driver source via Flake inputs
+    #     rtl8851bu-src = {
+    #       url = "github:kwankiu/rtl8851bu";
+    #       flake = false; # This is a standard Git repository, not a flake itself
+    #     };
   };
   outputs =
-    { self, nixpkgs, ... }@inputs:
+    {
+      self,
+      nixpkgs,
+      #       rtl8851bu-src,
+      ...
+    }@inputs:
     let
       system = "x86_64-linux";
     in
@@ -26,8 +35,10 @@
           modules = [
             ./configuration.nix
             (
-              { pkgs, ... }:
+              { config, pkgs, ... }:
               {
+                #                 _module.args = { inherit rtl8851bu-src; };
+                _module.args = { };
                 environment.systemPackages = [
                   (pkgs.callPackage ./prompts/runprompt.nix { })
                   pkgs.jq
