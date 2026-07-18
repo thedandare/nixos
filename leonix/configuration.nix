@@ -44,7 +44,16 @@ in
     "nix-command"
     "flakes"
   ];
-
+  fonts = {
+    enableDefaultPackages = true;
+    fontDir.enable = true; # <--- Adicione isso para expor as fontes para o root/GParted
+    packages = with pkgs; [
+      dejavu_fonts
+      freefont_ttf
+      liberation_ttf
+      noto-fonts
+    ];
+  };
   nixpkgs.config = {
     android_sdk.accept_license = true;
     allowUnfree = true;

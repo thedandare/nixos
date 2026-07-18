@@ -9,7 +9,9 @@
 
     ./tailscale.nix
   ];
-
+  services.postgresql = {
+    enable = false;
+  };
   services.journald.extraConfig = ''
     MaxRetentionSec=1day
   '';
@@ -102,7 +104,7 @@
 
   # 🚰 Hydra
   services.hydra = {
-    enable = true;
+    enable = false;
     hydraURL = "http://localhost:3000";
     notificationSender = "hydra@localhost";
     useSubstitutes = true;

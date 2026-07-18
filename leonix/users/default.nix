@@ -54,6 +54,7 @@ in
       "video" # dvb
       "dialout" # dvb
       "docker"
+      "ydotool" # clipboard
     ];
 
   };

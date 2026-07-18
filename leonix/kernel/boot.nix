@@ -54,7 +54,7 @@ in
     # Obrigatório para Funcionamento do Incus
     "br_netfilter"
     # NAO FUNCIONA MAIS
-    #     "ip_tables"
+    "ip_tables"
     #     "iptable_filter"
     #     "iptable_nat"
     #     "dvb-usb-rtl28xxu"
@@ -77,8 +77,24 @@ in
   boot.kernel.sysctl = {
     "net.bridge.bridge-nf-call-iptables" = 1;
     "net.bridge.bridge-nf-call-ip6tables" = 1;
+    "fs.file-max" = 100000;
+
     "net.ipv4.ip_forward" = 1;
   };
+  security.pam.loginLimits = [
+    {
+      domain = "*";
+      type = "soft";
+      item = "nofile";
+      value = "65535";
+    }
+    {
+      domain = "*";
+      type = "hard";
+      item = "nofile";
+      value = "65535";
+    }
+  ];
   # Linha 1 (kvm_amd): Ativa a virtualização aninhada (Nested Virtualization).
   #  Linha 2  é usado no Linux para habilitar o DPM (Dynamic Power Management), um recurso do driver amdgpu que controla o gerenciamento de energia e o ajuste dinâmico de clock da placa de vídeo AMD.
   boot.extraModprobeConfig = ''

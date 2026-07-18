@@ -16,18 +16,18 @@ in
   hardware.cpu.amd.updateMicrocode = true;
 
   fileSystems = {
-#     #   "shadowing" (sombreamento de diretório).
-#     "/home/leo/.cache" = {
-#       device = "tmpfs";
-#       fsType = "tmpfs";
-#       options = [
-#         "nosuid"
-#         "nodev"
-#         "size=16G"
-#         "mode=0700"
-#         "uid=1000"
-#       ];
-#     };
+    #     #   "shadowing" (sombreamento de diretório).
+    #     "/home/leo/.cache" = {
+    #       device = "tmpfs";
+    #       fsType = "tmpfs";
+    #       options = [
+    #         "nosuid"
+    #         "nodev"
+    #         "size=16G"
+    #         "mode=0700"
+    #         "uid=1000"
+    #       ];
+    #     };
 
     "boot" = {
       #        ATA Lexar SSD NQ100 part8
@@ -221,6 +221,16 @@ in
       depends = [ "/kali" ];
 
     };
+
+    "/var/lib/incus/storage-pools/default" = {
+      device = "/dev/disk/by-uuid/cca5f286-f126-4062-aa0e-56b226f724e2";
+      fsType = "btrfs";
+      options = [
+        "defaults"
+        "compress=zstd"
+      ]; # "compress=zstd" ativa compressão transparente automática para economizar muito espaço em Btrfs
+    };
+
   };
 
   swapDevices = [ ];

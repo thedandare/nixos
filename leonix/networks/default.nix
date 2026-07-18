@@ -91,13 +91,39 @@ in
   environment.etc."qemu/bridge.conf".text = ''
     allow br0
   '';
-
+  networking.extraHosts = ''
+    192.168.0.9 fibo.local
+  '';
   networking.interfaces.br0.ipv4.routes = [
     {
       #       # Configure the prefix route.
       address = "192.168.1.0";
       prefixLength = 24;
       via = "192.168.0.15";
+    }
+    {
+      #       # Configure the prefix route.
+      address = "10.1.182.194";
+      prefixLength = 32;
+      via = "192.168.0.7";
+    }
+    {
+      #       # Configure the prefix route.
+      address = "10.1.54.65";
+      prefixLength = 32;
+      via = "192.168.0.8";
+    }
+    {
+      #       # Configure the prefix route.
+      address = "10.1.0.0";
+      prefixLength = 16;
+      via = "192.168.0.8";
+    }
+    {
+      #       # Configure the prefix route.
+      address = "10.152.183.0";
+      prefixLength = 24;
+      via = "192.168.0.8";
     }
     /*
       {

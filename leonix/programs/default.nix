@@ -2,6 +2,9 @@
 
 {
 
+  # 1. Enable the native ydotool system service and driver
+  programs.ydotool.enable = true;
+
   imports = [ ./shells.nix ];
   #   programs.nixbit.enable = true; # A GUI application for updating your NixOS system from a Nix Flakes Git repository.
 

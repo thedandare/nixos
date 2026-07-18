@@ -24,10 +24,13 @@
     #▐▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▌
 
     windsurf
-
+    android-studio
+    android-tools
+    androidsdk
     jetbrains.idea
     jetbrains.pycharm
-
+    jetbrains-toolbox
+    jetbrains.jdk-21
     kdePackages.kate
     kdePackages.markdownpart # Markdown preview/rendering component used by KDE apps such as Kate.
 
@@ -39,6 +42,8 @@
     go
     dart
     flutter341 # Pinned Flutter version; useful when projects depend on a specific SDK release.
+    fvm # Simple CLI to manage Flutter SDK versions
+
     nodejs_24
     uv # Fast Python package/project manager; good replacement for many pip/venv workflows.
     serverpod_cli
@@ -156,6 +161,5 @@
     #▐ Move valid packages from here into the categories above.    ▌
     #▐▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▌
 
-    # nnnnnnnnbnmnnnnnmmmnnss # added by TUINIX; invalid/placeholder package name, kept commented.
   ];
 }

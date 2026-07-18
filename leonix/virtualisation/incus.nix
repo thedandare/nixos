@@ -38,25 +38,13 @@ in
     # Define a configuração declarativa do Incus (Rede, Storage e Perfis)
 
     preseed = {
-      storage_pools = [
-        {
-          name = "default";
-          driver = "dir";
-        }
-      ];
 
       networks = [ ];
 
       profiles = [
         {
           name = "default";
-          devices = {
-            root = {
-              path = "/";
-              pool = "default";
-              type = "disk";
-            };
-          };
+
         }
 
         #         rbd,
@@ -66,7 +54,6 @@ in
         #               type = "disk";
         #               readonly/. = "true";
         #             };
-        #  lxc.mount.auto=proc:rw sys:rw
         {
           name = "microk8s";
           # CORRIGIDO: Força o mapeamento relativo na árvore nativa do cgroup v2 do Kernel 7
@@ -75,13 +62,13 @@ in
             "boot.autostart" = "true";
             "security.nesting" = "true";
             "security.privileged" = "true";
-            "linux.kernel_modules" = " ip_vs,ip_vs_rr,ip_vs_wrr,ip_vs_sh,nf_nat,overlay,br_netfilter";
+            "linux.kernel_modules" = "rbd,ip_vs,ip_vs_rr,ip_vs_wrr,ip_vs_sh,nf_nat,overlay,br_netfilter";
 
             "raw.lxc" = ''
               lxc.apparmor.profile = unconfined
               lxc.apparmor.allow_nesting = 1
               lxc.cap.drop=
-
+              lxc.mount.auto=proc:rw sys:rw
             '';
 
             "user.user-data" = cloudInitConfig;

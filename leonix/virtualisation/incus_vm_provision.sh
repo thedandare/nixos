@@ -8,6 +8,7 @@ for i in 7 8 9; do
     ${pkgs.incus}/bin/incus init \
       images:ubuntu/26.04/cloud \
       "$NAME" \
+      -s default \
       -p default \
       -p microk8s
 

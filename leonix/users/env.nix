@@ -27,9 +27,12 @@ in
     alias vim='nvim'
      alias Edt='tmux new-window edit'B
      alias Spl='tmux split-window edit'
+    alias V='ydotool type "$(wl-paste)"'
+
   '';
 
   environment.shellAliases = {
+
     df = ''/run/current-system/sw/bin/df && echo -e "\033[7;36m \n 🪬 \n Lembre-se de\n    usar o dysk:\033[0m" && dysk # '';
 
     su = "sudo su";
