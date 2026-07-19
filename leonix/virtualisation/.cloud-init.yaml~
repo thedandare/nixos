@@ -150,7 +150,7 @@ runcmd:
 
   # 8. Atualiza rede do Host e segura atualizações automáticas do snap
   - sysctl --system
-  # - ln -sf /run/systemd/resolve/resolv.conf /etc/resolv.conf || true
+  - ln -sf /run/systemd/resolve/resolv.conf /etc/resolv.conf || true
   - snap set system refresh.hold=forever
 
    # Aplica exatamente o bind mount que foi validado manualmente.

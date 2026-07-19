@@ -63,18 +63,18 @@ in
               lxc.mount.auto=proc:rw sys:rw
             '';
 
-            "user.user-data" = cloudInitConfig;
+                        "user.user-data" = cloudInitConfig;
 
           };
           devices = {
             #
             # CRÍTICO PARA CEPH CSI / RBD
-            #             modules = {
-            #               type = "disk";
-            #               source = "/run/current-system/kernel-modules/lib/modules";
-            #               path = "/lib/modules";
-            #               readonly = "true";
-            #             };
+#             modules = {
+#               type = "disk";
+#               source = "/run/current-system/kernel-modules/lib/modules";
+#               path = "/lib/modules";
+#               readonly = "true";
+#             };
 
             kmsg = {
               path = "/dev/kmsg";

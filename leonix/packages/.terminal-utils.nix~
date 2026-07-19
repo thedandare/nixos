@@ -128,10 +128,10 @@
     #▐ Display server helpers, clipboard tools and graphics diagnostics. ▌
     #▐▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▌
 
-    #xhost # X server access control program
-    #xauth
-    #xinit
-    #libxdmcp
+    xhost # X server access control program
+    xauth
+    xinit
+    libxdmcp
 
     anyrun # Wayland-native, highly customizable runner.
     wayland-utils # Wayland diagnostic tools.

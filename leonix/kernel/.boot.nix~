@@ -54,7 +54,7 @@ in
     # Obrigatório para Funcionamento do Incus
     "br_netfilter"
     # NAO FUNCIONA MAIS
-    #     "ip_tables"
+#     "ip_tables"
     #     "iptable_filter"
     #     "iptable_nat"
     #     "dvb-usb-rtl28xxu"

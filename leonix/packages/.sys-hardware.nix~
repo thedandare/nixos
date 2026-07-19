@@ -93,7 +93,7 @@
     calf # Contém as tabelas de processamento surround e matrizes para o Linux
     ladspaPlugins # Plugins básicos de processamento de sinal
 
-    #real_time_config_quick_scan
+    real_time_config_quick_scan
     /*
       Linux configuration checker for systems to be used for real-time audio
       rtcqs is a Python utility to analyze your system and detect possible bottlenecks that could have a negative impact on the performance of your system when working with Linux audio. It is heavily inspired by raboof's excellent realtimeconfigquickscan script.
