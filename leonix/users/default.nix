@@ -20,7 +20,7 @@ in
   ];
 
   users.defaultUserShell = pkgs.zsh;
-  security.pam.services.sddm.enableKwallet = true;
+  #   security.pam.services.sddm.enableKwallet = true;
 
   users.users.root = {
     hashedPasswordFile = "/etc/nixos/root-password.hash";
@@ -31,6 +31,10 @@ in
 
   };
   #   home.file."/root/.ssh/root_id_ed25519.pub".text = rootSshKey;
+
+  # Allow tpm-fido to run [c.f. https://github.com/psanford/tpm-fido]
+  # 1. Define the custom group
+  users.groups.uhid = { };
 
   users.users.leo = {
     openssh.authorizedKeys.keys = [ userSshKey ];
@@ -45,10 +49,25 @@ in
       "incus-admin"
       "incus"
       "plugdev"
+      "uhid" # 4 alerta
+      "tss" # (Trusted Software Stack) 4 tpm-fido
+      "video" # dvb
+      "dialout" # dvb
+      "docker"
+      "ydotool" # clipboard
     ];
 
   };
+  environment.systemPackages = [
+    pkgs.udev
+  ];
+  # 3. Create the declarative udev rule
+  services.udev.extraRules = ''
+    KERNEL=="uhid", SUBSYSTEM=="misc", GROUP="uhid", MODE="0660"
+  '';
 
-  #     paxckages = with pkgs; [ thunderbird ];
+  # Alerta
+  users.users.alerta.group = "alerta";
+  users.groups.alerta = { };
 
 }

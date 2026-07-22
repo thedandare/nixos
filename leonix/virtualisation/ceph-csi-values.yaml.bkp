@@ -1,0 +1,20 @@
+csiConfig:
+  - clusterID: "61b9808c-9b4c-4941-ace2-6f1a8d0eca54"
+    monitors:
+      - "192.168.0.9:6789"
+      - "192.168.0.8:6789"
+      - "192.168.0.7:6789"
+      - "192.168.0.15:6789"
+
+provisioner:
+  replicaCount: 1
+
+nodeplugin:
+  forcechildren: true
+  podSecurityContext:
+    privileged: true
+  securityContext:
+    privileged: true
+  kubeletDir: "/var/snap/microk8s/common/var/lib/kubelet"
+
+  # helm upgrade ceph-csi-rbd ceph-csi/ceph-csi-rbd   --namespace ceph-csi-rbd-system   -f ceph-csi-values.yaml

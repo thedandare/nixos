@@ -31,10 +31,11 @@
     #     googleearth-pro
 
     lockbook-desktop
-
+    roomarranger
     # 🎳 Gaming
     #         rpcs3 # PS3 emulator/debugger
     zsnes
+    atari800
     #     retroarch-full
     #     retroarch-bare
     #     retroarch-joypad-autoconfig
@@ -49,6 +50,8 @@
     # 📻 Multimedia
     plex-desktop
     plexamp
+    goodvibes # Lightweight internet radio player
+
     # Ferramentas de linha de comando para manipular os arquivos baixados
     abcm2ps # Converte o arquivo .abc em arquivos de imagem/PDF com a partitura gráfica real
     abcmidi # Transforma o arquivo de texto bruto em um arquivo de áudio .mid executável

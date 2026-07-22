@@ -1,0 +1,15 @@
+csiConfig:
+  - clusterID: "$CEPH_CLUSTER_ID"
+    monitors:
+$CEPH_MONITORS
+
+provisioner:
+  replicaCount: 1
+
+nodeplugin:
+  kubeletDir: "/var/snap/microk8s/common/var/lib/kubelet"
+  forcechildren: true
+  podSecurityContext:
+    privileged: true
+  securityContext:
+    privileged: true

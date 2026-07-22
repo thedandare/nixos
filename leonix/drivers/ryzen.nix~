@@ -1,7 +1,0 @@
-{}:{
-  # ⚡ AMD Ryzen CPU
-  hardware.cpu.amd.ryzen-smu.enable = true; # A linux kernel driver that exposes access to the SMU (System Management Unit)
-  programs.ryzen-monitor-ng.enable = true; # A userspace application for setting and getting Ryzen SMU parameters via the above driver.
-  #hardware.cpu.amd.sev.enable = true; #[https://www.amd.com/en/developer/sev.html]
-
-}

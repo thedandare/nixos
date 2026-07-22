@@ -1,35 +1,39 @@
 { pkgs, ... }:
 {
-  imports = [
-    ./samba.nix
-    ./bonjour.nix
-    ./pihole.nix
-  ];
+  imports = [ ./samba.nix ];
   systemd.network.enable = true;
   systemd.network.wait-online.enable = false;
-  networking.hostName = "leonix";
+  networking.hostName = "nixos"; # Define your hostname.
   networking.networkmanager.enable = true;
+  # networking.wireless.enable = true;  # Enables wireless support via wpa_supplicant.
+  # networking.proxy.default = "http://user:password@proxy:port/";
+  # networking.proxy.noProxy = "127.0.0.1,localhost,internal.domain";
+  # networking.firewall.allowedTCPPorts = [ ... ];
+  # networking.firewall.allowedUDPPorts = [ ... ];
+  networking.firewall.enable = false;
 
-  # Firewalling
-  # Isso força o NixOS a garantir que o ecossistema iptables/nftables básico seja carregado
-  networking.firewall.enable = false; # [ pois =true  Nao funciona!]
-  # Ativa o nftables exigido pelo Incus no NixOS [Solucao!]
-  networking.nftables.enable = true;
-  networking.nat.enable = true;
-  # CORREÇÃO REAL: Força o nftables do host NixOS a liberar o tráfego do Kubernetes na bridge
-  networking.nftables.ruleset = ''
-    table inet filter {
-      chain input {
-        type filter hook input priority filter; policy accept;
-      }
-      # ADICIONADO: Permite que os nós do Kubernetes conversem entre si através da br0
-      chain forward {
-        type filter hook forward priority filter; policy accept;
-      }
-    }
-  '';
+  #   systemd.network = {
+  #     netdevs = {
+  #       # 2. Define the TAP device
+  #       "20-tap1" = {
+  #         enable = true;
+  #         netdevConfig = {
+  #           Kind = "tap";
+  #           Name = "tap1";
+  #         };
+  #       };
+  #     };
+  #     networks = {
+  #       # 3. Configure the TAP device
+  #       "40-tap1" = {
+  #         matchConfig.Name = "tap1";
+  #         # Optional: Bring interface up automatically
+  #         linkConfig.ActivationPolicy = "always-up";
+  #         # Add networking directives (e.g., static IP, bridging) here if needed
+  #       };
+  #     };
+  #   };
 
-  # TCP/IP
   networking.useDHCP = false; # off by defalut, enable per-interface
 
   networking.bridges = {
@@ -42,7 +46,7 @@
     br0.useDHCP = false; # Bridge gets IP via DHCP
   };
 
-  # libera a rede em Bridge para o QEMU
+  # Adicione isso no seu configuration.nix principal para liberar a rede em Bridge
   security.wrappers.qemu-bridge-helper = {
     setuid = true;
     owner = "root";
@@ -78,31 +82,3 @@
   ];
 
 }
-
-# networking.firewall.allowedTCPPorts = [ ... ];
-# networking.firewall.allowedUDPPorts = [ ... ];
-# networking.wireless.enable = true;  # Enables wireless support via wpa_supplicant.
-# Proxing
-# networking.proxy.default = "http://user:password@proxy:port/";
-# networking.proxy.noProxy = "127.0.0.1,localhost,internal.domain";
-#   systemd.network = {
-#     netdevs = {
-#       # 2. Define the TAP device
-#       "20-tap1" = {
-#         enable = true;
-#         netdevConfig = {
-#           Kind = "tap";
-#           Name = "tap1";
-#         };
-#       };
-#     };
-#     networks = {
-#       # 3. Configure the TAP device
-#       "40-tap1" = {
-#         matchConfig.Name = "tap1";
-#         # Optional: Bring interface up automatically
-#         linkConfig.ActivationPolicy = "always-up";
-#         # Add networking directives (e.g., static IP, bridging) here if needed
-#       };
-#     };
-#   };

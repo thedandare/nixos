@@ -6,7 +6,7 @@ let
   #     };
   home-manager = builtins.fetchTarball {
     url = "https://github.com/nix-community/home-manager/archive/release-26.05.tar.gz";
-    sha256 = "sha256:10y7xwm4ykcs3pqyj80ri8vwgwwvzzax32f2vgpqb8qc25xv2sv4";
+    sha256 = "sha256:1cqangi17i4nfkjpzpzpsavcgnaqdvarjjsjg09sbj5mnhnv6v35";
     #
   };
 in
@@ -14,7 +14,7 @@ in
 
   imports = [
     "${home-manager}/nixos"
-    #     ./home-packages.nix
+    ./home-packages.nix
   ];
 
   home-manager.useGlobalPkgs = true;

@@ -96,5 +96,22 @@ in
   };
 
   #
+#   system.activationScripts.tpmDolphinRootFix = {
+#     text = ''
+#       # Garante que a pasta local do root exista
+#       mkdir -p /root/.local/share
+#
+#       # Remove links antigos ou vazios para não dar erro de arquivo existente
+#       rm -f /root/.local/share/applications
+#       rm -f /root/.local/share/mime
+#
+#       # Cria os links simbólicos apontando para o usuário leo
+#       ln -s /home/leo/.local/share/applications /root/.local/share/applications
+#       ln -s /home/leo/.local/share/mime /root/.local/share/mime
+#
+#       # Dá permissão de leitura para o root acessar a pasta do leo
+#       chmod o+rx /home/leo /home/leo/.local /home/leo/.local/share
+#     '';
+#   };
 
 }

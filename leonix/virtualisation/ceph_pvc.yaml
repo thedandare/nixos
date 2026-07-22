@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: microceph-pvc-teste
+  namespace: default
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: microceph-rbd
+  resources:
+    requests:
+      storage: 10Gi

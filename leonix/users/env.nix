@@ -2,7 +2,8 @@
 let
   tmuxSessionHandler = ../scripts/handle_tmux_client_and_session.sh;
   scriptForNixosBuildName = ../scripts/popup_for_nixos_build_name.sh;
-
+  # Lê o arquivo e remove possíveis quebras de linha no final
+  openai_key = builtins.replaceStrings [ "\n" ] [ "" ] (builtins.readFile ../secret/openai_key);
   # Gerenciamento rápido das VMs
   makeRestartVmScript =
     serviceName:
@@ -18,15 +19,20 @@ let
 in
 {
   environment.variables.EDITOR = "nvim";
+  environment.variables.OPENAI_API_KEY = openai_key;
+  environment.variables.GIT_SSH_COMMAND = "ssh -i ~/.ssh/tdd_id_ed25519";
 
   environment.interactiveShellInit = ''
     alias gs='git status'
     alias vim='nvim'
-     alias Edt='tmux new-window edit'
+     alias Edt='tmux new-window edit'B
      alias Spl='tmux split-window edit'
+    alias V='ydotool type "$(wl-paste)"'
+
   '';
 
   environment.shellAliases = {
+
     df = ''/run/current-system/sw/bin/df && echo -e "\033[7;36m \n 🪬 \n Lembre-se de\n    usar o dysk:\033[0m" && dysk # '';
 
     su = "sudo su";
@@ -37,6 +43,7 @@ in
     #     cd.. = "cd ..";
 
     E = "tmux split-window edit";
+    e = "exit 0";
     Bt = "sudo nixos-rebuild boot  --show-trace";
     Tst = "sudo nixos-rebuilsld test  --show-trace";
     Sw = "sudo nixos-rebuild switch  --show-trace --print-build-logs --verbose";
@@ -49,6 +56,25 @@ in
     WinRst = makeRestartVmScript "windows-server.service"; # 🚨 Este nome tem que bater com o configurado em startup.nix!
     SockUbnt = makeOpenVmScript "ubuntu-vm"; # 🚨 Este nome tem que bater com o configurado em qemu-vms.nix!
     SockWin = makeOpenVmScript "windows-server"; # 🚨 Este nome tem que bater com o configurado em qemu-vms.nix!
+    JctlWin = "journalctl -u windows-server.service -e --no-page";
+    JctlUbnt = "journalctl -u ubuntu-vm.service -e --no-page";
+
+    OsnixCP = ''
+      if [ "$EUID" -ne 0 ]; then
+        echo "Error:   run as root." >&2
+        exit 1
+      fi
+      cd /osnix/nixos
+      git pull
+      ./rsync.sh
+      ./clear_temp_files.sh
+      ./pu.sh
+      cd ../ubunix
+      git pull
+      ./clear_temp_files.sh
+      ./pu.sh
+
+    '';
     #
 
     Swl = ''
@@ -57,6 +83,9 @@ in
       ${scriptForNixosBuildName}
     '';
 
+    "gs" = "git status";
+    "teste" = "echo teste";
+    "-g" = ".....=../../../..";
   };
   #   # Opcional: Garante que o diretório seja criado na inicialização se não existir
   #   systemd.tmpfiles.rules = [
@@ -74,6 +103,10 @@ in
     XDG_CONFIG_HOME = "$HOME/.config";
     XDG_DATA_HOME = "$HOME/.local/share";
     XDG_STATE_HOME = "$HOME/.local/state";
+    KUBECONFIG = "$HOME/.kube/config";
+
+    LETTA_API_KEY = "letta-self-hosted-password";
+    LETTA_BASE_URL = "http://10.152.183.35:8283";
 
     # Not officially in the specification
     XDG_BIN_HOME = "$HOME/.local/bin";

@@ -1,0 +1,27 @@
+# 1. Captura dinamicamente o FSID do MicroCeph
+export CEPH_CLUSTER_ID=$(sudo microceph.ceph fsid)
+
+# 2. Coleta todos os IPs dos monitores do cluster e formata como uma lista YAML indentada
+export CEPH_MONITORS=$(sudo microceph.ceph mon dump 2>/dev/null | \
+  grep -oP '192\.\d+\.\d+\.\d+' | \
+  sort -u | \
+  awk '{print "      - \"" $1 ":6789\""}')
+
+# 3. Injeta as variáveis de ambiente no template criando o arquivo de values real
+envsubst < ceph-csi-values.template.yaml > ceph-csi-values.yaml
+
+# 4. Executa a instalação limpa do Helm apontando apenas para o arquivo gerado
+microk8s helm  upgrade --install ceph-csi-rbd ceph-csi/ceph-csi-rbd \
+  --create-namespace \
+  --namespace ceph-csi-rbd-system \
+  -f ceph-csi-values.yaml \
+# 1. Scale to 0 to release the volume lock
+
+# 2. Wait 30 seconds, then scale back to 1
+kubectl scale deployment <your-deployment-name> --replicas=1
+
+
+# install ceph-csi-rbd ceph-csi/ceph-csi-rbd \
+  # --create-namespace \
+  # --namespace ceph-csi-rbd-system \
+  # -f ceph-csi-values.yaml

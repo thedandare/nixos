@@ -4,6 +4,7 @@
 {
   config,
   pkgs,
+  #   rtl8851bu-src,
   inputs,
   lib,
   ...
@@ -14,6 +15,7 @@ let
     url = "https://github.com/nix-community/home-manager/archive/release-26.05.tar.gz";
     sha256 = "sha256:10y7xwm4ykcs3pqyj80ri8vwgwwvzzax32f2vgpqb8qc25xv2sv4";
   };
+
   #   foo = builtins.getFlake (toString /home/leo/flakes/foo);
   #   myflake = builtins.getFlake (toString /home/leo/myflake);
   #   initCorsairMouse = builtins.getFlake (toString /home/leo/flakes/initCorsairMouse);
@@ -35,71 +37,23 @@ in
     ./users
     ./virtualisation
   ];
-
-  /*
-      home-manager.useGlobalPkgs = true;
-      home-manager.users.leo =
-        { pkgs, ... }:
-        let
-          homePackages = import ./packages.nix;
-
-          repositoryName = "nixos";
-          repositoryUser = "thedandare";
-          repositoryUrl = "git@github.com:${repositoryUser}/${repositoryName}.git"; # Usando SSH
-          userSshKey =
-            if builtins.getEnv "SSH_KEY" != "" then
-              builtins.getEnv "SSH_KEY"
-            else
-              "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAICs+sOj/1GK5exkDkCw7H7zmDapshfWaRn474qxZxSUY leo";
-
-        in
-        {
-          nixpkgs.config = {
-            permittedInsecurePackages = [ "googleearth-pro-7.3.7.1155" ];
-          };
-
-          programs.ssh = {
-            enable = true;
-            matchBlocks = {
-              "github.com" = {
-                hostname = "github.com";
-                user = "git";
-                identityFile = "~/.ssh/id_ed25519";
-              };
-            };
-          };
-          # Isso criará uma pasta física para o rep.
-          home.file."osnix" = {
-            source = builtins.fetchGit {
-              url = repositoryUrl;
-              ref = "main";
-            };
-            # Isso faz com que você possa modificar os arquivos localmente
-            recursive = true;
-          };
-          #       nix.settings.experimental-features = [
-          #         "nix-command"
-          #         "flakes"
-          #       ];
-          nixpkgs.config.allowUnfree = true;
-          home.packages = homePackages.packages;
-          services.mpris-proxy.enable = true; # To make bt buttons for pause/play or to skip to the next track usable.
-          programs.chromium.enable = true;
-          programs.home-manager.enable = true;
-          home.stateVersion = "26.05"; # 🚭 No Changing.
-
-          # ♐ Git
-          services.ssh-agent.enable = true;
-          home.file.".ssh/leo.ssh.pub".text = userSshKey; # Para q o Home Manager crie o arquivo  .pub na máquina
-
-        };
-  */
+  nix.optimise.automatic = true;
+  nix.optimise.dates = [ "08:00" ]; # Executa a varredura e unificação em background às 4h da manhã
 
   nix.settings.experimental-features = [
     "nix-command"
     "flakes"
   ];
-
+  fonts = {
+    enableDefaultPackages = true;
+    fontDir.enable = true; # <--- Adicione isso para expor as fontes para o root/GParted
+    packages = with pkgs; [
+      dejavu_fonts
+      freefont_ttf
+      liberation_ttf
+      noto-fonts
+    ];
+  };
   nixpkgs.config = {
     android_sdk.accept_license = true;
     allowUnfree = true;
@@ -116,6 +70,81 @@ in
       }
     });
   '';
+  # 1. Habilita o suporte ao hardware TPM
+  security.tpm2 = {
+    enable = true;
+    pkcs11.enable = true; # Defaults to false.
+  };
+
+  /*
+      O que o PKCS#11 faz (E por que você não precisa dele)
+      O PKCS#11 é um padrão de computação (uma API) usado para fazer
+      com que aplicativos de terceiros em espaço de usuário conversem
+      diretamente com hardwares criptográficos (como chaves Yubikey,
+      Smart Cards ou chips TPM).No Linux, você só ativa o módulo pkcs11
+      do TPM se quiser fazer estas duas coisas específicas:Chaves SSH
+      guardadas no TPM: Para que o seu terminal use a chave criptográfica
+      hardware ao se conectar a um servidor via SSH.Assinatura Git/GPG ou
+      certificados no Navegador: Para assinar Commits de código usando o
+      hardware ou carregar certificados digitais do governo (como e-CPF)
+      direto no Firefox/Chrome.
+
+    or que o KWallet não precisa dele?O foco do seu problema é o KWallet
+    deslogar suas contas. O ecossistema do KDE Plasma 6 no NixOS
+    gerencia isso usando a biblioteca kwallet-pam.O fluxo de funcionamento
+    dispensa o PKCS#11 porque ocorre de forma puramente local:Você
+    digita a senha da sua máquina na tela do SDDM.O subsistema PAM
+    do Linux intercepta essa senha e, em vez de apenas liberar o
+    sistema, ele a entrega imediatamente para o arquivo de biblioteca
+    kwallet-pam (módulo do KDE).
+    O kwallet-pam usa essa exata string da senha para descriptografar
+    e abrir a sua carteira local kdewallet de forma totalmente silenciosa
+    na memória RAM.
+    O Chrome, o cliente do GitHub e o Tailscale abrem, encontram a
+    carteira já aberta pelo PAM e puxam os seus respectivos tokens
+    do Gmail e sessões sem disparar nenhum aviso na tela.
+  */
+
+  # 2. Configuração correta do PAM para o KWallet no Plasma 6 / Unstable
+  security.pam.services = {
+    # Vincula o desbloqueio ao SDDM (Gerenciador de Login do KDE)
+    sddm = {
+      kwallet = {
+        enable = true;
+        package = pkgs.kdePackages.kwallet-pam; # Sintaxe do Plasma 6
+      };
+    };
+
+    #     # Garante que o bloqueador de tela (KScreenLocker) não trave sua carteira ao retornar
+    #     kde = {
+    #       kwallet = {
+    #         enable = true;
+    #         package = pkgs.kdePackages.kwallet-pam;
+    #       };
+    #     };
+  };
+  # 2. Configura o SUDO para não pedir senha para o seu usuário (Método Direto)
+  # Já que você odeia digitação, isso resolve o sudo sem precisar interagir com o hardware
+  security.sudo.extraRules = [
+    {
+      users = [ "leo" ]; # Substitua pelo seu nome de usuário
+      commands = [
+        {
+          command = "ALL";
+          options = [ "NOPASSWD" ];
+        }
+      ];
+    }
+  ];
+
+  # Isolamento estrito dos builds para reprodutibilidade e segurança
+  nix.settings.sandbox = true; # defaults true. Use "relaxed" APENAS se: Você for um desenvolvedor de pacotes avançado e estiver criando ferramentas próprias que obrigatoriamente precisem interagir com a rede ou hardware bruto durante a fase de build (como testes de integração de rede complexos).
+
+  #   # 3. Desbloqueio automático de Wallets/Keyrings com PAM e TPM
+  #   security.pam.services.login.text = ''
+  #     auth optional pam_gnome_keyring.so
+  #     session optional pam_gnome_keyring.so auto_start
+  #   '';
 
   # Select internationalisation properties.
   i18n.defaultLocale = "en_US.UTF-8";
@@ -133,26 +162,5 @@ in
   };
 
   system.stateVersion = "25.11"; # 🚭 No Changing.
-  /*
-    virtualisation.lxc = {
-      enable = false;
-
-      # Ativa o lxcfs para isolamento correto de CPU/Memória (opcional, mas recomendado)
-      lxcfs.enable = true;
-
-      # Injeta a configuração global que todo container criado irá herdar
-      defaultConfig = ''
-        # Inclui o perfil padrão de Nesting que vem com o pacote LXC do NixOS
-        lxc.include = ${pkgs.lxc}/share/lxc/config/nesting.conf
-
-        # Configurações de montagem para permitir o gerenciamento de cgroups/sys
-        lxc.mount.auto = cgroup:rw sys:rw
-        lxc.apparmor.profile = unconfined
-
-        # Permite que o container manipule o hardware de loop do host (major number 7)
-        lxc.cgroup2.devices.allow = b 7:* rwm
-      '';
-    };
-  */
 
 }

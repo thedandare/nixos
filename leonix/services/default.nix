@@ -5,8 +5,18 @@
     ./bluetooth.nix
     ./mailing.nix
     ./startup.nix
+    ./sshd.nix
+
     ./tailscale.nix
   ];
+  services.postgresql = {
+    enable = false;
+  };
+  services.journald.extraConfig = ''
+    MaxRetentionSec=1day
+  '';
+
+  services.alerta.enable = true;
 
   services.outline.enable = false;
   services.outline.secretKeyFile = "/etc/nixos/secret/outline_key";
@@ -94,7 +104,7 @@
 
   # 🚰 Hydra
   services.hydra = {
-    enable = true;
+    enable = false;
     hydraURL = "http://localhost:3000";
     notificationSender = "hydra@localhost";
     useSubstitutes = true;
@@ -102,8 +112,12 @@
 
   #services.pdfding.enable=true;
 
-  # 🔗 Networking
-  services.rqbit.enable = true; # A bittorrent client in Rust https://github.com/ikatson/rqbit
+  #  🔗 A bittorrent client in Rust https://github.com/ikatson/rqbit
+  services.rqbit = {
+    enable = true;
+    # Optional: Set the directory where torrents will download
+    downloadDir = "/home/leo/rqbit/";
+  };
 
   services.samba.enable = true;
 

@@ -8,16 +8,24 @@ let
       mac = "52:54:00:AB:12:34";
       device = "/dev/disk/by-id/ata-Lexar_SSD_NQ100_1TB_QE6068R0049370S30T";
       cdrom = ""; # constantes.WIN_SRV_CDROM;
+      # garmin gps: -device qemu-xhci -device usb-host,hostbus=1,hostaddr=11
       discosAdicionais = "${constantes.PASS_WD40} ${constantes.PASS_ST40} ${constantes.PASS_ST10}"; # ${constantes.WIN_VIRTIO_CDROM}
-      ram = "5G";
+      ram = "3G";
     };
     "ubuntu-vm" = {
       mac = "52:54:00:AB:56:78";
       device = "/dev/disk/by-id/nvme-WD_BLACK_SN750_SE_500GB_22064Y801267";
       cdrom = ""; # constantes.UBUNTU_CDROM; # Certifique-se de que está definido no seu constants.nix;
       discosAdicionais = "";
-      ram = "6G";
+      ram = "10G";
     };
+    #      "kali-vm" = {
+    #       mac = "52:54:00:AB:56:78";
+    #       device = "/dev/disk/by-id/nvme-WD_BLACK_SN750_SE_500GB_22064Y801267";
+    #       cdrom = ""; # constantes.UBUNTU_CDROM; # Certifique-se de que está definido no seu constants.nix;
+    #       discosAdicionais = "";
+    #       ram = "10G";
+    #     };
   };
 
 in
@@ -79,11 +87,12 @@ in
       SOCK_ADDR="${constantes.HOME}socks/${vmID}-spice.sock"
       OVFM_VARS="${constantes.HOME}${vmID}_vars.fd"
       CPU_PARAMS="${constantes.MACHINE} ${constantes.SMP}"
-      MEMORY_PARAMS="-m ${vmConfig.ram} -object memory-backend-file,id=mem-${vmID},size=${vmConfig.ram},mem-path=/dev/hugepages,share=on,policy=bind,host-nodes=0 -numa node,memdev=mem-${vmID}"  BOOT_PARAMS="-boot menu=on ${constantes.EFI_DRIVE} -drive if=pflash,format=raw,file=$OVFM_VARS -device ahci,id=ahci0"
+      MEMORY_PARAMS="-m ${vmConfig.ram} -object memory-backend-file,id=mem-${vmID},size=${vmConfig.ram},mem-path=/dev/hugepages,share=on,policy=bind,host-nodes=0 -numa node,memdev=mem-${vmID}"
+      BOOT_PARAMS="-boot menu=on ${constantes.EFI_DRIVE} -drive if=pflash,format=raw,file=$OVFM_VARS -device ahci,id=ahci0"
       PASS_DISK="-drive file=${vmConfig.device},format=raw,if=none,id=physical_sata,cache=none -device ide-hd,drive=physical_sata,bus=ahci0.0"
       BRIDGE_NET="-netdev bridge,id=${vmID}net,br=${constantes.BRIDGE_IFACE} -device virtio-net,netdev=${vmID}net,mac=${vmConfig.mac}"
-      SPICE_SOCKET="-vga qxl -spice unix,addr=$SOCK_ADDR,disable-ticketing=on"
-      SPICE_CHARDEV="-chardev spicevmc,id=${vmID}-spicechannel,name=vdagent"
+      SPICE_SOCKET=" -vga qxl -spice unix,addr=$SOCK_ADDR,disable-ticketing=on"
+      SPICE_CHARDEV="-chardev spicevmc,id=${vmID}-spicechannel,name=vdagent -device virtio-serial-pci,id=virtio-serial0 -device virtserialport,bus=virtio-serial0.0,nr=1,chardev=${vmID}-spicechannel,name=com.redhat.spice.0 "
       QEMU_MONITOR="-monitor unix:$MONITOR_SOCK,server,nowait"
       PROC_NAME="-name ${vmID},process=${vmID}-qemu"
       ( # Esse loop roda em paralelo, espera os sockets aparecerem no /tmp e libera o acesso (777 ou 666)
@@ -93,7 +102,7 @@ in
         chmod 666 "$SOCK_ADDR" "$MONITOR_SOCK"
         echo "🔒 Permissões cedidas a VM ${vmID}!"
       ) &
-      COMANDO="${vmConfig.cdrom} $CPU_PARAMS $MEMORY_PARAMS $BOOT_PARAMS $PASS_DISK $BRIDGE_NET $SPICE_SOCKET $SPICE_CHARDEV $QEMU_MONITOR ${vmConfig.discosAdicionais} $PROC_NAME"
+      COMANDO=" $CPU_PARAMS $MEMORY_PARAMS $BOOT_PARAMS $PASS_DISK $BRIDGE_NET ${vmConfig.cdrom} $SPICE_SOCKET $SPICE_CHARDEV $QEMU_MONITOR ${vmConfig.discosAdicionais} $PROC_NAME"
       exec ${pkgs.qemu_kvm}/bin/qemu-system-x86_64 $COMANDO
     '';
   }) vms; # <--- Indica ao Nix que o loop deve ser aplicado em cima da nossa lista 'vms'

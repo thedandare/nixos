@@ -36,7 +36,7 @@ write_files:
       --protect-kernel-defaults=true
       --enforce-node-allocatable=""
       --cgroup-driver=systemd
-      --cni-conf-dir=/var/snap/microk8s/current/args/cni-network
+        --cni-conf-dir=/var/snap/microk8s/current/args/cni-network
 
         # =========================================================================
   # 🔌 INJEÇÃO IMUTÁVEL DE FLAGS DO PROXY (Fix de compatibilidade nftables)

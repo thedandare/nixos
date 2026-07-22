@@ -7,9 +7,7 @@
     authKeyFile = "/etc/nixos/secret/tailscale_key";
     serve = {
       enable = true;
-
       configFile = ./tailscale-serve.json;
-
     };
   };
 

@@ -1,92 +1,18 @@
-# { pkgs, ... }:
-#
-# let
-#   # Importa o arquivo de segredos centralizado
-#   secrets = import ../secret/default.nix;
-# in
-# {
-#   # 1. Habilita o motor central do Pi-hole (FTLDNS)
-#   services.pihole-ftl = {
-#     enable = true;
-#
-#     # The config is currently in read-only mode" acontece no NixOS?
-#     # O Pi-hole v6 joga esse erro no painel web sempre que ele detecta que não consegue salvar alterações no arquivo /etc/pihole/pihole.toml.
-#
-#     useDnsmasqConfig = true; # Import options defined in services.dnsmasq.settings via misc.dnsmasq_lines in Pi-hole’s config.
-#
-#     # Abrir portas no firewall automaticamente para DNS e DHCP
-#     openFirewallDNS = true;
-#     openFirewallDHCP = true;
-#     openFirewallWebserver = true;
-#     group = "pihole"; # default
-#     user = "pihole"; # default
-#     logDirectory = "/var/log/pihole";
-#     stateDirectory = "/var/lib/pihole"; # Path for pihole state files.
-#     settings = {
-#       # Servidores DNS de Upstream (onde ele busca quando não está bloqueado)
-#       dns.upstreams = [
-#         "1.1.1.1" # Cloudflare
-#         "9.9.9.9" # Quad9
-#       ];
-#       webserver = {
-#         # Consome a hash de forma limpa e dinâmica direto do barrel de segredos
-#         "api.pwhash" = secrets.pihole.password;
-#
-#         # Define o tempo de expiração da sessão (opcional - exemplo de 12 horas)
-#         "session.timeout" = 43200;
-#       };
-#     };
-#
-#     # Adicione suas Blocklists (Adlists) diretamente via código
-#     lists = [
-#       {
-#         url = "https://raw.githubusercontent.com/hagezi/dns-blocklists/main/adblock/pro.txt";
-#         type = "block";
-#         enabled = true;
-#         description = "Lista Hagezi Pro";
-#       }
-#     ];
-#   };
-#
-#   # 2. Habilita a Interface Web Administrativa do Pi-hole
-#   services.pihole-web = {
-#     enable = true;
-#     hostName = "pihl";
-#     ports = [
-#       314
-#       "14r"
-#       "24s"
-#     ];
-#   };
-# }
 { lib, pkgs, ... }:
 let
   # Importa o arquivo de segredos centralizado
   secrets = import ../secret/default.nix;
+  myLocalWhitelistFile = pkgs.writeText "pihole-whitelist.txt" ''
+    challenges.cloudflare.com
+    cloudflare.com
+    hcaptcha.com
+    recaptcha.net
+    google.com
+    gstatic.com
+  '';
+
 in
 {
-
-  #   # Essential infrastructure
-  #   # - List your most essential network resources here
-  #   networking = {
-  #     hosts = {
-  #       "192.168.0.1" = [
-  #         "gateway.homelab.me"
-  #         "gateway"
-  #       ];
-  #       "192.168.0.10" = [
-  #         "pi-hole.homelab.me"
-  #         "pi-hole"
-  #       ];
-  #       "192.168.33.15" = [
-  #         "nas.homelab.me"
-  #         "nas"
-  #       ];
-  #     };
-  #   };
-
-  #
-
   # 1. Habilita o motor central do Pi-hole (FTLDNS)
   services.pihole-ftl = {
     enable = true;
@@ -106,11 +32,19 @@ in
     #     stateDirectory = "/var/lib/pihole"; # Path for pihole state files.
     settings = {
       misc.readOnly = false;
-
-      # Servidores DNS de Upstream (onde ele busca quando não está bloqueado)
-      dns.upstreams = [
-        "1.1.1.1" # Cloudflare
-        "9.9.9.9" # Quad9
+      misc.privacylevel = 0; # 0 = show everything, 3 = anonymous mode
+      # Lista declarativa de Regex para permitir os domínios e TODOS os subdomínios deles
+      regex.allow = [
+        "(^|\\.)cloudflare\\.com$"
+        "(^|\\.)hcaptcha\\.com$"
+        "(^|\\.)recaptcha\\.net$"
+        "(^|\\.)github\\.com$"
+        "(^|\\.)google\\.com$"
+        "(^|\\.)gstatic\\.com$"
+        # 🛠️ ACRÉSCIMOS CRÍTICOS BASEADOS NO SEU LOG:
+        "(^|\\.)adtrafficquality\\.google$" # Libera o validador de tráfego humano do Google
+        "(^|\\.)googletagmanager\\.com$" # Permite a injeção limpa de scripts de autenticação
+        "(^|\\.)reddit\\.com$" # Corrige a quebra de telemetria/erros do Reddit
       ];
       webserver = {
         "api.password" = "p[]"; # secrets.pihole.password;
@@ -118,25 +52,13 @@ in
         # Define o tempo de expiração da sessão (opcional - exemplo de 12 horas)
         session.timeout = 43200;
       };
-      dhcp = {
-        active = true; # <-- SET TO TRUE ONLY WHEN YOU'RE READY!
-        end = "10.10.10.254";
-        hosts = [
-          #           "00:00:5e:00:53:01,192.168.33.22,jane-laptop"
-          #           "00:00:5e:00:53:ab,bill-desktop"
-          #           "00:00:5e:00:53:ff,office-printer"
-        ];
-        ipv6 = true;
-        leaseTime = "24h";
-        start = "10.10.10.1";
-        rapidCommit = true;
-        resolver = {
-          resolveIPv6 = true;
-        };
-        router = "10.10.0.1/16";
-      };
-      # misc.readOnly = false;
+      # DNS SERVER
       dns = {
+        upstreams = [
+          "1.1.1.1"
+          "8.8.8.8"
+        ];
+
         cnameRecords = [
           "color-printer,office-printer"
           "color-printer.homelab.me,office-printer.homelab.me"
@@ -158,6 +80,24 @@ in
         ipv6.active = false;
         sync.active = false;
       };
+      # DHCP SERVER
+      dhcp = {
+        active = false; # <-- SET TO TRUE ONLY WHEN YOU'RE READY!
+        end = "10.10.10.254";
+        hosts = [
+          #           "00:00:5e:00:53:01,192.168.33.22,jane-laptop"
+          #           "00:00:5e:00:53:ab,bill-desktop"
+          #           "00:00:5e:00:53:ff,office-printer"
+        ];
+        ipv6 = true;
+        leaseTime = "24h";
+        start = "10.10.10.1";
+        rapidCommit = true;
+        resolver = {
+          resolveIPv6 = true;
+        };
+        router = "10.10.0.1/16";
+      };
     };
 
     # Adicione suas Blocklists (Adlists) diretamente via código
@@ -168,7 +108,22 @@ in
         enabled = true;
         description = "Lista Hagezi Pro";
       }
+      {
+        url = "https://raw.githubusercontent.com/StevenBlack/hosts/master/hosts";
+        type = "block";
+        enabled = true;
+        description = "Steven Black's unified adlist";
+      }
+
+      #       # Your whitelists to keep Cloudflare working smoothly
+      #       {
+      #         url = "file://${myLocalWhitelistFile}";
+      #         type = "allow";
+      #         enabled = true;
+      #         description = "Commonly false-positive whitelisted domains";
+      #       }
     ];
+
   };
 
   # 2. Habilita a Interface Web Administrativa do Pi-hole
@@ -181,6 +136,7 @@ in
       "24s"
     ];
   };
+
   services.resolved = {
     settings = {
       Resolve = {

@@ -1,14 +1,29 @@
 { pkgs, config, ... }:
+let
+  SSID = "THIS_IS_US";
+  SSIDpassword = "C@fezinho403";
+  interface = "wlan0";
+
+in
 {
   imports = [
     ./bonjour.nix
     ./dhcp.nix
     ./pihole.nix
     ./samba.nix
-    ./sshd.nix
   ];
   systemd.network.enable = true;
   networking.hostName = "leonix";
+  #   networking.wireless = {
+  #     enable = true;
+  #     networks."${SSID}".psk = SSIDpassword;
+  #     interfaces = [ interface ];
+  #     userControlled.enable = true;
+  #   };
+
+  services.iperf3 = {
+    enable = true;
+  };
 
   networking.networkmanager.enable = true;
   # 3. Optimization: Prevent systemd from waiting for network online
@@ -61,7 +76,7 @@
   networking.interfaces = {
     enp7s0.useDHCP = false; # Interface is bridged
     enp5s0.useDHCP = false; # Interface is bridged
-    br0.useDHCP = false; # Bridge gets IP via DHCP
+    br0.useDHCP = true; # Bridge gets IP via DHCP
   };
 
   # libera a rede em Bridge para o QEMU
@@ -76,34 +91,74 @@
   environment.etc."qemu/bridge.conf".text = ''
     allow br0
   '';
-
+  networking.extraHosts = ''
+    192.168.0.9 fibo.local
+  '';
   networking.interfaces.br0.ipv4.routes = [
     {
-      # Configure the prefix route.
+      #       # Configure the prefix route.
       address = "192.168.1.0";
       prefixLength = 24;
       via = "192.168.0.15";
     }
     {
-      # Configure the prefix route.
+      #       # Configure the prefix route.
+      address = "10.1.182.194";
+      prefixLength = 32;
+      via = "192.168.0.27";
+    }
+    {
+      #       # Configure the prefix route.
+      address = "10.1.54.65";
+      prefixLength = 32;
+      via = "192.168.0.27";
+    }
+    {
+      #       # Configure the prefix route.
       address = "10.1.0.0";
       prefixLength = 16;
-      via = "192.168.0.15";
+      via = "192.168.0.27";
     }
+    {
+      #       # Configure the prefix route.
+      address = "10.152.183.0";
+      prefixLength = 24;
+      via = "192.168.0.27";
+    }
+    /*
+      {
+          # Configure the prefix route.
+          address = "10.1.0.0";
+          prefixLength = 16;
+          via = "192.168.0.15";
+      }
+    */
+    #     {
+    #       # Configure the prefix route.
+    #       address = "10.152.0.0";
+    #       prefixLength = 16;
+    #       via = "192.168.0.15";
+    #     }
   ];
   networking.interfaces.br0.ipv4.addresses = [
     {
       address = "192.168.0.10";
       prefixLength = 24;
-
     }
+
   ];
 
   networking.defaultGateway = "192.168.0.1";
   networking.nameservers = [
+    "192.168.0.2"
     "1.1.1.1"
-    "192.168.0.1"
+    "181.213.132.5"
   ];
+
+  #     "127.0.0.1"
+  #     "192.168.0.1"
+  #     "1.1.1.1"
+  #     "192.168.0.1"
 
   networking.interfaces.enp5s0.ipv4.addresses = [
     {
@@ -112,6 +167,12 @@
 
     }
   ];
+
+  #     {
+  #       address = "192.168.1.10";
+  #       prefixLength = 24;
+
+  #     }
   # Netmask:   255.255.240.0 = 20    11111111.11111111.1111 0000.00000000
   # Wildcard:  0.0.15.255            00000000.00000000.0000 1111.11111111
   # Network:   10.10.0.0/20          00001010.00001010.0000 0000.00000000 (Class A)

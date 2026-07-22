@@ -2,10 +2,16 @@
 
 {
 
+  # 1. Enable the native ydotool system service and driver
+  programs.ydotool.enable = true;
+
   imports = [ ./shells.nix ];
   #   programs.nixbit.enable = true; # A GUI application for updating your NixOS system from a Nix Flakes Git repository.
 
   #   programs.nixbit.forceAutostart = true;
+
+  programs.npm.enable = true;
+
   programs.pulseview.enable = true; # A sigrok GUI.
   programs.skim.enable = true; # skim fuzzy finder.
   programs.skim.keybindings = true; # https://github.com/skim-rs/skim
@@ -219,5 +225,13 @@
         EOF
       '';
     };
+  };
+
+  # https://github.com/nix-community/nh
+  programs.nh = {
+    enable = true;
+    clean.enable = true;
+    clean.extraArgs = "--keep-since 4d --keep 3";
+    # flake = "/home/user/my-nixos-config"; # sets NH_OS_FLAKE variable for you
   };
 }

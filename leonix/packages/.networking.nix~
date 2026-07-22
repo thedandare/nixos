@@ -1,7 +1,21 @@
 { pkgs, ... }:
 {
   environment.systemPackages = with pkgs; [
+    linuxKernel.packages.linux_5_15.rtw89 # Driver for Realtek 8852AE, 8852BE, and 8853CE, 802.11ax devices
+
+    # 📧 Email
+    mailutils
+    swaks # Featureful, flexible, scriptable, transaction-oriented SMTP test tool
+
+    # GNU Mailutils is a rich and powerful protocol-independent mail framework. It contains a series of useful mail libraries, clients, and servers. These are the primary mail utilities for the GNU system. The central library is capable of handling electronic mail in various mailbox formats and protocols, both local and remote. Specifically, this project contains a POP3 server, an IMAP4 server, and a Sieve mail filter. It also provides a POSIX `mailx’ client, and a collection of other handy tools.
+    # The GNU Mailutils libraries supply an ample set of primitives for handling electronic mail in programs written in C, C++, Python or Scheme.
+    # The utilities provided by Mailutils include imap4d and pop3d mail servers, mail reporting utility comsatd, mail filtering program sieve, and an implementation of MH message handling system.
+    # Programs provided
+    # comsatd decodemail dotlock frm from imap4d lmtpd mail mailutils mailutils-config mda messages mimeview movemail pop3d popauth putmail readmsg sieve
+
     # 📡 Networking
+    netbird
+    netbird-ui
     tailscale
     nmap
     zenmap
@@ -12,26 +26,23 @@
     tshark
     wireshark
     wireshark-cli
-    pihole-ftl
+    #pihole-ftl
+    dublin-traceroute # NAT-aware multipath traceroute tool
+    iperf3
+
+    owamp # one-way active measurements http://software.internet2.edu/owamp/
 
     # 🏢 Remote Access
-    x2goclient
+    # x2goclient
     gnome-connections
-    x2goserver
+    # x2goserver
     remmina
     freerdp
     tigervnc
+    rdpgw # Remote Desktop Gateway https://github.com/bolkedebruin/rdpgw
 
     # 🌏 Sharing
     rqbit
 
-    # 📻 SDR
-    gnuradio
-    gnuradioPackages.osmosdr # Programs provided
-    #     rtl-sdr-librtlsdr # Fork of the rtl-sdr library by the Osmocom project.
-    sdr-j-fm
-    gqrx
-
-    qradiolink
   ];
 }

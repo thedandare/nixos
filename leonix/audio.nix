@@ -7,7 +7,6 @@
 # E4 ─── ♩ ────────────────── ♩ ─────────────────
 #  ─ ♩ ─
 
-
 { ... }:
 {
   # 🔊 Sound blasting.
@@ -18,35 +17,111 @@
     alsa.support32Bit = true;
     pulse.enable = true;
     jack.enable = true; # If you want to use JACK applications
-    extraConfig = {
-      # 🌟 Configurações Audiófilas para o PipeWire:
-      pipewire."99-audiophile" = {
-        "context.properties" = {
-          "module.x11.bell" = false; # Disable X11 bell module, which plays a sound on urgency hint
+    extraConfig = { };
+    #{
+    # 🌟 Configurações Audiófilas para o PipeWire:
+    /*
+      pipewire = {
+        "99-audiophile" = {
+          "context.properties" = {
+            "module.x11.bell" = false; # Disable X11 bell module, which plays a sound on urgency hint
 
-          # Permite que o PipeWire mude a taxa de amostragem do hardware dinamicamente
-          "default.clock.allowed-rates" = [
-            44100
-            48000
-            88200
-            96000
-            176400
-            192000
-            352800
-            384000
-          ];
-          # Define a qualidade máxima de reamostragem caso ela precise acontecer
-          "resample.quality" = 10;
-          # Um buffer de 64 ou 128 amostras é imperceptível ao ouvido humano e evita estalos
-          "default.clock.quantum" = 64;
-          "default.clock.min-quantum" = 32; # Permite que apps de áudio profissional peçam 32 se precisarem
-          "default.clock.max-quantum" = 1024; # Permite que o sistema aumente o buffer em tarefas leves para poupar energia
+            # Permite que o PipeWire mude a taxa de amostragem do hardware dinamicamente
+            "default.clock.allowed-rates" = [
+              44100
+              48000
+              88200
+              96000
+              176400
+              192000
+              352800
+              384000
+            ];
+            # Define a qualidade máxima de reamostragem caso ela precise acontecer
+            "resample.quality" = 10;
+            # Um buffer de 64 ou 128 amostras é imperceptível ao ouvido humano e evita estalos
+            "default.clock.quantum" = 128;
+            "default.clock.min-quantum" = 128; # Permite que apps de áudio profissional peçam 32 se precisarem
+            "default.clock.max-quantum" = 1024; # Permite que o sistema aumente o buffer em tarefas leves para poupar energia
 
+          };
         };
-      };
-    };
+        # Quadrophonic DECODER):
+        "99-sq-decoder" = {
+          "context.modules" = [
+            {
+              name = "libpipewire-module-filter-chain";
+              args = {
+                "node.description" = "Decodificador Matrix SQ Quadrafônico";
+                "media.name" = "Matrix SQ Decoder";
+                "node.name" = "sq_decoder";
+                "in.channels" = [
+                  "FL"
+                  "FR"
+                ];
+                "out.channels" = [
+                  "FL"
+                  "FR"
+                  "RL"
+                  "RR"
+                ];
+                "filter.graph" = {
+                  nodes = [
+                    {
+                      type = "builtin";
+                      label = "linear";
+                      name = "matrix";
+                    }
+                  ];
+                  settings = {
+                    "matrix.dump" = true;
+                    "matrix.gain" = 1.0;
+                    "matrix.matrix" = [
+                      [
+                        1.0
+                        0.0
+                      ] # Frente Esquerda (L)
+                      [
+                        0.0
+                        1.0
+                      ] # Frente Direita (R)
+                      [
+                        (-0.707)
+                        0.707
+                      ] # Trás Esquerda (-0.707L + 0.707R)
+                      [
+                        0.707
+                        (-0.707)
+                      ] # Trás Direita (0.707L - 0.707R)
+                    ];
+                  };
+                };
+                "capture.props" = {
+                  "node.passive" = true;
+                  "audio.position" = [
+                    "FL"
+                    "FR"
+                  ];
+                };
+                "playback.props" = {
+                  "node.name" = "sq_output";
+                  "audio.position" = [
+                    "FL"
+                    "FR"
+                    "RL"
+                    "RR"
+                  ];
+                };
+              };
+            }
+          ];
+        };
+    */
+    #   };
+
+    #};
   };
-  security.rtkit.enable = true; # rtkit (optional, recommended) allows Pipewire to use the realtime scheduler for increased performance.
+  security.rtkit.enable = false; # rtkit (optional, recommended) allows Pipewire to use the realtime scheduler for increased performance.
 
   /*
     ▐▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▌

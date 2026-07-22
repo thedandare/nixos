@@ -1,0 +1,37 @@
+for i in 8 9 10 11; do
+  NAME="leonk${i}s"
+  IP_ADDRESS="192.168.0.${i}"
+
+  if ! ${pkgs.incus}/bin/incus info "$NAME" >/dev/null 2>&1; then
+    echo "Container $NAME não encontrado. Criando com IP $IP_ADDRESS..."
+
+    ${pkgs.incus}/bin/incus init \
+      images:ubuntu/26.04/cloud \
+      "$NAME" \
+      -s default \
+      -p default \
+      -p microk8s
+
+   # ${pkgs.incus}/bin/incus config set "$NAME" user.user-data "$(cat /etc/nixos/virtualisation/cloud-init.yaml)"
+
+    ${pkgs.incus}/bin/incus config set "$NAME" user.network-config - <<NETEOF
+version: 2
+ethernets:
+  eth0:
+    dhcp4: false
+    addresses:
+      - ${IP_ADDRESS}/24
+    routes:
+      - to: default
+        via: 192.168.0.1
+    nameservers:
+      addresses:
+        - 192.168.0.1
+        - 1.1.1.1
+NETEOF
+
+    ${pkgs.incus}/bin/incus start "$NAME"
+  else
+    echo "Container $NAME já existe."
+  fi
+done
