@@ -139,5 +139,8 @@
     xclip # X11 clipboard support for console applications.
 
     vulkan-tools # Vulkan diagnostics/utilities such as vulkaninfo.
+
+    tlrc # Official tldr client written in Rust https://github.com/tldr-pages/tlrc
+
   ];
 }

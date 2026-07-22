@@ -206,6 +206,7 @@
     deepsecrets # Secrets scanner that understands source code.
     stacs # Static token and credential scanner.
     spyre # YARA-based IOC scanner for searching filesystems for indicators of compromise.
+    secrets-extractor # Tool to check packets for secrets
 
     #▐▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▌
     #▐ 📶 Wireless / RF / Wardriving Security                      ▌
@@ -224,5 +225,6 @@
 
     # https://github.com/vi/websocat
     websocat
+
   ];
 }

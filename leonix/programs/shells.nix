@@ -7,11 +7,11 @@
     autosuggestions.enable = true;
     syntaxHighlighting.enable = true;
     enableBashCompletion = true; # Enable compatibility with bash’s programmable completion system.
-    shellInit = "[[ -o interactive ]] && echo -e \" \033[7;33m E aízsh \033[0m\" "; # Shell script code called during zsh shell initialisation.
+    #     shellInit = "[[ -o interactive ]] && echo -e \" \033[7;33m E aízsh \033[0m\" "; # Shell script code called during zsh shell initialisation.
     ohMyZsh = {
       enable = true;
       theme = "robbyrussell"; # <--- ADICIONE ESTA LINHA (O robbyrussell mostra o caminho atual por padrão)
-      preLoaded = "[[ -o interactive ]] && echo -e \"'\033[7;31m' oh My Zsh  '\033[0m'\"";
+      #       preLoaded = "[[ -o interactive ]] && echo -e \"'\033[7;31m' oh My Zsh  '\033[0m'\"";
       plugins = [
         "zsh-interactive-cd"
         "web-search"
@@ -92,7 +92,7 @@
                 # Uso:
                 #   nixa ll "ls -lah"
                 #   nixa gst "git status"
-                #   nixa rebuild "sudo nixos-rebuild switch --show-trace"
+                #   nixa rebuild "sudo nixos-rebuild switch --show-trace"F
                 #
                 # Também aceita:
                 #   nixa ll=ls -lah

@@ -103,6 +103,10 @@ in
     XDG_CONFIG_HOME = "$HOME/.config";
     XDG_DATA_HOME = "$HOME/.local/share";
     XDG_STATE_HOME = "$HOME/.local/state";
+    KUBECONFIG = "$HOME/.kube/config";
+
+    LETTA_API_KEY = "letta-self-hosted-password";
+    LETTA_BASE_URL = "http://10.152.183.35:8283";
 
     # Not officially in the specification
     XDG_BIN_HOME = "$HOME/.local/bin";

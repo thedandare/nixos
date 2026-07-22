@@ -128,10 +128,10 @@
     #▐ Display server helpers, clipboard tools and graphics diagnostics. ▌
     #▐▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▌
 
-    xhost # X server access control program
-    xauth
-    xinit
-    libxdmcp
+    #xhost # X server access control program
+    #xauth
+    #xinit
+    #libxdmcp
 
     anyrun # Wayland-native, highly customizable runner.
     wayland-utils # Wayland diagnostic tools.
@@ -139,5 +139,8 @@
     xclip # X11 clipboard support for console applications.
 
     vulkan-tools # Vulkan diagnostics/utilities such as vulkaninfo.
+
+    tlrc #Official tldr client written in Rust https://github.com/tldr-pages/tlrc
+
   ];
 }

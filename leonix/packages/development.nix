@@ -14,7 +14,7 @@
     codex # OpenAI Codex CLI/agent tooling.
     devin-cli
 
-    antigravity
+    #antigravity
     antigravity-cli # Google's Go-based terminal user interface agent client.
     antigravity-fhs # FHS wrapper; useful when extensions expect a standard Linux filesystem layout.
 
@@ -40,6 +40,7 @@
     #▐▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▌
 
     go
+    dart-bin
     dart
     flutter341 # Pinned Flutter version; useful when projects depend on a specific SDK release.
     fvm # Simple CLI to manage Flutter SDK versions
