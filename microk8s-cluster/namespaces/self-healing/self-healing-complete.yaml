@@ -1,0 +1,148 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: self-healing
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: node-fixer-sa
+  namespace: self-healing
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: node-fixer-role
+rules:
+- apiGroups: [""]
+  resources: ["nodes"]
+  verbs: ["get", "list", "watch"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: node-fixer-binding
+subjects:
+- kind: ServiceAccount
+  name: node-fixer-sa
+  namespace: self-healing
+roleRef:
+  kind: ClusterRole
+  name: node-fixer-role
+  apiGroup: rbac.authorization.k8s.io
+---
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: microk8s-pleg-watcher
+  namespace: self-healing
+spec:
+  selector:
+    matchLabels:
+      app: pleg-watcher
+  template:
+    metadata:
+      labels:
+        app: pleg-watcher
+    spec:
+      hostPID: true         # Enxerga os processos reais do host
+      hostNetwork: true     # Usa a rede do host para capturar o hostname correto
+      restartPolicy: Always
+      serviceAccountName: node-fixer-sa
+      tolerations:
+      - operator: Exists    # Permite rodar mesmo se o nó estiver NotReady
+      containers:
+      - name: watcher
+        image: alpine:3.18
+        securityContext:
+          privileged: true  # Permite comandos systemctl no host via nsenter
+        command: ["/bin/sh", "-c"]
+        args:
+          - |
+            apk add --no-cache curl perl net-tools
+
+            # Instala o swaks de forma efêmera no container do monitor
+            curl -sSfL https://jetmore.org -o /usr/bin/swaks
+            chmod +x /usr/bin/swaks
+
+            # Baixa o kubectl para checar o status do nó local
+            curl -LO "https://k8s.io"
+            chmod +x kubectl
+
+            NODE_NAME=$(hostname)
+            echo "Monitor de autocorreção iniciado no nó: $NODE_NAME"
+
+            while true; do
+              echo "$(date): Validando status de $NODE_NAME..."
+
+              if ./kubectl get node "$NODE_NAME" | grep -q "NotReady"; then
+                  echo "Alerta! Nó $NODE_NAME em estado NotReady."
+
+                  # Dispara e-mail via Swaks
+                  swaks --server 100.100.1.15 --port 25 \
+                    --to "root@kub.qzz.io, thedandare@gmail.com" \
+                    --from "${NODE_NAME}@kub.qzz.io" \
+                    --header "Subject: ALERTA: MicroK8s no $NODE_NAME apresentou falha de PLEG" \
+                    --body "O nó $NODE_NAME foi detectado como NotReady pelo DaemonSet. Reiniciando os servicos locais."
+
+                  echo "Reiniciando daemons do MicroK8s no host atual..."
+                  nsenter -t 1 -m -u -i -n -p systemctl restart snap.microk8s.daemon-containerd
+                  sleep 5
+                  nsenter -t 1 -m -u -i -n -p systemctl restart snap.microk8s.daemon-kubelet
+                  echo "Serviços reiniciados. Pausando monitor por 60 segundos..."
+                  sleep 60
+              fi
+
+              sleep 120
+            done
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: crontab-guru-dashboard
+  namespace: self-healing
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: crontab-guru
+  template:
+    metadata:
+      labels:
+        app: crontab-guru
+    spec:
+      containers:
+      - name: dashboard
+        image: alpine:latest
+        ports:
+        - containerPort: 9000
+          name: http
+        command: ["/bin/bash", "-c"]
+        args:
+          - |
+            apk add --no-cache curl bash ca-certificates dcron perl
+            # Instala o utilitário oficial do Cronitor (que alimenta o Crontab Guru Dashboard)
+            curl -sL https://cronitor.io -o /tmp/cronitor.tar.gz
+            tar -xf /tmp/cronitor.tar.gz -C /usr/local/bin/
+            chmod +x /usr/local/bin/cronitor
+
+            # Configura credenciais administrativas para o painel (Ajuste se quiser alterar)
+            cronitor configure --dash-username admin --dash-password admin123
+
+            echo "Iniciando Crontab Guru Dashboard na porta 9000..."
+            exec cronitor dash --port 9000
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: crontab-guru-service
+  namespace: self-healing
+spec:
+  type: ClusterIP # Altere para NodePort ou adicione annotations do MetalLB caso queira IP externo
+  ports:
+  - port: 9000
+    targetPort: 9000
+    protocol: TCP
+    name: http
+  selector:
+    app: crontab-guru
